@@ -46,6 +46,21 @@ namespace Luny
                 }
             }
         }
+        public void OnLateUpdate(Double deltaTime)
+        {
+	        foreach (var observer in _registry.EnabledObservers)
+	        {
+		        try
+		        {
+			        observer.OnLateUpdate(deltaTime);
+		        }
+		        catch (Exception e)
+		        {
+			        /* keep dispatch resilient */
+			        Log.Exception(e);
+		        }
+	        }
+        }
 
         public void OnFixedStep(Double fixedDeltaTime)
         {
@@ -124,11 +139,15 @@ namespace Luny
                     })
                     .Where(t => typeof(IEngineLifecycle).IsAssignableFrom(t) && !t.IsAbstract);
 
+                // TODO: sort observers deterministically
+                // TODO: configure observer enabled states
+
                 foreach (var type in observerTypes)
                 {
-                    var instance = (IEngineLifecycle)Activator.CreateInstance(type);
-                    _registeredObservers[type] = instance;
-                    _enabledObservers.Add(instance); // enabled by default
+	                Log.Info($"Creating observer instance: {type.Name} (Assembly: {type.Assembly.GetName().Name})");
+                    var observer = (IEngineLifecycle)Activator.CreateInstance(type);
+                    _registeredObservers[type] = observer;
+					_enabledObservers.Add(observer); // enabled by default
                 }
 
                 sw.Stop();
