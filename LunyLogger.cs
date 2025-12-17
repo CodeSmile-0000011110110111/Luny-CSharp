@@ -15,10 +15,35 @@ namespace Luny
 		/// </summary>
 		public static void SetLogger(ILunyLogger logger) => _logger = logger ?? new ConsoleLogger();
 
-		public static void LogInfo(String message) => _logger.LogInfo(message);
-		public static void LogWarning(String message) => _logger.LogWarning(message);
-		public static void LogError(String message) => _logger.LogError(message);
-		public static void LogException(Exception exception) => _logger.LogException(exception);
+		public static void LogInfo(String message, Object context = null) => _logger.LogInfo(FormatWithContext(message, context));
+		public static void LogWarning(String message, Object context = null) => _logger.LogWarning(FormatWithContext(message, context));
+		public static void LogError(String message, Object context = null) => _logger.LogError(FormatWithContext(message, context));
+
+		public static void LogException(Exception exception, Object context = null)
+		{
+			// Preserve engine-native exception handling while still emitting a contextual header if provided
+			if (context != null)
+			{
+				var header = FormatWithContext(exception?.Message, context);
+				_logger.LogError(header);
+			}
+			_logger.LogException(exception);
+		}
+
+		private static String FormatWithContext(String message, Object context)
+		{
+			if (context == null)
+				return message;
+
+			var prefix = context switch
+			{
+				Type t => t.Name,
+				String s => s,
+				var _ => context.GetType().Name,
+			};
+
+			return prefix == null ? message : $"[{prefix}] {message}";
+		}
 
 		private sealed class ConsoleLogger : ILunyLogger
 		{

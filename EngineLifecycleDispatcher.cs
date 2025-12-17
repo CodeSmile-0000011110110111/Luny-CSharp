@@ -126,7 +126,7 @@ namespace Luny
 
 			private void DiscoverAndInstantiateObservers()
 			{
-				LunyLogger.LogInfo($"[LifecycleObserverRegistry] Locating {nameof(IEngineLifecycle)} observers ...");
+				LunyLogger.LogInfo($"Locating {nameof(IEngineLifecycle)} observers ...", this);
 				var sw = Stopwatch.StartNew();
 
 				var observerTypes = AppDomain.CurrentDomain.GetAssemblies()
@@ -142,7 +142,7 @@ namespace Luny
 
 				foreach (var type in observerTypes)
 				{
-					LunyLogger.LogInfo($"[LifecycleObserverRegistry] Creating observer instance: {type.Name} (Assembly: {type.Assembly.GetName().Name})");
+					LunyLogger.LogInfo($"Creating observer instance: {type.Name} (Assembly: {type.Assembly.GetName().Name})", this);
 					var observer = (IEngineLifecycle)Activator.CreateInstance(type);
 					_registeredObservers[type] = observer;
 					_enabledObservers.Add(observer); // enabled by default
@@ -151,7 +151,7 @@ namespace Luny
 				sw.Stop();
 
 				var ms = (Int32)Math.Round(sw.Elapsed.TotalMilliseconds, MidpointRounding.AwayFromZero);
-				LunyLogger.LogInfo($"[LifecycleObserverRegistry] Registered {_enabledObservers.Count} {nameof(IEngineLifecycle)} observers in {ms} ms.");
+				LunyLogger.LogInfo($"Registered {_enabledObservers.Count} {nameof(IEngineLifecycle)} observers in {ms} ms.", this);
 			}
 
 			public void EnableObserver<T>() where T : IEngineLifecycle
