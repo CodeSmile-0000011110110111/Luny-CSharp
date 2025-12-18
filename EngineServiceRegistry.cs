@@ -9,7 +9,7 @@ namespace Luny
 	/// Generic service registry that discovers and holds engine provider services.
 	/// </summary>
 	/// <typeparam name="T">Service interface type that must implement IEngineProvider</typeparam>
-	public sealed class EngineServiceRegistry<T> where T : class, IEngineProvider
+	public sealed class EngineServiceRegistry<T> where T : class, IEngineServiceProvider
 	{
 		private readonly Dictionary<Type, T> _registeredServices = new();
 
@@ -19,7 +19,6 @@ namespace Luny
 
 		private void DiscoverAndInstantiateServices()
 		{
-			LunyLogger.LogInfo($"Discovering {typeof(T).Name} services...", this);
 			var sw = Stopwatch.StartNew();
 
 			var serviceTypes = AppDomain.CurrentDomain.GetAssemblies()
@@ -32,9 +31,12 @@ namespace Luny
 
 			foreach (var type in serviceTypes)
 			{
-				LunyLogger.LogInfo($"Registering service: {type.Name} (Assembly: {type.Assembly.GetName().Name})", this);
+				// Find the specific service interface (not IEngineServiceProvider directly)
+				var serviceInterface = GetServiceInterface(type);
+
+				LunyLogger.LogInfo($"Registering service: {type.Name} as {serviceInterface.Name} (Assembly: {type.Assembly.GetName().Name})", this);
 				var service = (T)Activator.CreateInstance(type);
-				_registeredServices[type] = service;
+				_registeredServices[serviceInterface] = service;
 			}
 
 			sw.Stop();
@@ -43,16 +45,46 @@ namespace Luny
 			LunyLogger.LogInfo($"Registered {_registeredServices.Count} {typeof(T).Name} services in {ms} ms.", this);
 		}
 
-		public TService Get<TService>() where TService : class, T, IEngineProvider
+		private static Type GetServiceInterface(Type implementationType)
+		{
+			// Get all interfaces that derive from IEngineServiceProvider (but are not IEngineServiceProvider itself)
+			var serviceInterfaces = implementationType.GetInterfaces()
+				.Where(i => i != typeof(T) && typeof(T).IsAssignableFrom(i))
+				.ToArray();
+
+			// Must implement exactly one specific service interface
+			if (serviceInterfaces.Length == 0)
+				LunyThrow.ServiceMustImplementSpecificInterfaceException(implementationType.Name);
+
+			if (serviceInterfaces.Length > 1)
+			{
+				// Check if any interface directly inherits from IEngineServiceProvider
+				var directInterfaces = serviceInterfaces
+					.Where(i => i.GetInterfaces().Contains(typeof(T)))
+					.ToArray();
+
+				if (directInterfaces.Length != 1)
+				{
+					var interfaceNames = String.Join(", ", serviceInterfaces.Select(i => i.Name));
+					LunyThrow.ServiceImplementsMultipleInterfacesException(implementationType.Name, interfaceNames);
+				}
+
+				return directInterfaces[0];
+			}
+
+			return serviceInterfaces[0];
+		}
+
+		public TService Get<TService>() where TService : class, T, IEngineServiceProvider
 		{
 			if (_registeredServices.TryGetValue(typeof(TService), out var service))
 				return service as TService;
 
-			Throw.ServiceNotFoundException(typeof(TService).Name);
+			LunyThrow.ServiceNotFoundException(typeof(TService).Name);
 			return null;
 		}
 
-		public Boolean Has<TService>() where TService : class, T, IEngineProvider =>
+		public Boolean Has<TService>() where TService : class, T, IEngineServiceProvider =>
 			_registeredServices.ContainsKey(typeof(TService));
 	}
 }

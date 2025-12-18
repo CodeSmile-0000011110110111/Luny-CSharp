@@ -5,7 +5,7 @@ namespace Luny.Providers
 	/// <summary>
 	/// Engine-agnostic scene information provider.
 	/// </summary>
-	public interface ISceneProvider : IEngineProvider
+	public interface ISceneServiceProvider : IEngineServiceProvider
 	{
 		/// <summary>
 		/// Gets the name of the currently active scene.

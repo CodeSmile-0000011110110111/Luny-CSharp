@@ -2,6 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
+using Luny.Attributes;
+using Luny.Extensions;
+using Luny.Providers;
 
 namespace Luny
 {
@@ -15,11 +19,14 @@ namespace Luny
 
 		public IEnumerable<IEngineLifecycleObserver> EnabledObservers => _enabledObservers;
 
-		public EngineLifecycleObserverRegistry() => DiscoverAndInstantiateObservers();
-
-		private void DiscoverAndInstantiateObservers()
+		public EngineLifecycleObserverRegistry(ISceneServiceProvider sceneServiceProvider)
 		{
-			LunyLogger.LogInfo($"Locating {nameof(IEngineLifecycleObserver)} observers ...", this);
+			var isSmokeTestScene = IsSmokeTestScene(sceneServiceProvider);
+			DiscoverAndInstantiateObservers(isSmokeTestScene);
+		}
+
+		private void DiscoverAndInstantiateObservers(Boolean isSmokeTestScene)
+		{
 			var sw = Stopwatch.StartNew();
 
 			var observerTypes = AppDomain.CurrentDomain.GetAssemblies()
@@ -32,10 +39,16 @@ namespace Luny
 
 			// TODO: sort observers deterministically
 			// TODO: configure observer enabled states
-			// TODO: filter [LunyTestable] observers unless in test scenario
 
 			foreach (var type in observerTypes)
 			{
+				// Skip [LunyTestable] types unless in smoke test scenes
+				if (!isSmokeTestScene && type.HasAttribute<LunyTestableAttribute>())
+				{
+					LunyLogger.LogInfo($"Skipping test observer: {type.Name} (not running a smoke test scene)", this);
+					continue;
+				}
+
 				LunyLogger.LogInfo($"Creating observer instance: {type.Name} (Assembly: {type.Assembly.GetName().Name})", this);
 				var observer = (IEngineLifecycleObserver)Activator.CreateInstance(type);
 				_registeredObservers[type] = observer;
@@ -66,5 +79,11 @@ namespace Luny
 		public Boolean IsObserverEnabled<T>() where T : IEngineLifecycleObserver =>
 			_registeredObservers.TryGetValue(typeof(T), out var observer) &&
 			_enabledObservers.Contains(observer);
+
+		private static Boolean IsSmokeTestScene(ISceneServiceProvider sceneServiceProvider)
+		{
+			var sceneName = sceneServiceProvider.CurrentSceneName;
+			return sceneName.StartsWith("Luny") && sceneName.EndsWith("SmokeTest");
+		}
 	}
 }

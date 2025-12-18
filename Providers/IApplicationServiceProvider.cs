@@ -5,7 +5,7 @@ namespace Luny.Providers
 	/// <summary>
 	/// Engine-agnostic application control provider.
 	/// </summary>
-	public interface IApplicationProvider : IEngineProvider
+	public interface IApplicationServiceProvider : IEngineServiceProvider
 	{
 		/// <summary>
 		/// Quits the application with optional exit code.

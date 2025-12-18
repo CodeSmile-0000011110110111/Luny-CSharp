@@ -19,7 +19,7 @@ namespace Luny
 		Boolean IsObserverEnabled<T>() where T : IEngineLifecycleObserver;
 
 		// Service access
-		TService GetService<TService>() where TService : class, IEngineProvider;
-		Boolean HasService<TService>() where TService : class, IEngineProvider;
+		TService GetService<TService>() where TService : class, IEngineServiceProvider;
+		Boolean HasService<TService>() where TService : class, IEngineServiceProvider;
 	}
 }

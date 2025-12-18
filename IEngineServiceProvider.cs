@@ -6,7 +6,7 @@ namespace Luny
 	/// Marker interface for engine-agnostic service providers.
 	/// Implementations are auto-discovered and registered at startup.
 	/// </summary>
-	public interface IEngineProvider
+	public interface IEngineServiceProvider
 	{
 	}
 }
