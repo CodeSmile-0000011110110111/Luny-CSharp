@@ -1,11 +1,10 @@
+using Luny.Attributes;
+using Luny.Extensions;
+using Luny.Providers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
-using Luny.Attributes;
-using Luny.Extensions;
-using Luny.Providers;
 
 namespace Luny
 {
@@ -18,6 +17,12 @@ namespace Luny
 		private readonly List<IEngineLifecycleObserver> _enabledObservers = new();
 
 		public IEnumerable<IEngineLifecycleObserver> EnabledObservers => _enabledObservers;
+
+		private static Boolean IsSmokeTestScene(ISceneServiceProvider sceneServiceProvider)
+		{
+			var sceneName = sceneServiceProvider.CurrentSceneName;
+			return sceneName.StartsWith("Luny") && sceneName.EndsWith("SmokeTest");
+		}
 
 		public EngineLifecycleObserverRegistry(ISceneServiceProvider sceneServiceProvider)
 		{
@@ -61,9 +66,12 @@ namespace Luny
 			LunyLogger.LogInfo($"Registered {_enabledObservers.Count} {nameof(IEngineLifecycleObserver)} observers in {ms} ms.", this);
 		}
 
+		public Boolean IsObserverEnabled<T>() where T : IEngineLifecycleObserver =>
+			TryGetObserver<T>(out var observer) && _enabledObservers.Contains(observer);
+
 		public void EnableObserver<T>() where T : IEngineLifecycleObserver
 		{
-			if (_registeredObservers.TryGetValue(typeof(T), out var observer))
+			if (TryGetObserver<T>(out var observer))
 			{
 				if (!_enabledObservers.Contains(observer))
 					_enabledObservers.Add(observer);
@@ -72,18 +80,13 @@ namespace Luny
 
 		public void DisableObserver<T>() where T : IEngineLifecycleObserver
 		{
-			if (_registeredObservers.TryGetValue(typeof(T), out var observer))
+			if (TryGetObserver<T>(out var observer))
 				_enabledObservers.Remove(observer);
 		}
 
-		public Boolean IsObserverEnabled<T>() where T : IEngineLifecycleObserver =>
-			_registeredObservers.TryGetValue(typeof(T), out var observer) &&
-			_enabledObservers.Contains(observer);
+		public T GetObserver<T>() where T : IEngineLifecycleObserver => TryGetObserver(out T observer) ? observer : default;
 
-		private static Boolean IsSmokeTestScene(ISceneServiceProvider sceneServiceProvider)
-		{
-			var sceneName = sceneServiceProvider.CurrentSceneName;
-			return sceneName.StartsWith("Luny") && sceneName.EndsWith("SmokeTest");
-		}
+		private Boolean TryGetObserver<T>(out T observer) where T : IEngineLifecycleObserver =>
+			(observer = _registeredObservers.TryGetValue(typeof(T), out var o) ? (T)o : default) is not null;
 	}
 }
