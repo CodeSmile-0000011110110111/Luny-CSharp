@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Luny.Reflection;
 
 namespace Luny
 {
@@ -19,13 +20,7 @@ namespace Luny
         {
             var sw = Stopwatch.StartNew();
 
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            var serviceTypes = assemblies.SelectMany(a =>
-                {
-                    try { return a.GetTypes(); }
-                    catch { return Array.Empty<Type>(); }
-                })
-                .Where(t => typeof(T).IsAssignableFrom(t) && !t.IsAbstract && !t.IsInterface);
+            var serviceTypes = TypeDiscovery.FindAll<T>();
 
             foreach (var type in serviceTypes)
             {

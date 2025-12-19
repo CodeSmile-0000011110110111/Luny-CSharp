@@ -1,10 +1,10 @@
 using Luny.Attributes;
 using Luny.Extensions;
 using Luny.Providers;
+using Luny.Reflection;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 
 namespace Luny
 {
@@ -34,13 +34,7 @@ namespace Luny
 		{
 			var sw = Stopwatch.StartNew();
 
-			var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-			var observerTypes = assemblies.SelectMany(a =>
-				{
-					try { return a.GetTypes(); }
-					catch { return Array.Empty<Type>(); }
-				})
-				.Where(t => typeof(IEngineLifecycleObserver).IsAssignableFrom(t) && !t.IsAbstract);
+			var observerTypes = TypeDiscovery.FindAll<IEngineLifecycleObserver>();
 
 			// TODO: sort observers deterministically
 			// TODO: configure observer enabled states
