@@ -73,7 +73,7 @@ namespace Luny
             if (_registeredServices.TryGetValue(typeof(TService), out var service))
                 return service as TService;
 
-            LunyThrow.ServiceNotFoundException(typeof(TService).Name);
+            LunyThrow.ServiceNotFoundException(typeof(TService).FullName);
             return null;
         }
 
