@@ -2,5 +2,8 @@
 
 namespace Luny.Interfaces.Providers
 {
-	public interface IDebugServiceProvider : IEngineServiceProvider, ILunyLogger {}
+	public interface IDebugServiceProvider : IEngineServiceProvider, ILunyLogger
+	{
+		void PausePlayer();
+	}
 }
