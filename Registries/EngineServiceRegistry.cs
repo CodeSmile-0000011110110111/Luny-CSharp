@@ -64,7 +64,7 @@ namespace Luny.Registries
 		internal TService Get<TService>() where TService : class, T, IEngineServiceProvider =>
 			_registeredServices.TryGetValue(typeof(TService), out var service)
 				? (TService)service
-				: throw new LunyServiceException($"Service {typeof(TService).FullName} not found in registry.");
+				: throw new LunyServiceException($"Required service {typeof(TService).FullName} not registered.");
 
 		internal Boolean TryGet<TService>(out TService service) where TService : class, T, IEngineServiceProvider
 		{
