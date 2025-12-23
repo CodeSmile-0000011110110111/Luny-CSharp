@@ -6,6 +6,7 @@ namespace Luny
 	{
 		public IApplicationServiceProvider Application { get; private set; }
 		public IDebugServiceProvider Debug { get; private set; }
+		public IEditorServiceProvider Editor { get; private set; }
 		public ISceneServiceProvider Scene { get; private set; }
 		public ITimeServiceProvider Time { get; private set; }
 
@@ -13,6 +14,7 @@ namespace Luny
 		{
 			Application = GetService<IApplicationServiceProvider>();
 			Debug = GetService<IDebugServiceProvider>();
+			Editor = GetService<IEditorServiceProvider>();
 			Scene = GetService<ISceneServiceProvider>();
 			Time = GetService<ITimeServiceProvider>();
 		}

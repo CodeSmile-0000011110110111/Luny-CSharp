@@ -11,6 +11,7 @@ namespace Luny.Interfaces
 		// Mandatory services
 		IApplicationServiceProvider Application { get; }
 		IDebugServiceProvider Debug { get; }
+		IEditorServiceProvider Editor { get; }
 		ISceneServiceProvider Scene { get; }
 		ITimeServiceProvider Time { get; }
 
