@@ -1,12 +1,12 @@
 using Luny.Attributes;
-using Luny.Extensions;
+using Luny.Interfaces;
 using Luny.Providers;
-using Luny.Reflection;
+using Luny.Proxies;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace Luny
+namespace Luny.Registries
 {
 	/// <summary>
 	/// Registry that discovers, manages, and enables/disables lifecycle observers.

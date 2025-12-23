@@ -1,6 +1,6 @@
 using System;
 
-namespace Luny
+namespace Luny.Interfaces
 {
 	/// <summary>
 	/// Lifecycle observer interface - receives callbacks from LunyEngine.

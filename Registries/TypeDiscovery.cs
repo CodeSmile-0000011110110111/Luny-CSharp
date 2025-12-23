@@ -1,9 +1,10 @@
+using Luny.Proxies;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Luny.Reflection
+namespace Luny.Registries
 {
 	/// <summary>
 	/// Utilities for discovering types via reflection across all loaded assemblies.

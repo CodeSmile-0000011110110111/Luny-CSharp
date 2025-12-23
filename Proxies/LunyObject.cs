@@ -1,5 +1,4 @@
 using System;
-using Luny.Core;
 
 namespace Luny.Proxies
 {

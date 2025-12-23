@@ -6,7 +6,5 @@ namespace Luny.Attributes
 	/// Marks a class as testable, meaning it will only be instantiated in smoke test scenarios.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Class)]
-	public sealed class LunyTestableAttribute : Attribute
-	{
-	}
+	public sealed class LunyTestableAttribute : Attribute {}
 }

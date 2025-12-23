@@ -1,10 +1,12 @@
+using Luny.Exceptions;
+using Luny.Interfaces;
+using Luny.Proxies;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Luny.Reflection;
 
-namespace Luny
+namespace Luny.Registries
 {
     /// <summary>
     /// Generic service registry that discovers and holds engine provider services.

@@ -1,5 +1,9 @@
 using Luny.Providers;
 using Luny.Diagnostics;
+using Luny.Exceptions;
+using Luny.Interfaces;
+using Luny.Proxies;
+using Luny.Registries;
 using System;
 
 namespace Luny

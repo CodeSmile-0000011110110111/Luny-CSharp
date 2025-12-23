@@ -1,6 +1,7 @@
+using Luny.Interfaces;
 using System;
 
-namespace Luny
+namespace Luny.Providers
 {
 	/// <summary>
 	/// Provides engine-agnostic access to time and frame information.

@@ -1,6 +1,6 @@
 using System;
 
-namespace Luny
+namespace Luny.Interfaces
 {
 	/// <summary>
 	/// LunyEngine interface - receives callbacks from engine adapters and provides service access.

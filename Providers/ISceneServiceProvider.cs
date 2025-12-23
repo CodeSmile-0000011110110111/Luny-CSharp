@@ -1,6 +1,7 @@
+using Luny.Interfaces;
+using Luny.Proxies;
 using System;
 using System.Collections.Generic;
-using Luny.Proxies;
 
 namespace Luny.Providers
 {

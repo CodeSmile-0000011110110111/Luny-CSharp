@@ -1,5 +1,7 @@
 using Luny.Attributes;
+using Luny.Interfaces;
 using Luny.Providers;
+using Luny.Proxies;
 using System;
 
 namespace Luny.Tests

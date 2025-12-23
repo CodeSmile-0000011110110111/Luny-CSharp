@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace Luny.Extensions
+namespace Luny
 {
 	public static class SystemTypeExtensions
 	{

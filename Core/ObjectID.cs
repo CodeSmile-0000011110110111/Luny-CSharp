@@ -1,6 +1,6 @@
 using System;
 
-namespace Luny.Core
+namespace Luny
 {
 	/// <summary>
 	/// Unique identifier for an engine object/node in a LunyScript context.
