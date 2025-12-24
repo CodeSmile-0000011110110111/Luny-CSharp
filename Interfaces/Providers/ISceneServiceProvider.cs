@@ -18,6 +18,7 @@ namespace Luny.Interfaces.Providers
 		/// Gets all objects in the current scene.
 		/// </summary>
 		IReadOnlyList<LunyObject> GetAllObjects();
+		// TODO: provide IEnumerable for scene tree traversal from a given starting point (null = entire tree)
 
 		/// <summary>
 		/// Finds an object by name in the current scene.

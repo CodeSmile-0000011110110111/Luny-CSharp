@@ -13,8 +13,8 @@ namespace Luny.Diagnostics
 	/// </summary>
 	public sealed class EngineProfiler
 	{
-		private readonly Dictionary<Type, ObserverMetrics> _metrics = new Dictionary<Type, ObserverMetrics>();
-		private readonly Dictionary<IEngineLifecycleObserver, Stopwatch> _activeObservers = new Dictionary<IEngineLifecycleObserver, Stopwatch>();
+		private readonly Dictionary<Type, ObserverMetrics> _metrics = new();
+		private readonly Dictionary<IEngineLifecycleObserver, Stopwatch> _activeObservers = new();
 		private Int32 _rollingAverageWindow = 60;
 
 		public Int32 RollingAverageWindow
@@ -64,9 +64,7 @@ namespace Luny.Diagnostics
 
 			// Rolling average: disabled if window <= 1
 			if (_rollingAverageWindow <= 1)
-			{
 				metrics.AverageMs = newSample; // No averaging, just use current sample
-			}
 			else
 			{
 				// Simple rolling average calculation
@@ -74,7 +72,6 @@ namespace Luny.Diagnostics
 				metrics.AverageMs = (metrics.AverageMs * (window - 1) + newSample) / window;
 			}
 
-			// Update min/max
 			if (metrics.CallCount == 1)
 			{
 				metrics.MinMs = newSample;
@@ -103,7 +100,7 @@ namespace Luny.Diagnostics
 			return new ProfilerSnapshot
 			{
 				ObserverMetrics = _metrics.Values.ToList(),
-				Timestamp = DateTime.UtcNow
+				Timestamp = DateTime.UtcNow,
 			};
 #else
 			return new ProfilerSnapshot
