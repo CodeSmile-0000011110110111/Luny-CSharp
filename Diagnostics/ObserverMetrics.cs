@@ -9,6 +9,7 @@ namespace Luny.Diagnostics
 	public sealed class ObserverMetrics
 	{
 		public String ObserverName;
+		public ProfilerCategory Category;
 		public Int32 CallCount;
 		public Double TotalMs;
 		public Double AverageMs;
@@ -17,6 +18,6 @@ namespace Luny.Diagnostics
 		public Int32 ErrorCount;
 
 		public override String ToString() =>
-			$"{ObserverName}: {CallCount} calls, {AverageMs:F2}ms avg ({MinMs:F2}-{MaxMs:F2}ms), {ErrorCount} errors";
+			$"{ObserverName} [{Category}]: {CallCount} calls, {AverageMs:F2}ms avg ({MinMs:F2}-{MaxMs:F2}ms), {ErrorCount} errors";
 	}
 }

@@ -21,7 +21,7 @@ namespace Luny.Diagnostics
 	/// </summary>
 	public sealed class EngineProfiler : IEngineProfiler
 	{
-		private readonly Dictionary<Type, ObserverMetrics> _metrics = new();
+		private readonly Dictionary<Type, Dictionary<ProfilerCategory, ObserverMetrics>> _metrics = new();
 		private readonly Dictionary<IEngineLifecycleObserver, Stopwatch> _activeObservers = new();
 		private Int32 _rollingAverageWindow = 30;
 		private ITimeService _timeService;
@@ -37,16 +37,26 @@ namespace Luny.Diagnostics
 		public IProfilerSnapshot TakeSnapshot()
 		{
 #if DEBUG || LUNY_DEBUG || LUNY_PROFILE
+			var categorized = new Dictionary<ProfilerCategory, IReadOnlyList<ObserverMetrics>>();
+			var allMetrics = _metrics.Values.SelectMany(d => d.Values).ToList();
+
+			foreach (var category in (ProfilerCategory[])Enum.GetValues(typeof(ProfilerCategory)))
+			{
+				categorized[category] = allMetrics
+					.Where(m => m.Category == category)
+					.ToList();
+			}
+
 			return new ProfilerSnapshot
 			{
-				ObserverMetrics = _metrics.Values.ToList(),
+				CategorizedMetrics = categorized,
 				Timestamp = DateTime.UtcNow,
 				FrameCount = _timeService.FrameCount,
 			};
 #else
 			return new ProfilerSnapshot
 			{
-				ObserverMetrics = Array.Empty<ObserverMetrics>(),
+				CategorizedMetrics = new Dictionary<ProfilerCategory, IReadOnlyList<ObserverMetrics>>(),
 				Timestamp = DateTime.UtcNow
 			};
 #endif
@@ -66,7 +76,7 @@ namespace Luny.Diagnostics
 		}
 
 		[Conditional("DEBUG")] [Conditional("LUNY_DEBUG")] [Conditional("LUNY_PROFILE")]
-		internal void EndObserver(IEngineLifecycleObserver observer)
+		internal void EndObserver(IEngineLifecycleObserver observer, ProfilerCategory category)
 		{
 #if DEBUG || LUNY_DEBUG || LUNY_PROFILE
 			if (!_activeObservers.TryGetValue(observer, out var sw))
@@ -76,10 +86,16 @@ namespace Luny.Diagnostics
 			var elapsed = sw.Elapsed.TotalMilliseconds;
 
 			var type = observer.GetType();
-			if (!_metrics.TryGetValue(type, out var metrics))
+			if (!_metrics.TryGetValue(type, out var categoryDict))
 			{
-				metrics = new ObserverMetrics { ObserverName = type.Name };
-				_metrics[type] = metrics;
+				categoryDict = new Dictionary<ProfilerCategory, ObserverMetrics>();
+				_metrics[type] = categoryDict;
+			}
+
+			if (!categoryDict.TryGetValue(category, out var metrics))
+			{
+				metrics = new ObserverMetrics { ObserverName = type.Name, Category = category };
+				categoryDict[category] = metrics;
 			}
 
 			UpdateMetrics(metrics, elapsed);
@@ -111,11 +127,11 @@ namespace Luny.Diagnostics
 		}
 
 		[Conditional("DEBUG")] [Conditional("LUNY_DEBUG")] [Conditional("LUNY_PROFILE")]
-		internal void RecordError(IEngineLifecycleObserver observer, Exception ex)
+		internal void RecordError(IEngineLifecycleObserver observer, ProfilerCategory category, Exception ex)
 		{
 #if DEBUG || LUNY_DEBUG || LUNY_PROFILE
 			var type = observer.GetType();
-			if (_metrics.TryGetValue(type, out var metrics))
+			if (_metrics.TryGetValue(type, out var categoryDict) && categoryDict.TryGetValue(category, out var metrics))
 				metrics.ErrorCount++;
 #endif
 		}

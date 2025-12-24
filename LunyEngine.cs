@@ -51,13 +51,13 @@ namespace Luny
 				}
 				catch (Exception e)
 				{
-					_profiler.RecordError(observer, e);
+					_profiler.RecordError(observer, ProfilerCategory.OnStartup, e);
 					/* keep dispatch resilient */
 					LunyLogger.LogException(e);
 				}
 				finally
 				{
-					_profiler.EndObserver(observer);
+					_profiler.EndObserver(observer, ProfilerCategory.OnStartup);
 				}
 			}
 		}
@@ -73,13 +73,13 @@ namespace Luny
 				}
 				catch (Exception e)
 				{
-					_profiler.RecordError(observer, e);
+					_profiler.RecordError(observer, ProfilerCategory.OnFixedStep, e);
 					/* keep dispatch resilient */
 					LunyLogger.LogException(e);
 				}
 				finally
 				{
-					_profiler.EndObserver(observer);
+					_profiler.EndObserver(observer, ProfilerCategory.OnFixedStep);
 				}
 			}
 		}
@@ -99,13 +99,13 @@ namespace Luny
 				}
 				catch (Exception e)
 				{
-					_profiler.RecordError(observer, e);
+					_profiler.RecordError(observer, ProfilerCategory.OnUpdate, e);
 					/* keep dispatch resilient */
 					LunyLogger.LogException(e);
 				}
 				finally
 				{
-					_profiler.EndObserver(observer);
+					_profiler.EndObserver(observer, ProfilerCategory.OnUpdate);
 				}
 			}
 		}
@@ -123,13 +123,13 @@ namespace Luny
 				}
 				catch (Exception e)
 				{
-					_profiler.RecordError(observer, e);
+					_profiler.RecordError(observer, ProfilerCategory.OnLateUpdate, e);
 					/* keep dispatch resilient */
 					LunyLogger.LogException(e);
 				}
 				finally
 				{
-					_profiler.EndObserver(observer);
+					_profiler.EndObserver(observer, ProfilerCategory.OnLateUpdate);
 				}
 			}
 
@@ -147,13 +147,13 @@ namespace Luny
 				}
 				catch (Exception e)
 				{
-					_profiler.RecordError(observer, e);
+					_profiler.RecordError(observer, ProfilerCategory.OnShutdown, e);
 					/* keep dispatch resilient */
 					LunyLogger.LogException(e);
 				}
 				finally
 				{
-					_profiler.EndObserver(observer);
+					_profiler.EndObserver(observer, ProfilerCategory.OnShutdown);
 				}
 			}
 
