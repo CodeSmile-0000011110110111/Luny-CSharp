@@ -16,7 +16,7 @@ namespace Luny.Proxies
 		/// <summary>
 		/// Engine-specific unique identifier, subject to engine's behaviour (ie may change between runs, or not).
 		/// </summary>
-		public abstract Int64 NativeId { get; }
+		public abstract NativeID NativeID { get; }
 
 		/// <summary>
 		/// The name of the object in the scene hierarchy.
@@ -45,6 +45,6 @@ namespace Luny.Proxies
 		/// </summary>
 		public abstract Object GetNativeObject();
 
-		public override String ToString() => $"{(Enabled ? "☑" : "☐")} {Name} (Luny:{LunyID}|Native:{NativeId})";
+		public override String ToString() => $"{(Enabled ? "☑" : "☐")} {Name} (Luny:{LunyID}|Native:{NativeID})";
 	}
 }

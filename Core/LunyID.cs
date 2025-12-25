@@ -24,7 +24,7 @@ namespace Luny
 		public override Boolean Equals(Object obj) => obj is LunyID other && Equals(other);
 		public override Int32 GetHashCode() => Value;
 		public Int32 CompareTo(LunyID other) => Value.CompareTo(other.Value);
-		public override String ToString() => $"ObjectID:{Value}";
+		public override String ToString() => $"{nameof(LunyID)}:{Value}";
 
 		public static Boolean operator ==(LunyID left, LunyID right) => left.Equals(right);
 		public static Boolean operator !=(LunyID left, LunyID right) => !left.Equals(right);
