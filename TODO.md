@@ -24,6 +24,10 @@ Add LuaCSharp as separate, optional LunyLua submodule which LunyScript will util
 
 ## LunyScript
 
+### Issues
+
+- inactive GameObjects still run the scripts
+
 ### NEXT-STEPS.md
 
 Briefly listing the tasks in that document:
@@ -46,6 +50,7 @@ Briefly listing the tasks in that document:
 
 ### Execution
 - ScriptContext => CONSIDER split in two: internal (runnables, debug, profile) and public (variables, object, script def)
+- need a way to specificy which observers to run 
 
 ### Diagnostics
 

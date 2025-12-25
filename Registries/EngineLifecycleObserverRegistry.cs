@@ -1,7 +1,6 @@
 using Luny.Attributes;
 using Luny.Diagnostics;
 using Luny.Interfaces;
-using Luny.Proxies;
 using Luny.Services;
 using System;
 using System.Collections.Generic;
@@ -52,7 +51,9 @@ namespace Luny.Registries
 				LunyLogger.LogInfo($"Creating observer instance: {type.Name} (Assembly: {type.Assembly.GetName().Name})", this);
 				var observer = (IEngineLifecycleObserver)Activator.CreateInstance(type);
 				_registeredObservers[type] = observer;
-				_enabledObservers.Add(observer); // enabled by default
+
+				if (observer.Enabled)
+					_enabledObservers.Add(observer);
 			}
 
 			sw.Stop();
