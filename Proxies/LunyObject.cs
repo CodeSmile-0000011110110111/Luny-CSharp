@@ -21,7 +21,7 @@ namespace Luny.Proxies
 		/// <summary>
 		/// The name of the object in the scene hierarchy.
 		/// </summary>
-		public abstract String Name { get; }
+		public abstract String Name { get; set; }
 
 		/// <summary>
 		/// Whether the underlying engine object is valid/exists.
