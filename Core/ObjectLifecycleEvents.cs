@@ -1,6 +1,6 @@
 using System;
 
-namespace Luny.Diagnostics
+namespace Luny
 {
 	/// <summary>
 	/// LunyObject lifecycle events.
