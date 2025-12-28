@@ -9,7 +9,7 @@ namespace Luny.Diagnostics
 	public sealed class ObserverMetrics
 	{
 		public String ObserverName;
-		public ProfilerCategory Category;
+		public EngineLifecycleEvents Category;
 		public Int32 CallCount;
 		public Double TotalMs;
 		public Double AverageMs;

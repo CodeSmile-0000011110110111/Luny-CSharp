@@ -5,7 +5,7 @@ namespace Luny.Diagnostics
 {
 	public interface IProfilerSnapshot
 	{
-		IReadOnlyDictionary<ProfilerCategory, IReadOnlyList<ObserverMetrics>> CategorizedMetrics { get; }
+		IReadOnlyDictionary<EngineLifecycleEvents, IReadOnlyList<ObserverMetrics>> CategorizedMetrics { get; }
 		DateTime Timestamp { get; }
 		Int64 FrameCount { get; }
 	}
@@ -16,10 +16,10 @@ namespace Luny.Diagnostics
 	/// </summary>
 	public sealed class ProfilerSnapshot : IProfilerSnapshot
 	{
-		public IReadOnlyDictionary<ProfilerCategory, IReadOnlyList<ObserverMetrics>> CategorizedMetrics { get; internal set; }
+		public IReadOnlyDictionary<EngineLifecycleEvents, IReadOnlyList<ObserverMetrics>> CategorizedMetrics { get; internal set; }
 		public DateTime Timestamp { get; internal set; }
 		public Int64 FrameCount { get; internal set; }
 
-		public override String ToString() => $"ProfilerSnapshot @ {Timestamp:HH:mm:ss.fff}: {CategorizedMetrics[ProfilerCategory.OnStartup]?.Count} observers";
+		public override String ToString() => $"ProfilerSnapshot @ {Timestamp:HH:mm:ss.fff}: {CategorizedMetrics[EngineLifecycleEvents.OnStartup]?.Count} observers";
 	}
 }

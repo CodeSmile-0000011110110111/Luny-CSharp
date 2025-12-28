@@ -10,7 +10,7 @@ namespace Luny.Interfaces
 		public bool Enabled => true;
 
 		// Lifecycle observer interface - receives callbacks from LunyEngine
-		void OnStartup(ILunyEngine engine);
+		void OnStartup();
 		void OnFixedStep(Double fixedDeltaTime);
 		void OnUpdate(Double deltaTime);
 		void OnLateUpdate(Double deltaTime);

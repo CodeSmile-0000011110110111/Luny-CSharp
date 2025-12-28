@@ -22,7 +22,7 @@ namespace Luny.Tests
 
         public EngineLifecycleExpectedEventOrderMock() => LunyLogger.LogInfo($"{nameof(EngineLifecycleExpectedEventOrderMock)} ctor", this);
 
-        public void OnStartup(ILunyEngine engine)
+        public void OnStartup()
         {
             LunyLogger.LogInfo(nameof(OnStartup), this);
             LunyAssert.IsFalse(_didRunStartup, $"{nameof(OnStartup)} called more than once");

@@ -26,18 +26,41 @@ namespace Luny
 		/// <summary>
 		/// Gets the singleton instance, creating it on first access.
 		/// </summary>
-		public static ILunyEngine Instance => _instance ??= new LunyEngine();
+		public static ILunyEngine Instance
+		{
+			get
+			{
+				if (_instance == null)
+				{
+					// the ctor/init pattern prevents stackoverflows for cases where
+					// LunyEngine.Instance is accessed by code running within LunyEngine's ctor
+					_instance = new LunyEngine();
+					_instance.Initialize();
+				}
+
+				return _instance;
+			}
+		}
 
 		private LunyEngine()
 		{
 			if (_instance != null)
 				LunyThrow.SingletonDuplicationException(nameof(LunyEngine));
 
+			LunyLogger.LogInfo($"{nameof(LunyEngine)} ctor runs", this);
+		}
+
+		private void Initialize()
+		{
+			LunyLogger.LogInfo($"{nameof(LunyEngine)} {nameof(Initialize)}", this);
+
 			_serviceRegistry = new EngineServiceRegistry<IEngineService>();
 			AcquireMandatoryServices();
 
 			_observerRegistry = new EngineLifecycleObserverRegistry(Scene);
 			_profiler = new EngineProfiler(Time);
+
+			LunyLogger.LogInfo($"{nameof(LunyEngine)} initialization complete", this);
 		}
 
 		public void OnStartup()
@@ -47,17 +70,17 @@ namespace Luny
 				_profiler.BeginObserver(observer);
 				try
 				{
-					observer.OnStartup(this);
+					observer.OnStartup();
 				}
 				catch (Exception e)
 				{
-					_profiler.RecordError(observer, ProfilerCategory.OnStartup, e);
+					_profiler.RecordError(observer, EngineLifecycleEvents.OnStartup, e);
 					/* keep dispatch resilient */
 					LunyLogger.LogException(e);
 				}
 				finally
 				{
-					_profiler.EndObserver(observer, ProfilerCategory.OnStartup);
+					_profiler.EndObserver(observer, EngineLifecycleEvents.OnStartup);
 				}
 			}
 		}
@@ -73,13 +96,13 @@ namespace Luny
 				}
 				catch (Exception e)
 				{
-					_profiler.RecordError(observer, ProfilerCategory.OnFixedStep, e);
+					_profiler.RecordError(observer, EngineLifecycleEvents.OnFixedStep, e);
 					/* keep dispatch resilient */
 					LunyLogger.LogException(e);
 				}
 				finally
 				{
-					_profiler.EndObserver(observer, ProfilerCategory.OnFixedStep);
+					_profiler.EndObserver(observer, EngineLifecycleEvents.OnFixedStep);
 				}
 			}
 		}
@@ -99,13 +122,13 @@ namespace Luny
 				}
 				catch (Exception e)
 				{
-					_profiler.RecordError(observer, ProfilerCategory.OnUpdate, e);
+					_profiler.RecordError(observer, EngineLifecycleEvents.OnUpdate, e);
 					/* keep dispatch resilient */
 					LunyLogger.LogException(e);
 				}
 				finally
 				{
-					_profiler.EndObserver(observer, ProfilerCategory.OnUpdate);
+					_profiler.EndObserver(observer, EngineLifecycleEvents.OnUpdate);
 				}
 			}
 		}
@@ -123,13 +146,13 @@ namespace Luny
 				}
 				catch (Exception e)
 				{
-					_profiler.RecordError(observer, ProfilerCategory.OnLateUpdate, e);
+					_profiler.RecordError(observer, EngineLifecycleEvents.OnLateUpdate, e);
 					/* keep dispatch resilient */
 					LunyLogger.LogException(e);
 				}
 				finally
 				{
-					_profiler.EndObserver(observer, ProfilerCategory.OnLateUpdate);
+					_profiler.EndObserver(observer, EngineLifecycleEvents.OnLateUpdate);
 				}
 			}
 
@@ -147,13 +170,13 @@ namespace Luny
 				}
 				catch (Exception e)
 				{
-					_profiler.RecordError(observer, ProfilerCategory.OnShutdown, e);
+					_profiler.RecordError(observer, EngineLifecycleEvents.OnShutdown, e);
 					/* keep dispatch resilient */
 					LunyLogger.LogException(e);
 				}
 				finally
 				{
-					_profiler.EndObserver(observer, ProfilerCategory.OnShutdown);
+					_profiler.EndObserver(observer, EngineLifecycleEvents.OnShutdown);
 				}
 			}
 
