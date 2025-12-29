@@ -1,11 +1,44 @@
 using Luny.Diagnostics;
 using Luny.Exceptions;
-using Luny.Interfaces;
 using Luny.Registries;
+using Luny.Services;
 using System;
 
 namespace Luny
 {
+	/// <summary>
+	/// LunyEngine interface - receives callbacks from engine adapters and provides service access.
+	/// </summary>
+	public interface ILunyEngine
+	{
+		// Mandatory services
+		IApplicationService Application { get; }
+		IDebugService Debug { get; }
+		IEditorService Editor { get; }
+		ISceneService Scene { get; }
+		ITimeService Time { get; }
+
+		// Diagnostics
+		IEngineProfiler Profiler { get; }
+
+		// Lifecycle dispatch methods - receives callbacks from engine adapters
+		void OnStartup();
+		void OnFixedStep(Double fixedDeltaTime);
+		void OnUpdate(Double deltaTime);
+		void OnLateUpdate(Double deltaTime);
+		void OnShutdown();
+
+		// Observer management
+		void EnableObserver<T>() where T : IEngineLifecycleObserver;
+		void DisableObserver<T>() where T : IEngineLifecycleObserver;
+		Boolean IsObserverEnabled<T>() where T : IEngineLifecycleObserver;
+
+		// Service access
+		TService GetService<TService>() where TService : class, IEngineService;
+		Boolean TryGetService<TService>(out TService service) where TService : class, IEngineService;
+		Boolean HasService<TService>() where TService : class, IEngineService;
+	}
+
 	/// <summary>
 	/// Singleton engine that discovers and manages services and lifecycle observers.
 	/// </summary>
@@ -63,6 +96,9 @@ namespace Luny
 			LunyLogger.LogInfo($"{nameof(LunyEngine)} initialization complete", this);
 		}
 
+		/// <summary>
+		/// CAUTION: Must only be called by engine-native lifecycle adapter!
+		/// </summary>
 		public void OnStartup()
 		{
 			foreach (var observer in _observerRegistry.EnabledObservers)
@@ -85,6 +121,9 @@ namespace Luny
 			}
 		}
 
+		/// <summary>
+		/// CAUTION: Must only be called by engine-native lifecycle adapter!
+		/// </summary>
 		public void OnFixedStep(Double fixedDeltaTime)
 		{
 			foreach (var observer in _observerRegistry.EnabledObservers)
@@ -107,6 +146,9 @@ namespace Luny
 			}
 		}
 
+		/// <summary>
+		/// CAUTION: Must only be called by engine-native lifecycle adapter!
+		/// </summary>
 		public void OnUpdate(Double deltaTime)
 		{
 			// TODO: send "OnPreUpdate"
@@ -133,6 +175,9 @@ namespace Luny
 			}
 		}
 
+		/// <summary>
+		/// CAUTION: Must only be called by engine-native lifecycle adapter!
+		/// </summary>
 		public void OnLateUpdate(Double deltaTime)
 		{
 			foreach (var observer in _observerRegistry.EnabledObservers)
@@ -159,6 +204,9 @@ namespace Luny
 			// TODO: run structural changes here, ie "OnPostUpdate"
 		}
 
+		/// <summary>
+		/// CAUTION: Must only be called by engine-native lifecycle adapter!
+		/// </summary>
 		public void OnShutdown()
 		{
 			foreach (var observer in _observerRegistry.EnabledObservers)
@@ -187,17 +235,16 @@ namespace Luny
 			_instance = null;
 		}
 
-		public Boolean IsObserverEnabled<T>() where T : IEngineLifecycleObserver => _observerRegistry.IsObserverEnabled<T>();
+		// TODO: HasObserver?
+		public T GetObserver<T>() where T : IEngineLifecycleObserver => _observerRegistry.GetObserver<T>();
 		public void EnableObserver<T>() where T : IEngineLifecycleObserver => _observerRegistry.EnableObserver<T>();
-
 		public void DisableObserver<T>() where T : IEngineLifecycleObserver => _observerRegistry.DisableObserver<T>();
-		public TService GetService<TService>() where TService : class, IEngineService => _serviceRegistry.Get<TService>();
+		public Boolean IsObserverEnabled<T>() where T : IEngineLifecycleObserver => _observerRegistry.IsObserverEnabled<T>();
 
+		public Boolean HasService<TService>() where TService : class, IEngineService => _serviceRegistry.Has<TService>();
+		public TService GetService<TService>() where TService : class, IEngineService => _serviceRegistry.Get<TService>();
 		public Boolean TryGetService<TService>(out TService service) where TService : class, IEngineService =>
 			_serviceRegistry.TryGet(out service);
 
-		public Boolean HasService<TService>() where TService : class, IEngineService => _serviceRegistry.Has<TService>();
-
-		public T GetObserver<T>() where T : IEngineLifecycleObserver => _observerRegistry.GetObserver<T>();
 	}
 }

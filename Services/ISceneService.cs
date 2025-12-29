@@ -1,4 +1,3 @@
-using Luny.Interfaces;
 using Luny.Proxies;
 using System;
 using System.Collections.Generic;
@@ -18,12 +17,12 @@ namespace Luny.Services
 		/// <summary>
 		/// Gets all objects in the current scene.
 		/// </summary>
-		IReadOnlyList<LunyObject> GetAllObjects();
+		IReadOnlyList<ILunyObject> GetAllObjects();
 		// TODO: provide IEnumerable for scene tree traversal from a given starting point (null = entire tree)
 
 		/// <summary>
 		/// Finds an object by name in the current scene.
 		/// </summary>
-		LunyObject FindObjectByName(String name);
+		ILunyObject FindObjectByName(String name);
 	}
 }

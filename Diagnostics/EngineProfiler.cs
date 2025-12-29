@@ -1,4 +1,3 @@
-using Luny.Interfaces;
 using Luny.Services;
 using System;
 using System.Collections.Generic;
@@ -7,6 +6,55 @@ using System.Linq;
 
 namespace Luny.Diagnostics
 {
+	/// <summary>
+	/// Performance metrics for a single lifecycle observer.
+	/// Tracks execution time statistics and error counts.
+	/// </summary>
+	public sealed class ObserverMetrics
+	{
+		public String ObserverName;
+		public EngineLifecycleEvents Category;
+		public Int32 CallCount;
+		public Double TotalMs;
+		public Double AverageMs;
+		public Double MinMs;
+		public Double MaxMs;
+		public Int32 ErrorCount;
+
+		public override String ToString() =>
+			$"{ObserverName} [{Category}]: {CallCount} calls, {AverageMs:F2}ms avg ({MinMs:F2}-{MaxMs:F2}ms), {ErrorCount} errors";
+	}
+
+	/// <summary>
+	/// Immutable snapshot of profiler state at a specific point in time.
+	/// Useful for querying performance metrics without blocking the profiler.
+	/// </summary>
+	public interface IProfilerSnapshot
+	{
+		IReadOnlyDictionary<EngineLifecycleEvents, IReadOnlyList<ObserverMetrics>> CategorizedMetrics { get; }
+		DateTime Timestamp { get; }
+		Int64 FrameCount { get; }
+	}
+
+	/// <summary>
+	/// Immutable snapshot of profiler state at a specific point in time.
+	/// Useful for querying performance metrics without blocking the profiler.
+	/// </summary>
+	internal sealed class ProfilerSnapshot : IProfilerSnapshot
+	{
+		public IReadOnlyDictionary<EngineLifecycleEvents, IReadOnlyList<ObserverMetrics>> CategorizedMetrics { get; internal set; }
+		public DateTime Timestamp { get; internal set; }
+		public Int64 FrameCount { get; internal set; }
+
+		public override String ToString() =>
+			$"ProfilerSnapshot @ {Timestamp:HH:mm:ss.fff}: {CategorizedMetrics[EngineLifecycleEvents.OnStartup]?.Count} observers";
+	}
+
+	/// <summary>
+	/// Concrete implementation of engine-level profiling.
+	/// Tracks execution time for each lifecycle observer with configurable rolling average.
+	/// Public methods use [Conditional] attributes - completely stripped in release builds unless LUNY_PROFILE defined.
+	/// </summary>
 	public interface IEngineProfiler
 	{
 		Int32 RollingAverageWindow { get; set; }
@@ -19,7 +67,7 @@ namespace Luny.Diagnostics
 	/// Tracks execution time for each lifecycle observer with configurable rolling average.
 	/// Public methods use [Conditional] attributes - completely stripped in release builds unless LUNY_PROFILE defined.
 	/// </summary>
-	public sealed class EngineProfiler : IEngineProfiler
+	internal sealed class EngineProfiler : IEngineProfiler
 	{
 		private readonly Dictionary<Type, Dictionary<EngineLifecycleEvents, ObserverMetrics>> _metrics = new();
 		private readonly Dictionary<IEngineLifecycleObserver, Stopwatch> _activeObservers = new();

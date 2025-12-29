@@ -1,9 +1,8 @@
-using Luny.Interfaces;
 using System;
 
 namespace Luny.Exceptions
 {
-	public sealed class LunyThrow
+	internal sealed class LunyThrow
 	{
 		// [StackTraceHidden] not supported by Unity 6
 		public static void LifecycleAdapterSingletonDuplicationException(String adapterTypeName, String existingObjectName,

@@ -3,10 +3,25 @@ using System;
 namespace Luny.Proxies
 {
 	/// <summary>
+	/// Engine-agnostic interface for engine objects/nodes.
+	/// Provides unified access to common object properties and operations.
+	/// </summary>
+	public interface ILunyObject
+	{
+		LunyID LunyID { get; }
+		NativeID NativeID { get; }
+		String Name { get; }
+		Boolean IsValid { get; }
+		Boolean Enabled { get; }
+		Object GetNativeObject();
+		T As<T>() where T : class;
+	}
+
+	/// <summary>
 	/// Engine-agnostic base class for wrapping engine objects/nodes.
 	/// Provides unified access to common object properties and operations.
 	/// </summary>
-	public abstract class LunyObject
+	public abstract class LunyObject : ILunyObject
 	{
 		/// <summary>
 		/// LunyScript-specific unique identifier (distinct from engine's native ID).
@@ -41,9 +56,16 @@ namespace Luny.Proxies
 
 		/// <summary>
 		/// Gets the underlying engine-native object as generic System.Object type (cast as necessary).
-		/// Note: Engine implementations should provide a property for typed access to the engine-native object.
+		/// Note: Engine implementations provide a property for typed access to the engine-native object. Get<T> can also be used.
 		/// </summary>
 		public abstract Object GetNativeObject();
+
+		/// <summary>
+		/// Gets the underlying engine-native object cast to T. Returns null if type T is mismatched.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <returns></returns>
+		public T As<T>() where T : class => GetNativeObject() as T;
 
 		public override String ToString() => $"{(Enabled ? "☑" : "☐")} {Name} (Luny:{LunyID}|Native:{NativeID})";
 	}
