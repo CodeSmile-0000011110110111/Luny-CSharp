@@ -9,7 +9,7 @@ namespace Luny.Tests
 	/// Only instantiated in smoke test scenes.
 	/// </summary>
 	[LunyTestable]
-	internal sealed class EngineLifecycleExpectedEventOrderMock : IEngineLifecycleObserver
+	internal sealed class EngineLifecycleEventOrderMock : IEngineLifecycleObserver
 	{
 		private Boolean _didRunStartup;
 		private Int32 _fixedStepRunCount;
@@ -18,7 +18,7 @@ namespace Luny.Tests
 		private Boolean _didRunShutdown;
 		private Int32 _shutdownAfterThisManyUpdates = 3;
 
-		public EngineLifecycleExpectedEventOrderMock() => LunyLogger.LogInfo($"{nameof(EngineLifecycleExpectedEventOrderMock)} ctor", this);
+		public EngineLifecycleEventOrderMock() => LunyLogger.LogInfo($"{nameof(EngineLifecycleEventOrderMock)} ctor", this);
 
 		public void OnStartup()
 		{

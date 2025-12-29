@@ -6,6 +6,10 @@
 [assembly: InternalsVisibleTo(nameof(Luny) + ".Unity")]
 [assembly: InternalsVisibleTo(nameof(Luny) + ".UnityEditor")]
 
+// because of a Rider issue
+[assembly: InternalsVisibleTo("Luny.Unity")]
+[assembly: InternalsVisibleTo("Luny.UnityEditor")]
+
 // reserved namespaces for future C# engine implementations
 [assembly: InternalsVisibleTo(nameof(Luny) + ".Cocos")] // no C# support (yet)
 [assembly: InternalsVisibleTo(nameof(Luny) + ".CocosEditor")]
