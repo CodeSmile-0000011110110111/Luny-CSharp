@@ -12,7 +12,7 @@ namespace Luny.Proxies
 		NativeID NativeID { get; }
 		String Name { get; }
 		Boolean IsValid { get; }
-		Boolean Enabled { get; }
+		Boolean Enabled { get; set; }
 		Object GetNativeObject();
 		T As<T>() where T : class;
 	}
