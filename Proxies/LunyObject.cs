@@ -13,6 +13,7 @@ namespace Luny.Proxies
 		String Name { get; }
 		Boolean IsValid { get; }
 		Boolean Enabled { get; set; }
+		void Destroy();
 		Object GetNativeObject();
 		T As<T>() where T : class;
 	}
@@ -52,7 +53,26 @@ namespace Luny.Proxies
 		/// </remarks>
 		public abstract Boolean Enabled { get; set; }
 
+		/// <summary>
+		/// Lifecycle event hooks
+		/// </summary>
+		public Action OnEnable { get; set; }
+		public Action OnDisable { get; set; }
+		public Action OnDestroy { get; set; }
+
 		protected LunyObject() => LunyID = LunyID.Generate();
+
+		/// <summary>
+		/// Destroys this object, triggering OnDestroy events and performing/queuing native object destruction.
+		/// </summary>
+		public abstract void Destroy();
+
+		/// <summary>
+		/// Destroys the underlying native engine object.
+		/// Should only be called internally by lifecycle managers when the destroy operation is being queued.
+		/// </summary>
+		/// <exception cref="InvalidOperationException">Throws if Destroy() was not called before.</exception>
+		public abstract void DestroyNativeObject();
 
 		/// <summary>
 		/// Gets the underlying engine-native object as generic System.Object type (cast as necessary).
