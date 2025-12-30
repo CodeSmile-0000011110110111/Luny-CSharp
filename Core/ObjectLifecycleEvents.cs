@@ -33,28 +33,28 @@ namespace Luny
 		OnDisable = 3,
 
 		/// <summary>
+		/// Runs once per lifetime, just before the first call to either OnFixedStep (if it runs in this frame) or OnUpdate.
+		/// Unity: Start | Godot: _ready
+		/// </summary>
+		OnReady = 4,
+
+		/// <summary>
 		/// Runs in sync with engine's fixed update / physics processing at a fixed rate.
 		/// May run multiple times in a single frame: catch-up behaviour, particularly in low framerate / high fixed tick scenarios.
 		/// Is not guaranteed to run before every OnUpdate, as fixed time step is often lower than framerate eg a 30 or 50 Hz fixed timestep is common, but framerates are usually 60 Hz or more.
 		/// CAUTION: Unsuitable for Input Event handling! Input events may be missed, especially first-frame triggers.
 		/// Unity: FixedUpdate | Godot: _physics_process
 		/// </summary>
-		OnFixedStep = 4,
+		OnFixedStep = 5,
 		/// <summary>
 		/// Runs in sync with engine's update.
 		/// Unity: Update | Godot: _process
 		/// </summary>
-		OnUpdate = 5,
+		OnUpdate = 6,
 		/// <summary>
 		/// Runs in sync with engine's update, directly after OnUpdate.
 		/// Unity: LateUpdate | Godot: N/A
 		/// </summary>
-		OnLateUpdate = 6,
-
-		/// <summary>
-		/// Runs once per lifetime, just before the first call to either OnFixedStep (if it runs in this frame) or OnUpdate.
-		/// Unity: Start | Godot: _ready
-		/// </summary>
-		OnReady = 7,
+		OnLateUpdate = 7,
 	}
 }
