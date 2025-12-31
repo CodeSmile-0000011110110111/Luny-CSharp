@@ -178,9 +178,9 @@ namespace Luny.Diagnostics
 		private sealed class ConsoleLogger : ILunyLogger
 		{
 			public void LogInfo(String message) => Console.WriteLine(message);
-			public void LogWarning(String message) => Console.WriteLine(message);
-			public void LogError(String message) => Console.WriteLine(message);
-			public void LogException(Exception exception) => Console.WriteLine(exception?.ToString());
+			public void LogWarning(String message) => Console.WriteLine($"[Warning] {message}");
+			public void LogError(String message) => Console.WriteLine($"[ERROR] {message}");
+			public void LogException(Exception exception) => LogError(exception.ToString());
 		}
 	}
 }

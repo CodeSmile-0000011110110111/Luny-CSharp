@@ -42,12 +42,9 @@ namespace Luny.Registries
 			{
 				// Skip [LunyTestable] types unless in smoke test scenes
 				if (!isSmokeTestScene && type.HasAttribute<LunyTestableAttribute>())
-				{
-					LunyLogger.LogInfo($"Skipping test observer: {type.Name} (not running a smoke test scene)", this);
 					continue;
-				}
 
-				LunyLogger.LogInfo($"Creating observer instance: {type.Name} (Assembly: {type.Assembly.GetName().Name})", this);
+				LunyLogger.LogInfo($"{type.FullName} registered", this);
 				var observer = (IEngineLifecycleObserver)Activator.CreateInstance(type);
 				_registeredObservers[type] = observer;
 
@@ -58,7 +55,8 @@ namespace Luny.Registries
 			sw.Stop();
 
 			var ms = (Int32)Math.Round(sw.Elapsed.TotalMilliseconds, MidpointRounding.AwayFromZero);
-			LunyLogger.LogInfo($"Registered {_enabledObservers.Count} {nameof(IEngineLifecycleObserver)} observers in {ms} ms.", this);
+			LunyLogger.LogInfo($"Registered {_registeredObservers.Count} (enabled: {_enabledObservers.Count}) " +
+			                   $"{nameof(IEngineLifecycleObserver)} observers in {ms} ms.", this);
 		}
 
 		public Boolean IsObserverEnabled<T>() where T : IEngineLifecycleObserver =>

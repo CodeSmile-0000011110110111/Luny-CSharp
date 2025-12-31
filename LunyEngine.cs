@@ -79,13 +79,11 @@ namespace Luny
 		{
 			if (_instance != null)
 				LunyThrow.SingletonDuplicationException(nameof(LunyEngine));
-
-			LunyLogger.LogInfo($"{nameof(LunyEngine)} ctor runs", this);
 		}
 
 		private void Initialize()
 		{
-			LunyLogger.LogInfo($"{nameof(LunyEngine)} {nameof(Initialize)}", this);
+			LunyLogger.LogInfo("Initializing...", this);
 
 			_serviceRegistry = new EngineServiceRegistry<IEngineService>();
 			AcquireMandatoryServices();
@@ -93,7 +91,7 @@ namespace Luny
 			_observerRegistry = new EngineLifecycleObserverRegistry(Scene);
 			_profiler = new EngineProfiler(Time);
 
-			LunyLogger.LogInfo($"{nameof(LunyEngine)} initialization complete", this);
+			LunyLogger.LogInfo("Initialization complete.", this);
 		}
 
 		/// <summary>
@@ -101,6 +99,8 @@ namespace Luny
 		/// </summary>
 		public void OnStartup()
 		{
+			LunyLogger.LogInfo($"{nameof(OnStartup)} running...", this);
+
 			foreach (var observer in _observerRegistry.EnabledObservers)
 			{
 				_profiler.BeginObserver(observer);
@@ -119,6 +119,8 @@ namespace Luny
 					_profiler.EndObserver(observer, EngineLifecycleEvents.OnStartup);
 				}
 			}
+
+			LunyLogger.LogInfo($"{nameof(OnStartup)} complete.", this);
 		}
 
 		/// <summary>
@@ -209,6 +211,8 @@ namespace Luny
 		/// </summary>
 		public void OnShutdown()
 		{
+			LunyLogger.LogInfo($"{nameof(OnShutdown)} running...", this);
+
 			foreach (var observer in _observerRegistry.EnabledObservers)
 			{
 				_profiler.BeginObserver(observer);
@@ -233,18 +237,23 @@ namespace Luny
 			_observerRegistry = null;
 			_profiler = null;
 			_instance = null;
+
+			LunyLogger.LogInfo($"{nameof(OnShutdown)} complete.", this);
 		}
 
-		// TODO: HasObserver?
-		public T GetObserver<T>() where T : IEngineLifecycleObserver => _observerRegistry.GetObserver<T>();
 		public void EnableObserver<T>() where T : IEngineLifecycleObserver => _observerRegistry.EnableObserver<T>();
 		public void DisableObserver<T>() where T : IEngineLifecycleObserver => _observerRegistry.DisableObserver<T>();
 		public Boolean IsObserverEnabled<T>() where T : IEngineLifecycleObserver => _observerRegistry.IsObserverEnabled<T>();
 
 		public Boolean HasService<TService>() where TService : class, IEngineService => _serviceRegistry.Has<TService>();
 		public TService GetService<TService>() where TService : class, IEngineService => _serviceRegistry.Get<TService>();
+
 		public Boolean TryGetService<TService>(out TService service) where TService : class, IEngineService =>
 			_serviceRegistry.TryGet(out service);
 
+		~LunyEngine() => LunyLogger.LogInfo($"finalized {GetHashCode()}", this);
+
+		// TODO: HasObserver?
+		public T GetObserver<T>() where T : IEngineLifecycleObserver => _observerRegistry.GetObserver<T>();
 	}
 }

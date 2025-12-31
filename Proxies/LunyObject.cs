@@ -1,4 +1,5 @@
 using System;
+using SystemObject = System.Object;
 
 namespace Luny.Proxies
 {
@@ -14,7 +15,7 @@ namespace Luny.Proxies
 		Boolean IsValid { get; }
 		Boolean IsEnabled { get; set; }
 		void Destroy();
-		Object GetNativeObject();
+		SystemObject GetNativeObject();
 		T As<T>() where T : class;
 	}
 
@@ -93,6 +94,24 @@ namespace Luny.Proxies
 		protected LunyObject() => LunyID = LunyID.Generate();
 
 		/// <summary>
+		/// Destroys this object, triggering OnDisable/OnDestroy events and performing/queuing native object destruction.
+		/// </summary>
+		public abstract void Destroy();
+
+		/// <summary>
+		/// Gets the underlying engine-native object as generic System.Object type (cast as necessary).
+		/// Note: Engine implementations provide a property for typed access to the engine-native object. Get<T> can also be used.
+		/// </summary>
+		public abstract SystemObject GetNativeObject();
+
+		/// <summary>
+		/// Gets the underlying engine-native object cast to T. Returns null if type T is mismatched.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <returns></returns>
+		public T As<T>() where T : class => GetNativeObject() as T;
+
+		/// <summary>
 		/// Called when the framework decides to work with the object ("object awakes").
 		/// This sends the OnCreate event and - if Enabled - the OnEnable event.
 		/// </summary>
@@ -102,24 +121,6 @@ namespace Luny.Proxies
 			if (IsEnabled)
 				OnEnable?.Invoke();
 		}
-
-		/// <summary>
-		/// Destroys this object, triggering OnDisable/OnDestroy events and performing/queuing native object destruction.
-		/// </summary>
-		public abstract void Destroy();
-
-		/// <summary>
-		/// Gets the underlying engine-native object as generic System.Object type (cast as necessary).
-		/// Note: Engine implementations provide a property for typed access to the engine-native object. Get<T> can also be used.
-		/// </summary>
-		public abstract Object GetNativeObject();
-
-		/// <summary>
-		/// Gets the underlying engine-native object cast to T. Returns null if type T is mismatched.
-		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		/// <returns></returns>
-		public T As<T>() where T : class => GetNativeObject() as T;
 
 		/// <summary>
 		/// Destroys the underlying native engine object.
