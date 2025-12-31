@@ -12,7 +12,7 @@ namespace Luny.Proxies
 		NativeID NativeID { get; }
 		String Name { get; }
 		Boolean IsValid { get; }
-		Boolean Enabled { get; set; }
+		Boolean IsEnabled { get; set; }
 		void Destroy();
 		Object GetNativeObject();
 		T As<T>() where T : class;
@@ -51,7 +51,7 @@ namespace Luny.Proxies
 		/// <remarks>
 		/// For engines using the "Paused" concept: enabled == "not paused" / disabled == "paused".
 		/// </remarks>
-		public abstract Boolean Enabled { get; set; }
+		public abstract Boolean IsEnabled { get; set; }
 
 		/// <summary>
 		/// Sent once when the object is "created". First event the object invokes.
@@ -59,7 +59,7 @@ namespace Luny.Proxies
 		/// </summary>
 		public Action OnCreate { get; set; }
 		/// <summary>
-		/// Sent once when the object is "destroyed". Last event the object invokes.
+		/// Sent once when the object is "destroyed". Last event the object invokes. Runs regardless of object's "enabled" state.
 		/// Technically this occurs when the object is marked for deletion in Luny, but the engine's object still exists in disabled state.
 		/// </summary>
 		public Action OnDestroy { get; set; }
@@ -76,11 +76,13 @@ namespace Luny.Proxies
 		/// <summary>
 		/// Sent every time the object's enabled state changes to "enabled": visible, updating, interacting with other objects.
 		/// Runs right after OnCreate if the object is created in enabled state.
+		/// The object is already enabled when this event runs.
 		/// </summary>
 		public Action OnEnable { get; set; }
 		/// <summary>
 		/// Sent every time the object's enabled state changes to "disabled": hidden, not updating, not interacting with other objects.
 		/// If the object is enabled and gets destroyed, OnDisable runs right before OnDestroy.
+		/// The object is already disabled when this event runs.
 		/// </summary>
 		public Action OnDisable { get; set; }
 
@@ -91,16 +93,20 @@ namespace Luny.Proxies
 		protected LunyObject() => LunyID = LunyID.Generate();
 
 		/// <summary>
-		/// Destroys this object, triggering OnDestroy events and performing/queuing native object destruction.
+		/// Called when the framework decides to work with the object ("object awakes").
+		/// This sends the OnCreate event and - if Enabled - the OnEnable event.
 		/// </summary>
-		public abstract void Destroy();
+		public void Activate()
+		{
+			OnCreate?.Invoke();
+			if (IsEnabled)
+				OnEnable?.Invoke();
+		}
 
 		/// <summary>
-		/// Destroys the underlying native engine object.
-		/// Should only be called internally by lifecycle managers when the destroy operation is being queued.
+		/// Destroys this object, triggering OnDisable/OnDestroy events and performing/queuing native object destruction.
 		/// </summary>
-		/// <exception cref="InvalidOperationException">Throws if Destroy() was not called before.</exception>
-		public abstract void DestroyNativeObject();
+		public abstract void Destroy();
 
 		/// <summary>
 		/// Gets the underlying engine-native object as generic System.Object type (cast as necessary).
@@ -115,6 +121,13 @@ namespace Luny.Proxies
 		/// <returns></returns>
 		public T As<T>() where T : class => GetNativeObject() as T;
 
-		public override String ToString() => $"{(Enabled ? "☑" : "☐")} {Name} (Luny:{LunyID}|Native:{NativeID})";
+		/// <summary>
+		/// Destroys the underlying native engine object.
+		/// Should only be called internally by lifecycle managers when the destroy operation is being queued.
+		/// </summary>
+		/// <exception cref="InvalidOperationException">Throws if Destroy() was not called before.</exception>
+		public abstract void DestroyNativeObject();
+
+		public override String ToString() => $"{(IsEnabled ? "☑" : "☐")} {Name} ({LunyID}, {NativeID})";
 	}
 }
