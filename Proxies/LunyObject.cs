@@ -25,7 +25,7 @@ namespace Luny.Proxies
 	public abstract class LunyObject : ILunyObject
 	{
 		/// <summary>
-		/// LunyScript-specific unique identifier (distinct from engine's native ID).
+		/// LunyScript-specific unique identifier. This ID is distinct from engine's native object ID!
 		/// </summary>
 		public LunyID LunyID { get; }
 
@@ -54,12 +54,40 @@ namespace Luny.Proxies
 		public abstract Boolean Enabled { get; set; }
 
 		/// <summary>
-		/// Lifecycle event hooks
+		/// Sent once when the object is "created". First event the object invokes.
+		/// Technically this happens when an object gets 'registered' with Luny and after the engine object's "create" event ran.
+		/// </summary>
+		public Action OnCreate { get; set; }
+		/// <summary>
+		/// Sent once when the object is "destroyed". Last event the object invokes.
+		/// Technically this occurs when the object is marked for deletion in Luny, but the engine's object still exists in disabled state.
+		/// </summary>
+		public Action OnDestroy { get; set; }
+		/// <summary>
+		/// Sent once just before the object first runs OnFixedStep/OnUpdate.
+		/// </summary>
+		/// <remarks>
+		/// Depending on whether OnFixedStep happens to run in the frame the object becomes "ready", the event order is either:
+		///		OnCreate => OnEnable => OnReady => OnUpdate (first) => OnLateUpdate (first)
+		/// or:
+		///		OnCreate => OnEnable => OnReady => OnFixedStep (first) => OnUpdate (first) => OnLateUpdate (first)
+		/// </remarks>
+		public Action OnReady { get; set; }
+		/// <summary>
+		/// Sent every time the object's enabled state changes to "enabled": visible, updating, interacting with other objects.
+		/// Runs right after OnCreate if the object is created in enabled state.
 		/// </summary>
 		public Action OnEnable { get; set; }
+		/// <summary>
+		/// Sent every time the object's enabled state changes to "disabled": hidden, not updating, not interacting with other objects.
+		/// If the object is enabled and gets destroyed, OnDisable runs right before OnDestroy.
+		/// </summary>
 		public Action OnDisable { get; set; }
-		public Action OnDestroy { get; set; }
 
+		/// <summary>
+		/// Instantiates a LunyObject instance.
+		/// The engine-native implementation is expected to assign the native object instance in its ctor.
+		/// </summary>
 		protected LunyObject() => LunyID = LunyID.Generate();
 
 		/// <summary>
