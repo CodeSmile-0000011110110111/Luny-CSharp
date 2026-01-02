@@ -5,7 +5,7 @@ namespace Luny
 	/// <summary>
 	/// Lifecycle observer interface - receives callbacks from LunyEngine.
 	/// </summary>
-	public interface IEngineLifecycleObserver
+	public interface IEngineObserver
 	{
 		public bool Enabled => true;
 

@@ -70,7 +70,7 @@ namespace Luny.Diagnostics
 	internal sealed class EngineProfiler : IEngineProfiler
 	{
 		private readonly Dictionary<Type, Dictionary<EngineLifecycleEvents, ObserverMetrics>> _metrics = new();
-		private readonly Dictionary<IEngineLifecycleObserver, Stopwatch> _activeObservers = new();
+		private readonly Dictionary<IEngineObserver, Stopwatch> _activeObservers = new();
 		private Int32 _rollingAverageWindow = 30;
 		private ITimeService _timeService;
 
@@ -111,7 +111,7 @@ namespace Luny.Diagnostics
 		}
 
 		[Conditional("DEBUG")] [Conditional("LUNY_DEBUG")] [Conditional("LUNY_PROFILE")]
-		internal void BeginObserver(IEngineLifecycleObserver observer)
+		internal void BeginObserver(IEngineObserver observer)
 		{
 #if DEBUG || LUNY_DEBUG || LUNY_PROFILE
 			if (!_activeObservers.TryGetValue(observer, out var sw))
@@ -124,7 +124,7 @@ namespace Luny.Diagnostics
 		}
 
 		[Conditional("DEBUG")] [Conditional("LUNY_DEBUG")] [Conditional("LUNY_PROFILE")]
-		internal void EndObserver(IEngineLifecycleObserver observer, EngineLifecycleEvents category)
+		internal void EndObserver(IEngineObserver observer, EngineLifecycleEvents category)
 		{
 #if DEBUG || LUNY_DEBUG || LUNY_PROFILE
 			if (!_activeObservers.TryGetValue(observer, out var sw))
@@ -175,7 +175,7 @@ namespace Luny.Diagnostics
 		}
 
 		[Conditional("DEBUG")] [Conditional("LUNY_DEBUG")] [Conditional("LUNY_PROFILE")]
-		internal void RecordError(IEngineLifecycleObserver observer, EngineLifecycleEvents category, Exception ex)
+		internal void RecordError(IEngineObserver observer, EngineLifecycleEvents category, Exception ex)
 		{
 #if DEBUG || LUNY_DEBUG || LUNY_PROFILE
 			var type = observer.GetType();

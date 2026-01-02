@@ -29,9 +29,9 @@ namespace Luny
 		void OnShutdown();
 
 		// Observer management
-		void EnableObserver<T>() where T : IEngineLifecycleObserver;
-		void DisableObserver<T>() where T : IEngineLifecycleObserver;
-		Boolean IsObserverEnabled<T>() where T : IEngineLifecycleObserver;
+		void EnableObserver<T>() where T : IEngineObserver;
+		void DisableObserver<T>() where T : IEngineObserver;
+		Boolean IsObserverEnabled<T>() where T : IEngineObserver;
 
 		// Service access
 		TService GetService<TService>() where TService : class, IEngineService;
@@ -45,10 +45,10 @@ namespace Luny
 	public sealed partial class LunyEngine : ILunyEngine
 	{
 		private static LunyEngine s_Instance;
-		static bool s_IsDisposed;
+		private static Boolean s_IsDisposed;
 
 		private EngineServiceRegistry<IEngineService> _serviceRegistry;
-		private EngineLifecycleObserverRegistry _observerRegistry;
+		private EngineObserverRegistry _observerRegistry;
 		private EngineProfiler _profiler;
 
 		/// <summary>
@@ -76,6 +76,8 @@ namespace Luny
 			}
 		}
 
+		internal static void ResetDisposedFlag_UnityEditorOnly() => s_IsDisposed = false;
+
 		private LunyEngine()
 		{
 			if (s_Instance != null)
@@ -89,7 +91,7 @@ namespace Luny
 			_serviceRegistry = new EngineServiceRegistry<IEngineService>();
 			AcquireMandatoryServices();
 
-			_observerRegistry = new EngineLifecycleObserverRegistry(Scene);
+			_observerRegistry = new EngineObserverRegistry(Scene);
 			_profiler = new EngineProfiler(Time);
 
 			LunyLogger.LogInfo("Initialization complete.", this);
@@ -237,7 +239,17 @@ namespace Luny
 			Dispose();
 		}
 
-		void Dispose()
+		public void EnableObserver<T>() where T : IEngineObserver => _observerRegistry.EnableObserver<T>();
+		public void DisableObserver<T>() where T : IEngineObserver => _observerRegistry.DisableObserver<T>();
+		public Boolean IsObserverEnabled<T>() where T : IEngineObserver => _observerRegistry.IsObserverEnabled<T>();
+
+		public Boolean HasService<TService>() where TService : class, IEngineService => _serviceRegistry.Has<TService>();
+		public TService GetService<TService>() where TService : class, IEngineService => _serviceRegistry.Get<TService>();
+
+		public Boolean TryGetService<TService>(out TService service) where TService : class, IEngineService =>
+			_serviceRegistry.TryGet(out service);
+
+		private void Dispose()
 		{
 			if (s_IsDisposed)
 				throw new LunyLifecycleException($"{nameof(LunyEngine)} already disposed!");
@@ -254,19 +266,9 @@ namespace Luny
 			LunyLogger.LogInfo("Disposed.", this);
 		}
 
-		public void EnableObserver<T>() where T : IEngineLifecycleObserver => _observerRegistry.EnableObserver<T>();
-		public void DisableObserver<T>() where T : IEngineLifecycleObserver => _observerRegistry.DisableObserver<T>();
-		public Boolean IsObserverEnabled<T>() where T : IEngineLifecycleObserver => _observerRegistry.IsObserverEnabled<T>();
-
-		public Boolean HasService<TService>() where TService : class, IEngineService => _serviceRegistry.Has<TService>();
-		public TService GetService<TService>() where TService : class, IEngineService => _serviceRegistry.Get<TService>();
-
-		public Boolean TryGetService<TService>(out TService service) where TService : class, IEngineService =>
-			_serviceRegistry.TryGet(out service);
-
 		~LunyEngine() => LunyLogger.LogInfo($"finalized {GetHashCode()}", this);
 
 		// TODO: HasObserver?
-		public T GetObserver<T>() where T : IEngineLifecycleObserver => _observerRegistry.GetObserver<T>();
+		public T GetObserver<T>() where T : IEngineObserver => _observerRegistry.GetObserver<T>();
 	}
 }
