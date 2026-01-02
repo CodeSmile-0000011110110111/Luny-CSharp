@@ -92,38 +92,36 @@ namespace Luny.Diagnostics
 		/// </summary>
 		public static Boolean EnableInternalLogging { get; set; }
 
-		public static void LogInfo(String message, Object context = null)
+		public static void Log(String message, Object context = null, LogLevel logLevel = LogLevel.Info)
 		{
 			var time = LunyEngine.Instance?.Time;
-			RecordInternalLog(LogLevel.Info, message, context, time);
-			_logger.LogInfo(FormatWithContext(message, context, time));
+			RecordInternalLog(logLevel, message, context, time);
+			var formattedMessage = FormatWithContext(message, context, time);
+			switch (logLevel)
+			{
+				case LogLevel.Info:
+					_logger.LogInfo(formattedMessage);
+					break;
+				case LogLevel.Warning:
+					_logger.LogWarning(formattedMessage);
+					break;
+				case LogLevel.Error:
+					_logger.LogError(formattedMessage);
+					break;
+				default:
+					throw new ArgumentOutOfRangeException(nameof(logLevel), logLevel, context?.ToString());
+			}
 		}
 
-		public static void LogWarning(String message, Object context = null)
-		{
-			var time = LunyEngine.Instance?.Time;
-			RecordInternalLog(LogLevel.Warning, message, context, time);
-			_logger.LogWarning(FormatWithContext(message, context, time));
-		}
-
-		public static void LogError(String message, Object context = null)
-		{
-			var time = LunyEngine.Instance?.Time;
-			RecordInternalLog(LogLevel.Error, message, context, time);
-			_logger.LogError(FormatWithContext(message, context, time));
-		}
+		public static void LogInfo(String message, Object context = null) => Log(message, context);
+		public static void LogWarning(String message, Object context = null) => Log(message, context, LogLevel.Warning);
+		public static void LogError(String message, Object context = null) => Log(message, context, LogLevel.Error);
 
 		public static void LogException(Exception exception, Object context = null)
 		{
 			var time = LunyEngine.Instance?.Time;
-			RecordInternalLog(LogLevel.Error, exception?.ToString() ?? "null exception", exception?.GetType(), time);
-
-			// Preserve engine-native exception handling while still emitting a contextual header if provided
-			if (context != null)
-			{
-				var header = FormatWithContext(exception?.Message, context, time);
-				_logger.LogError(header);
-			}
+			var message = FormatWithContext(exception?.ToString() ?? "<Exception: null>", context, time);
+			RecordInternalLog(LogLevel.Error, message, exception?.GetType(), time);
 			_logger.LogException(exception);
 		}
 
