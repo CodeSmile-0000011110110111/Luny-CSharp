@@ -7,6 +7,7 @@ namespace Luny.Diagnostics
 {
 	public interface ILunyLogger
 	{
+		// TODO: add overloads accepting an object
 		void LogInfo(String message);
 		void LogWarning(String message);
 		void LogError(String message);

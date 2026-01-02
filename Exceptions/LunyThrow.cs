@@ -5,7 +5,7 @@ namespace Luny.Exceptions
 	internal sealed class LunyThrow
 	{
 		// [StackTraceHidden] not supported by Unity 6
-		public static void LifecycleAdapterSingletonDuplicationException(String adapterTypeName, String existingObjectName,
+		public static void EngineAdapterSingletonDuplicationException(String adapterTypeName, String existingObjectName,
 			Int64 existingInstanceId, String duplicateObjectName, Int64 duplicateInstanceId) => throw new LunyLifecycleException(
 			$"Duplicate {adapterTypeName} singleton detected! " +
 			$"Existing: Name='{existingObjectName}' InstanceID={existingInstanceId}, " +
@@ -16,7 +16,7 @@ namespace Luny.Exceptions
 			throw new LunyLifecycleException($"Duplicate {typeName} singleton detected!");
 
 		// [StackTraceHidden] not supported by Unity 6
-		public static void LifecycleAdapterPrematurelyRemovedException(String adapterName) => throw new LunyLifecycleException(
+		public static void EngineAdapterPrematurelyRemovedException(String adapterName) => throw new LunyLifecycleException(
 			$"{adapterName} unexpectedly removed from SceneTree! It must remain in scene at all times.");
 
 		// [StackTraceHidden] not supported by Unity 6
