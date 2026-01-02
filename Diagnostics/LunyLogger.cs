@@ -1,3 +1,4 @@
+using Luny.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -74,7 +75,15 @@ namespace Luny.Diagnostics
 		/// <summary>
 		/// Installs an engine-specific logger. Pass <c>null</c> to revert to the default console logger.
 		/// </summary>
-		public static ILunyLogger Logger { get => _logger; set => _logger = value ?? _consoleLogger; }
+		public static ILunyLogger Logger
+		{
+			get => _logger;
+			set
+			{
+				_logger = value ?? _consoleLogger;
+				_logger?.LogInfo($"{nameof(LunyLogger)}.{nameof(Logger)} = {_logger}");
+			}
+		}
 
 		/// <summary>
 		/// Enables internal Luny logging system. When enabled, all log messages are recorded
@@ -84,30 +93,34 @@ namespace Luny.Diagnostics
 
 		public static void LogInfo(String message, Object context = null)
 		{
-			RecordInternalLog(LogLevel.Info, message, context);
-			_logger.LogInfo(FormatWithContext(message, context));
+			var time = LunyEngine.Instance?.Time;
+			RecordInternalLog(LogLevel.Info, message, context, time);
+			_logger.LogInfo(FormatWithContext(message, context, time));
 		}
 
 		public static void LogWarning(String message, Object context = null)
 		{
-			RecordInternalLog(LogLevel.Warning, message, context);
-			_logger.LogWarning(FormatWithContext(message, context));
+			var time = LunyEngine.Instance?.Time;
+			RecordInternalLog(LogLevel.Warning, message, context, time);
+			_logger.LogWarning(FormatWithContext(message, context, time));
 		}
 
 		public static void LogError(String message, Object context = null)
 		{
-			RecordInternalLog(LogLevel.Error, message, context);
-			_logger.LogError(FormatWithContext(message, context));
+			var time = LunyEngine.Instance?.Time;
+			RecordInternalLog(LogLevel.Error, message, context, time);
+			_logger.LogError(FormatWithContext(message, context, time));
 		}
 
 		public static void LogException(Exception exception, Object context = null)
 		{
-			RecordInternalLog(LogLevel.Error, exception?.ToString() ?? "null exception", exception?.GetType());
+			var time = LunyEngine.Instance?.Time;
+			RecordInternalLog(LogLevel.Error, exception?.ToString() ?? "null exception", exception?.GetType(), time);
 
 			// Preserve engine-native exception handling while still emitting a contextual header if provided
 			if (context != null)
 			{
-				var header = FormatWithContext(exception?.Message, context);
+				var header = FormatWithContext(exception?.Message, context, time);
 				_logger.LogError(header);
 			}
 			_logger.LogException(exception);
@@ -136,43 +149,48 @@ namespace Luny.Diagnostics
 				writer.WriteLine(entry.ToString());
 		}
 
-		private static void RecordInternalLog(LogLevel level, String message, Object context)
+		private static void RecordInternalLog(LogLevel level, String message, Object context = null, ITimeService time = null)
 		{
 			if (!EnableInternalLogging)
 				return;
 
-			var timeService = LunyEngine.Instance.Time;
+			var frameCount = -1L;
+			var elapsedSeconds = -1.0;
+			if (time != null)
+			{
+				frameCount = time.FrameCount;
+				elapsedSeconds = time.ElapsedSeconds;
+			}
 
 			_internalLog ??= new List<LogEntry>();
 			_internalLog.Add(new LogEntry
 			{
-				FrameCount = timeService.FrameCount,
-				ElapsedSeconds = timeService.ElapsedSeconds,
+				FrameCount = frameCount,
+				ElapsedSeconds = elapsedSeconds,
 				Level = level,
 				Message = message,
 				Context = context switch
 				{
 					Type t => t.Name,
 					String s => s,
-					null => "null",
+					null => null,
 					var _ => context.GetType().Name,
 				},
 			});
 		}
 
-		private static String FormatWithContext(String message, Object context)
+		private static String FormatWithContext(String message, Object context = null, ITimeService time = null)
 		{
-			if (context == null)
-				return message;
-
 			var prefix = context switch
 			{
-				Type t => t.Name,
-				String s => s,
-				var _ => context.GetType().Name,
+				Type t => $"[{t.Name}] ",
+				String s => $"[{s}] ",
+				var _ => context != null ? $"[{context.GetType().Name}] " : String.Empty,
 			};
 
-			return prefix == null ? message : $"[{prefix}] {message}";
+			var frameCount = time == null ? String.Empty : $"[{time.FrameCount}] ";
+
+			return $"{frameCount}{prefix}{message}";
 		}
 
 		private sealed class ConsoleLogger : ILunyLogger

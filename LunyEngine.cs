@@ -44,7 +44,8 @@ namespace Luny
 	/// </summary>
 	public sealed partial class LunyEngine : ILunyEngine
 	{
-		private static LunyEngine _instance;
+		private static LunyEngine s_Instance;
+		static bool s_IsDisposed;
 
 		private EngineServiceRegistry<IEngineService> _serviceRegistry;
 		private EngineLifecycleObserverRegistry _observerRegistry;
@@ -63,21 +64,21 @@ namespace Luny
 		{
 			get
 			{
-				if (_instance == null)
+				if (s_Instance == null && !s_IsDisposed)
 				{
 					// the ctor/init pattern prevents stackoverflows for cases where
 					// LunyEngine.Instance is accessed by code running within LunyEngine's ctor
-					_instance = new LunyEngine();
-					_instance.Initialize();
+					s_Instance = new LunyEngine();
+					s_Instance.Initialize();
 				}
 
-				return _instance;
+				return s_Instance;
 			}
 		}
 
 		private LunyEngine()
 		{
-			if (_instance != null)
+			if (s_Instance != null)
 				LunyThrow.SingletonDuplicationException(nameof(LunyEngine));
 		}
 
@@ -232,13 +233,25 @@ namespace Luny
 				}
 			}
 
-			// invalidate references
+			LunyLogger.LogInfo($"{nameof(OnShutdown)} complete.", this);
+			Dispose();
+		}
+
+		void Dispose()
+		{
+			if (s_IsDisposed)
+				throw new LunyLifecycleException($"{nameof(LunyEngine)} already disposed!");
+
+			// references are reset last, at the discretion of the engine adapter
 			_serviceRegistry = null;
 			_observerRegistry = null;
 			_profiler = null;
-			_instance = null;
 
-			LunyLogger.LogInfo($"{nameof(OnShutdown)} complete.", this);
+			// ensure we won't get re-instantiated after this point
+			s_IsDisposed = true;
+			s_Instance = null;
+
+			LunyLogger.LogInfo("Disposed.", this);
 		}
 
 		public void EnableObserver<T>() where T : IEngineLifecycleObserver => _observerRegistry.EnableObserver<T>();
