@@ -8,19 +8,27 @@ namespace Luny
 	/// </summary>
 	public interface IEngineAdapter
 	{
-		static IEngineAdapter EnsureSingleInstance(IEngineAdapter existingInstance, Object current)
+		static IEngineAdapter GetValidatedSingletonInstance(IEngineAdapter existingInstance, Object current)
 		{
 			if (existingInstance != null)
-				LunyThrow.EngineAdapterSingletonDuplicationException(typeof(IEngineAdapter), existingInstance, current);
-			return (IEngineAdapter)current;
+			{
+				throw new LunyLifecycleException($"Duplicate {nameof(IEngineAdapter)} singleton detected! " +
+				                                 $"Existing: {existingInstance}, Duplicate: {current}");
+			}
+
+			if (current is not IEngineAdapter adapter)
+				throw new LunyLifecycleException($"New {nameof(IEngineAdapter)} instance is null or incorrect type: {current}");
+
+			return adapter;
 		}
 
-		static void EnsureEngineAdapterNotNull(IEngineAdapter adapter)
+		static void AssertEngineAdapterNotNull(IEngineAdapter adapter)
 		{
 			if (adapter == null)
 				throw new LunyLifecycleException($"{nameof(IEngineAdapter)} is null");
 		}
-		static void EnsureLunyEngineNotNull(ILunyEngine lunyEngine)
+
+		static void AssertLunyEngineNotNull(ILunyEngine lunyEngine)
 		{
 			if (lunyEngine == null)
 				throw new LunyLifecycleException($"{nameof(ILunyEngine)} is null");

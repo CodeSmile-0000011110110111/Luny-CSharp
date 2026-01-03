@@ -5,12 +5,6 @@ namespace Luny.Exceptions
 {
 	internal sealed class LunyThrow
 	{
-#if GODOT
-		[StackTraceHidden] // not supported by Unity 6
-#endif
-		public static void EngineAdapterSingletonDuplicationException(Type instanceType, Object existingInstance, Object duplicateInstance) =>
-			throw new LunyLifecycleException($"Duplicate {instanceType?.Name} singleton detected! " +
-			                                 $"Existing: {existingInstance}, Duplicate: {duplicateInstance}");
 
 #if GODOT
 		[StackTraceHidden] // not supported by Unity 6
