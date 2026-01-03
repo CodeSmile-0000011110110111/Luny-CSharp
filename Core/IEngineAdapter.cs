@@ -14,5 +14,16 @@ namespace Luny
 				LunyThrow.EngineAdapterSingletonDuplicationException(typeof(IEngineAdapter), existingInstance, current);
 			return (IEngineAdapter)current;
 		}
+
+		static void EnsureEngineAdapterNotNull(IEngineAdapter adapter)
+		{
+			if (adapter == null)
+				throw new LunyLifecycleException($"{nameof(IEngineAdapter)} is null");
+		}
+		static void EnsureLunyEngineNotNull(ILunyEngine lunyEngine)
+		{
+			if (lunyEngine == null)
+				throw new LunyLifecycleException($"{nameof(ILunyEngine)} is null");
+		}
 	}
 }
