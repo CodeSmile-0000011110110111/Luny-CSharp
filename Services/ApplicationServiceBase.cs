@@ -4,6 +4,7 @@ namespace Luny.Services
 {
 	/// <summary>
 	/// Engine-agnostic application control.
+	/// CAUTION: Implementations must inherit from both IApplicationService interface and ApplicationServiceBase class!
 	/// </summary>
 	public interface IApplicationService : IEngineService
 	{
@@ -22,5 +23,13 @@ namespace Luny.Services
 		/// True if the application is playing (not paused in editor).
 		/// </summary>
 		Boolean IsPlaying { get; }
+	}
+
+	internal interface IApplicationServiceInternal
+	{
+	}
+
+	public abstract class ApplicationServiceBase : IApplicationServiceInternal
+	{
 	}
 }
