@@ -17,7 +17,6 @@ namespace Luny
 			Editor = GetService<IEditorService>();
 			Scene = GetService<ISceneService>();
 			Time = GetService<ITimeService>();
-			_timeInternal = (ITimeServiceInternal)Time;
 		}
 	}
 }

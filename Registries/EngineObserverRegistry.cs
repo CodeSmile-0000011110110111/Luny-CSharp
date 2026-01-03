@@ -17,15 +17,8 @@ namespace Luny.Registries
 
 		public IEnumerable<IEngineObserver> EnabledObservers => _enabledObservers;
 
-		private static Boolean IsSmokeTestScene(ISceneService sceneService)
+		public EngineObserverRegistry(Boolean isSmokeTestScene)
 		{
-			var sceneName = sceneService.CurrentSceneName;
-			return sceneName.StartsWith("Luny") && sceneName.EndsWith("SmokeTest");
-		}
-
-		public EngineObserverRegistry(ISceneService sceneService)
-		{
-			var isSmokeTestScene = IsSmokeTestScene(sceneService);
 			DiscoverAndInstantiateObservers(isSmokeTestScene);
 		}
 

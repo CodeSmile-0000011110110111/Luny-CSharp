@@ -73,13 +73,20 @@ namespace Luny
 			if (engineAdapter == null)
 				throw new ArgumentNullException(nameof(engineAdapter), "Engine adapter cannot be null.");
 
-			// splitting ctor and init prevents stackoverflows for cases where LunyEngine.Instance is accessed within LunyEngine's ctor
+			// splitting ctor and Initialize prevents stackoverflows for cases where Instance is accessed from within ctor
 			s_Instance = new LunyEngine();
 			s_Instance.Initialize();
 			return s_Instance;
 		}
 
 		internal static void ResetDisposedFlag_UnityEditorOnly() => s_IsDisposed = false;
+
+		private static Boolean IsSmokeTestScene(ISceneService sceneService)
+		{
+			// FIXME: remove hardcoded strings, find a better way to determine test mode
+			var sceneName = sceneService.CurrentSceneName;
+			return sceneName.StartsWith("Luny") && sceneName.EndsWith("SmokeTest");
+		}
 
 		private LunyEngine()
 		{
@@ -95,9 +102,12 @@ namespace Luny
 
 			_serviceRegistry = new EngineServiceRegistry<IEngineService>();
 			AcquireMandatoryServices();
+
+			_timeInternal = (ITimeServiceInternal)Time;
 			_timeInternal.SetLunyFrameCount(1); // ensure we always start in frame "1"
 
-			_observerRegistry = new EngineObserverRegistry(Scene);
+			var isSmokeTestingScene = IsSmokeTestScene(Scene);
+			_observerRegistry = new EngineObserverRegistry(isSmokeTestingScene);
 			_profiler = new EngineProfiler(Time);
 
 			LunyLogger.LogInfo("Initialization complete.", this);
