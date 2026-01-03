@@ -15,12 +15,6 @@ namespace Luny.Exceptions
 #if GODOT
 		[StackTraceHidden] // not supported by Unity 6
 #endif
-		public static void EngineAdapterPrematurelyRemovedException(String adapterName) => throw new LunyLifecycleException(
-			$"{adapterName} unexpectedly removed from SceneTree! It must remain in scene at all times.");
-
-#if GODOT
-		[StackTraceHidden] // not supported by Unity 6
-#endif
 		public static void ServiceMustImplementSpecificInterfaceException(String serviceName) => throw new LunyServiceException(
 			$"Service {serviceName} must implement a specific interface derived from {nameof(IEngineService)}, not {nameof(IEngineService)} directly.");
 

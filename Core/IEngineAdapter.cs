@@ -1,4 +1,5 @@
-﻿using Luny.Exceptions;
+﻿using Luny.Diagnostics;
+using Luny.Exceptions;
 using System;
 
 namespace Luny
@@ -8,7 +9,7 @@ namespace Luny
 	/// </summary>
 	public interface IEngineAdapter
 	{
-		static IEngineAdapter GetValidatedSingletonInstance(IEngineAdapter existingInstance, Object current)
+		static IEngineAdapter ValidateAdapterSingletonInstance(IEngineAdapter existingInstance, Object current)
 		{
 			if (existingInstance != null)
 			{
@@ -22,7 +23,7 @@ namespace Luny
 			return adapter;
 		}
 
-		static void AssertEngineAdapterNotNull(IEngineAdapter adapter)
+		static void AssertNotNull(IEngineAdapter adapter)
 		{
 			if (adapter == null)
 				throw new LunyLifecycleException($"{nameof(IEngineAdapter)} is null");
@@ -32,6 +33,29 @@ namespace Luny
 		{
 			if (lunyEngine == null)
 				throw new LunyLifecycleException($"{nameof(ILunyEngine)} is null");
+		}
+
+		static void AssertNotPrematurelyRemoved(IEngineAdapter adapter, ILunyEngine lunyEngine)
+		{
+			if (adapter != null)
+			{
+				if (lunyEngine != null)
+					ShutdownLunyEngine(adapter, lunyEngine);
+
+				throw new LunyLifecycleException($"{adapter} unexpectedly removed from Scene! It must not be destroyed/removed manually.");
+			}
+		}
+
+		static void ShutdownLunyEngine(IEngineAdapter adapter, ILunyEngine lunyEngine)
+		{
+			LunyLogger.LogInfo("Shutting down...", adapter);
+			lunyEngine?.OnShutdown();
+		}
+
+		static void ShutdownComplete(IEngineAdapter adapter)
+		{
+			LunyLogger.LogInfo("Shutdown complete.", adapter);
+			LunyLogger.Logger = null;
 		}
 	}
 }
