@@ -50,6 +50,7 @@ namespace Luny
 		private EngineServiceRegistry<IEngineService> _serviceRegistry;
 		private EngineObserverRegistry _observerRegistry;
 		private EngineProfiler _profiler;
+		private ITimeServiceInternal _timeInternal;
 
 		/// <summary>
 		/// Gets the engine profiler for performance monitoring.
@@ -94,6 +95,7 @@ namespace Luny
 
 			_serviceRegistry = new EngineServiceRegistry<IEngineService>();
 			AcquireMandatoryServices();
+			_timeInternal.SetLunyFrameCount(1); // ensure we always start in frame "1"
 
 			_observerRegistry = new EngineObserverRegistry(Scene);
 			_profiler = new EngineProfiler(Time);
@@ -211,6 +213,9 @@ namespace Luny
 			}
 
 			// TODO: run structural changes here, ie "OnPostUpdate"
+
+			// next frame
+			_timeInternal.SetLunyFrameCount(Time.FrameCount + 1);
 		}
 
 		/// <summary>
@@ -261,6 +266,7 @@ namespace Luny
 			_serviceRegistry = null;
 			_observerRegistry = null;
 			_profiler = null;
+			_timeInternal = null;
 			s_Instance = null;
 
 			// ensure we won't get re-instantiated after this point

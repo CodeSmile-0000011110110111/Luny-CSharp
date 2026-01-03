@@ -99,7 +99,7 @@ namespace Luny.Diagnostics
 			{
 				CategorizedMetrics = categorized,
 				Timestamp = DateTime.UtcNow,
-				FrameCount = _timeService.FrameCount,
+				FrameCount = _timeService.EngineFrameCount,
 			};
 #else
 			return new ProfilerSnapshot

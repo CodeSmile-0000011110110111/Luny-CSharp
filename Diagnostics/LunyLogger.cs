@@ -157,7 +157,7 @@ namespace Luny.Diagnostics
 			var elapsedSeconds = -1.0;
 			if (time != null)
 			{
-				frameCount = time.FrameCount;
+				frameCount = time.EngineFrameCount;
 				elapsedSeconds = time.ElapsedSeconds;
 			}
 
@@ -187,7 +187,7 @@ namespace Luny.Diagnostics
 				var _ => context != null ? $"[{context.GetType().Name}] " : String.Empty,
 			};
 
-			var frameCount = time == null ? String.Empty : $"[{time.FrameCount}] ";
+			var frameCount = time == null ? String.Empty : $"[{time.EngineFrameCount}] ";
 
 			return $"{frameCount}{prefix}{message}";
 		}
