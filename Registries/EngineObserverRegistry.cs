@@ -56,7 +56,7 @@ namespace Luny.Registries
 
 			var ms = (Int32)Math.Round(sw.Elapsed.TotalMilliseconds, MidpointRounding.AwayFromZero);
 			LunyLogger.LogInfo($"Registered {_registeredObservers.Count} (enabled: {_enabledObservers.Count}) " +
-			                   $"{nameof(IEngineObserver)} observers in {ms} ms.", this);
+			                   $"{nameof(IEngineObserver)}s in {ms} ms.", this);
 		}
 
 		public Boolean IsObserverEnabled<T>() where T : IEngineObserver =>

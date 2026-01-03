@@ -60,20 +60,22 @@ namespace Luny
 		/// <summary>
 		/// Gets the singleton instance, creating it on first access.
 		/// </summary>
-		public static ILunyEngine Instance
-		{
-			get
-			{
-				if (s_Instance == null && !s_IsDisposed)
-				{
-					// the ctor/init pattern prevents stackoverflows for cases where
-					// LunyEngine.Instance is accessed by code running within LunyEngine's ctor
-					s_Instance = new LunyEngine();
-					s_Instance.Initialize();
-				}
+		public static ILunyEngine Instance => s_Instance;
 
-				return s_Instance;
-			}
+		// We only pass the engine adapter instance to signal that this must only be called by the engine adapter
+		internal static ILunyEngine CreateInstance(IEngineAdapter engineAdapter)
+		{
+			if (s_IsDisposed)
+				throw new LunyLifecycleException($"{nameof(LunyEngine)} instance already disposed. It must not be created again.");
+			if (s_Instance != null)
+				throw new LunyLifecycleException($"{nameof(LunyEngine)} instance already exists.");
+			if (engineAdapter == null)
+				throw new ArgumentNullException(nameof(engineAdapter), "Engine adapter cannot be null.");
+
+			// splitting ctor and init prevents stackoverflows for cases where LunyEngine.Instance is accessed within LunyEngine's ctor
+			s_Instance = new LunyEngine();
+			s_Instance.Initialize();
+			return s_Instance;
 		}
 
 		internal static void ResetDisposedFlag_UnityEditorOnly() => s_IsDisposed = false;
@@ -87,6 +89,8 @@ namespace Luny
 		private void Initialize()
 		{
 			LunyLogger.LogInfo("Initializing...", this);
+
+			LunyID.Reset();
 
 			_serviceRegistry = new EngineServiceRegistry<IEngineService>();
 			AcquireMandatoryServices();
@@ -254,14 +258,13 @@ namespace Luny
 			if (s_IsDisposed)
 				throw new LunyLifecycleException($"{nameof(LunyEngine)} already disposed!");
 
-			// references are reset last, at the discretion of the engine adapter
 			_serviceRegistry = null;
 			_observerRegistry = null;
 			_profiler = null;
+			s_Instance = null;
 
 			// ensure we won't get re-instantiated after this point
 			s_IsDisposed = true;
-			s_Instance = null;
 
 			LunyLogger.LogInfo("Disposed.", this);
 		}

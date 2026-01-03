@@ -9,7 +9,9 @@ namespace Luny
 	/// </summary>
 	public readonly struct LunyID : IEquatable<LunyID>, IComparable<LunyID>
 	{
-		private static Int32 _nextID = 1;
+		private const Int32 StartID = 1;
+		private static Int32 s_NextID = StartID;
+		internal static void Reset() => s_NextID = StartID;
 
 		public readonly Int32 Value;
 
@@ -18,7 +20,7 @@ namespace Luny
 		/// <summary>
 		/// Generates a new unique ObjectID.
 		/// </summary>
-		public static LunyID Generate() => new LunyID(_nextID++);
+		public static LunyID Generate() => new(s_NextID++);
 
 		public Boolean Equals(LunyID other) => Value == other.Value;
 		public override Boolean Equals(Object obj) => obj is LunyID other && Equals(other);

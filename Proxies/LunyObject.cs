@@ -1,3 +1,4 @@
+using Luny.Exceptions;
 using System;
 using SystemObject = System.Object;
 
@@ -117,6 +118,9 @@ namespace Luny.Proxies
 		/// </summary>
 		public void Activate()
 		{
+			if (GetNativeObject() == null)
+				throw new LunyLifecycleException($"{this}: missing native object!");
+
 			OnCreate?.Invoke();
 			if (IsEnabled)
 				OnEnable?.Invoke();

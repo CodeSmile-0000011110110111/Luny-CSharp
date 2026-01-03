@@ -82,7 +82,7 @@ namespace Luny.Diagnostics
 			set
 			{
 				_logger = value ?? _consoleLogger;
-				_logger?.LogInfo($"{nameof(LunyLogger)}.{nameof(Logger)} = {_logger}");
+				_logger?.LogInfo($"{nameof(LunyLogger)}.{nameof(Logger)} => {_logger}");
 			}
 		}
 

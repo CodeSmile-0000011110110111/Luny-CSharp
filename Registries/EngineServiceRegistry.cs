@@ -48,7 +48,7 @@ namespace Luny.Registries
 				// Find the specific service interface (not IEngineServiceProvider directly)
 				var serviceInterface = GetServiceInterface(type);
 
-				LunyLogger.LogInfo($"{type.FullName} registered as {serviceInterface.Name}", this);
+				LunyLogger.LogInfo($"{serviceInterface.Name} => {type.FullName} registered", this);
 				var service = (T)Activator.CreateInstance(type);
 				_registeredServices[serviceInterface] = service;
 			}
