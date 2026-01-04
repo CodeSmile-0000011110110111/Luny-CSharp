@@ -11,15 +11,15 @@ namespace Luny.Engine.Registries
 	/// Marker interface for engine-agnostic services: APIs such as Debug, Input, etc.
 	/// Implementations are auto-discovered and registered at startup.
 	/// </summary>
-	public interface IEngineService {}
+	public interface ILunyEngineService {}
 
-	public interface IEngineServiceRegistry {}
+	public interface ILunyServiceRegistry {}
 
 	/// <summary>
 	/// Generic service registry that discovers and holds engine services.
 	/// </summary>
 	/// <typeparam name="T">Service interface type that must implement IEngineProvider</typeparam>
-	internal sealed class EngineServiceRegistry<T> : IEngineServiceRegistry where T : class, IEngineService
+	internal sealed class LunyServiceRegistry<T> : ILunyServiceRegistry where T : class, ILunyEngineService
 	{
 		private readonly Dictionary<Type, T> _registeredServices = new();
 
@@ -43,8 +43,8 @@ namespace Luny.Engine.Registries
 			return serviceInterfaces[0];
 		}
 
-		internal EngineServiceRegistry() => DiscoverAndInstantiateServices();
-		~EngineServiceRegistry() => LunyLogger.LogInfo($"finalized {GetHashCode()}", this);
+		internal LunyServiceRegistry() => DiscoverAndInstantiateServices();
+		~LunyServiceRegistry() => LunyLogger.LogInfo($"finalized {GetHashCode()}", this);
 
 		private void DiscoverAndInstantiateServices()
 		{
@@ -68,12 +68,12 @@ namespace Luny.Engine.Registries
 			LunyLogger.LogInfo($"Registered {_registeredServices.Count} {typeof(T).Name} instances in {ms} ms.", this);
 		}
 
-		internal TService Get<TService>() where TService : class, T, IEngineService =>
+		internal TService Get<TService>() where TService : class, T, ILunyEngineService =>
 			_registeredServices.TryGetValue(typeof(TService), out var service)
 				? (TService)service
 				: throw new LunyServiceException($"Required service {typeof(TService).FullName} not registered.");
 
-		internal Boolean TryGet<TService>(out TService service) where TService : class, T, IEngineService
+		internal Boolean TryGet<TService>(out TService service) where TService : class, T, ILunyEngineService
 		{
 			if (_registeredServices.TryGetValue(typeof(TService), out var registeredService))
 			{
@@ -85,6 +85,6 @@ namespace Luny.Engine.Registries
 			return false;
 		}
 
-		internal Boolean Has<TService>() where TService : class, T, IEngineService => _registeredServices.ContainsKey(typeof(TService));
+		internal Boolean Has<TService>() where TService : class, T, ILunyEngineService => _registeredServices.ContainsKey(typeof(TService));
 	}
 }

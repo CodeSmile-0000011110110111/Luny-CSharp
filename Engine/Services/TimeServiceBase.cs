@@ -8,7 +8,7 @@ namespace Luny.Engine.Services
 	/// Implementations should use engine-native time sources (Time.frameCount, Time.realtimeSinceStartup, etc.)
 	/// CAUTION: Implementations must inherit from both ITimeService interface and TimeServiceBase class!
 	/// </summary>
-	public interface ITimeService : IEngineService
+	public interface ITimeService : ILunyEngineService
 	{
 		/// <summary>
 		/// Gets the total number of frames that have been rendered since the application started.

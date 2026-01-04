@@ -6,7 +6,7 @@ namespace Luny.Engine.Services
 	/// Engine-agnostic editor service.
 	/// CAUTION: Implementations must inherit from both IEditorService interface and EditorServiceBase class!
 	/// </summary>
-	public interface IEditorService : IEngineService
+	public interface IEditorService : ILunyEngineService
 	{
 		/// <summary>
 		/// Pauses the in-editor player / play mode.

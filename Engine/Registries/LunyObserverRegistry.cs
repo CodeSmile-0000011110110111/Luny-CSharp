@@ -9,7 +9,7 @@ namespace Luny.Engine.Registries
 	/// <summary>
 	/// Lifecycle observer interface - receives callbacks from LunyEngine.
 	/// </summary>
-	public interface IEngineObserver
+	public interface ILunyEngineObserver
 	{
 		public Boolean Enabled => true;
 
@@ -20,27 +20,27 @@ namespace Luny.Engine.Registries
 		void OnShutdown();
 	}
 
-	public interface IEngineObserverRegistry {}
+	public interface ILunyObserverRegistry {}
 
 	/// <summary>
 	/// Registry that discovers, manages, and enables/disables lifecycle observers.
 	/// </summary>
-	internal sealed class EngineObserverRegistry : IEngineObserverRegistry
+	internal sealed class LunyObserverRegistry : ILunyObserverRegistry
 	{
-		private readonly Dictionary<Type, IEngineObserver> _registeredObservers = new();
-		private readonly List<IEngineObserver> _enabledObservers = new();
+		private readonly Dictionary<Type, ILunyEngineObserver> _registeredObservers = new();
+		private readonly List<ILunyEngineObserver> _enabledObservers = new();
 
-		public IEnumerable<IEngineObserver> EnabledObservers => _enabledObservers;
+		public IEnumerable<ILunyEngineObserver> EnabledObservers => _enabledObservers;
 
-		public EngineObserverRegistry(Boolean isSmokeTestScene) => DiscoverAndInstantiateObservers(isSmokeTestScene);
+		public LunyObserverRegistry(Boolean isSmokeTestScene) => DiscoverAndInstantiateObservers(isSmokeTestScene);
 
-		~EngineObserverRegistry() => LunyLogger.LogInfo($"finalized {GetHashCode()}", this);
+		~LunyObserverRegistry() => LunyLogger.LogInfo($"finalized {GetHashCode()}", this);
 
 		private void DiscoverAndInstantiateObservers(Boolean isSmokeTestScene)
 		{
 			var sw = Stopwatch.StartNew();
 
-			var observerTypes = TypeDiscovery.FindAll<IEngineObserver>();
+			var observerTypes = TypeDiscovery.FindAll<ILunyEngineObserver>();
 
 			// TODO: sort observers deterministically
 			// TODO: configure observer enabled states
@@ -52,7 +52,7 @@ namespace Luny.Engine.Registries
 					continue;
 
 				LunyLogger.LogInfo($"{type.FullName} registered", this);
-				var observer = (IEngineObserver)Activator.CreateInstance(type);
+				var observer = (ILunyEngineObserver)Activator.CreateInstance(type);
 				_registeredObservers[type] = observer;
 
 				if (observer.Enabled)
@@ -63,13 +63,13 @@ namespace Luny.Engine.Registries
 
 			var ms = (Int32)Math.Round(sw.Elapsed.TotalMilliseconds, MidpointRounding.AwayFromZero);
 			LunyLogger.LogInfo($"Registered {_registeredObservers.Count} (enabled: {_enabledObservers.Count}) " +
-			                   $"{nameof(IEngineObserver)}s in {ms} ms.", this);
+			                   $"{nameof(ILunyEngineObserver)}s in {ms} ms.", this);
 		}
 
-		public Boolean IsObserverEnabled<T>() where T : IEngineObserver =>
+		public Boolean IsObserverEnabled<T>() where T : ILunyEngineObserver =>
 			TryGetObserver<T>(out var observer) && _enabledObservers.Contains(observer);
 
-		public void EnableObserver<T>() where T : IEngineObserver
+		public void EnableObserver<T>() where T : ILunyEngineObserver
 		{
 			if (TryGetObserver<T>(out var observer))
 			{
@@ -78,15 +78,15 @@ namespace Luny.Engine.Registries
 			}
 		}
 
-		public void DisableObserver<T>() where T : IEngineObserver
+		public void DisableObserver<T>() where T : ILunyEngineObserver
 		{
 			if (TryGetObserver<T>(out var observer))
 				_enabledObservers.Remove(observer);
 		}
 
-		public T GetObserver<T>() where T : IEngineObserver => TryGetObserver(out T observer) ? observer : default;
+		public T GetObserver<T>() where T : ILunyEngineObserver => TryGetObserver(out T observer) ? observer : default;
 
-		private Boolean TryGetObserver<T>(out T observer) where T : IEngineObserver =>
+		private Boolean TryGetObserver<T>(out T observer) where T : ILunyEngineObserver =>
 			(observer = _registeredObservers.TryGetValue(typeof(T), out var o) ? (T)o : default) is not null;
 	}
 }

@@ -5,7 +5,7 @@ namespace Luny.Engine.Events
 	/// <summary>
 	/// LunyScript lifecycle events.
 	/// </summary>
-	[Flags] public enum EngineLifecycleEvents
+	[Flags] public enum LunyEngineLifecycleEvents
 	{
 		/// <summary>
 		/// Runs once when application (runtime player) launches. Does not re-run when loading scenes.

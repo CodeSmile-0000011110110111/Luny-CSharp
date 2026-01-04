@@ -13,11 +13,11 @@ namespace Luny.Engine.Diagnostics
 	/// Tracks execution time for each lifecycle observer with configurable rolling average.
 	/// Public methods use [Conditional] attributes - completely stripped in release builds unless LUNY_PROFILE defined.
 	/// </summary>
-	public interface IEngineProfiler
+	public interface ILunyEngineProfiler
 	{
 		Int32 RollingAverageWindow { get; set; }
 
-		IProfilerSnapshot TakeSnapshot();
+		ILunyProfilerSnapshot TakeSnapshot();
 	}
 
 	/// <summary>
@@ -25,10 +25,10 @@ namespace Luny.Engine.Diagnostics
 	/// Tracks execution time for each lifecycle observer with configurable rolling average.
 	/// Public methods use [Conditional] attributes - completely stripped in release builds unless LUNY_PROFILE defined.
 	/// </summary>
-	internal sealed class EngineProfiler : IEngineProfiler
+	internal sealed class LunyEngineProfiler : ILunyEngineProfiler
 	{
-		private readonly Dictionary<Type, Dictionary<EngineLifecycleEvents, ObserverMetrics>> _metrics = new();
-		private readonly Dictionary<IEngineObserver, Stopwatch> _activeObservers = new();
+		private readonly Dictionary<Type, Dictionary<LunyEngineLifecycleEvents, LunyObserverMetrics>> _metrics = new();
+		private readonly Dictionary<ILunyEngineObserver, Stopwatch> _activeObservers = new();
 		private Int32 _rollingAverageWindow = 30;
 		private ITimeService _timeService;
 
@@ -38,40 +38,40 @@ namespace Luny.Engine.Diagnostics
 			set => _rollingAverageWindow = Math.Max(1, value); // Clamp to minimum 1
 		}
 
-		public EngineProfiler(ITimeService timeService) => _timeService = timeService;
+		public LunyEngineProfiler(ITimeService timeService) => _timeService = timeService;
 
-		public IProfilerSnapshot TakeSnapshot()
+		public ILunyProfilerSnapshot TakeSnapshot()
 		{
 #if DEBUG || LUNY_DEBUG || LUNY_PROFILE
-			var categorized = new Dictionary<EngineLifecycleEvents, IReadOnlyList<ObserverMetrics>>();
+			var categorized = new Dictionary<LunyEngineLifecycleEvents, IReadOnlyList<LunyObserverMetrics>>();
 			var allMetrics = _metrics.Values.SelectMany(d => d.Values).ToList();
 
-			foreach (var category in (EngineLifecycleEvents[])Enum.GetValues(typeof(EngineLifecycleEvents)))
+			foreach (var category in (LunyEngineLifecycleEvents[])Enum.GetValues(typeof(LunyEngineLifecycleEvents)))
 			{
 				categorized[category] = allMetrics
 					.Where(m => m.Category == category)
 					.ToList();
 			}
 
-			return new ProfilerSnapshot
+			return new LunyProfilerSnapshot
 			{
 				CategorizedMetrics = categorized,
 				Timestamp = DateTime.UtcNow,
 				FrameCount = _timeService.EngineFrameCount,
 			};
 #else
-			return new ProfilerSnapshot
+			return new LunyProfilerSnapshot
 			{
-				CategorizedMetrics = new Dictionary<ProfilerCategory, IReadOnlyList<ObserverMetrics>>(),
+				CategorizedMetrics = new Dictionary<ProfilerCategory, IReadOnlyList<LunyObserverMetrics>>(),
 				Timestamp = DateTime.UtcNow
 			};
 #endif
 		}
 
-		~EngineProfiler() => LunyLogger.LogInfo($"finalized {GetHashCode()}", this);
+		~LunyEngineProfiler() => LunyLogger.LogInfo($"finalized {GetHashCode()}", this);
 
 		[Conditional("DEBUG")] [Conditional("LUNY_DEBUG")] [Conditional("LUNY_PROFILE")]
-		internal void BeginObserver(IEngineObserver observer)
+		internal void BeginObserver(ILunyEngineObserver observer)
 		{
 #if DEBUG || LUNY_DEBUG || LUNY_PROFILE
 			if (!_activeObservers.TryGetValue(observer, out var sw))
@@ -84,7 +84,7 @@ namespace Luny.Engine.Diagnostics
 		}
 
 		[Conditional("DEBUG")] [Conditional("LUNY_DEBUG")] [Conditional("LUNY_PROFILE")]
-		internal void EndObserver(IEngineObserver observer, EngineLifecycleEvents category)
+		internal void EndObserver(ILunyEngineObserver observer, LunyEngineLifecycleEvents category)
 		{
 #if DEBUG || LUNY_DEBUG || LUNY_PROFILE
 			if (!_activeObservers.TryGetValue(observer, out var sw))
@@ -96,13 +96,13 @@ namespace Luny.Engine.Diagnostics
 			var type = observer.GetType();
 			if (!_metrics.TryGetValue(type, out var categoryDict))
 			{
-				categoryDict = new Dictionary<EngineLifecycleEvents, ObserverMetrics>();
+				categoryDict = new Dictionary<LunyEngineLifecycleEvents, LunyObserverMetrics>();
 				_metrics[type] = categoryDict;
 			}
 
 			if (!categoryDict.TryGetValue(category, out var metrics))
 			{
-				metrics = new ObserverMetrics { ObserverName = type.Name, Category = category };
+				metrics = new LunyObserverMetrics { ObserverName = type.Name, Category = category };
 				categoryDict[category] = metrics;
 			}
 
@@ -110,7 +110,7 @@ namespace Luny.Engine.Diagnostics
 #endif
 		}
 
-		private void UpdateMetrics(ObserverMetrics metrics, Double newSample)
+		private void UpdateMetrics(LunyObserverMetrics metrics, Double newSample)
 		{
 			metrics.CallCount++;
 			metrics.TotalMs += newSample;
@@ -135,7 +135,7 @@ namespace Luny.Engine.Diagnostics
 		}
 
 		[Conditional("DEBUG")] [Conditional("LUNY_DEBUG")] [Conditional("LUNY_PROFILE")]
-		internal void RecordError(IEngineObserver observer, EngineLifecycleEvents category, Exception ex)
+		internal void RecordError(ILunyEngineObserver observer, LunyEngineLifecycleEvents category, Exception ex)
 		{
 #if DEBUG || LUNY_DEBUG || LUNY_PROFILE
 			var type = observer.GetType();
@@ -158,10 +158,10 @@ namespace Luny.Engine.Diagnostics
 	/// Performance metrics for a single lifecycle observer.
 	/// Tracks execution time statistics and error counts.
 	/// </summary>
-	public sealed class ObserverMetrics
+	public sealed class LunyObserverMetrics
 	{
 		public String ObserverName;
-		public EngineLifecycleEvents Category;
+		public LunyEngineLifecycleEvents Category;
 		public Int32 CallCount;
 		public Double TotalMs;
 		public Double AverageMs;
@@ -177,9 +177,9 @@ namespace Luny.Engine.Diagnostics
 	/// Immutable snapshot of profiler state at a specific point in time.
 	/// Useful for querying performance metrics without blocking the profiler.
 	/// </summary>
-	public interface IProfilerSnapshot
+	public interface ILunyProfilerSnapshot
 	{
-		IReadOnlyDictionary<EngineLifecycleEvents, IReadOnlyList<ObserverMetrics>> CategorizedMetrics { get; }
+		IReadOnlyDictionary<LunyEngineLifecycleEvents, IReadOnlyList<LunyObserverMetrics>> CategorizedMetrics { get; }
 		DateTime Timestamp { get; }
 		Int64 FrameCount { get; }
 	}
@@ -188,13 +188,13 @@ namespace Luny.Engine.Diagnostics
 	/// Immutable snapshot of profiler state at a specific point in time.
 	/// Useful for querying performance metrics without blocking the profiler.
 	/// </summary>
-	internal sealed class ProfilerSnapshot : IProfilerSnapshot
+	internal sealed class LunyProfilerSnapshot : ILunyProfilerSnapshot
 	{
-		public IReadOnlyDictionary<EngineLifecycleEvents, IReadOnlyList<ObserverMetrics>> CategorizedMetrics { get; internal set; }
+		public IReadOnlyDictionary<LunyEngineLifecycleEvents, IReadOnlyList<LunyObserverMetrics>> CategorizedMetrics { get; internal set; }
 		public DateTime Timestamp { get; internal set; }
 		public Int64 FrameCount { get; internal set; }
 
 		public override String ToString() =>
-			$"ProfilerSnapshot @ {Timestamp:HH:mm:ss.fff}: {CategorizedMetrics[EngineLifecycleEvents.OnStartup]?.Count} observers";
+			$"LunyProfilerSnapshot @ {Timestamp:HH:mm:ss.fff}: {CategorizedMetrics[LunyEngineLifecycleEvents.OnStartup]?.Count} observers";
 	}
 }

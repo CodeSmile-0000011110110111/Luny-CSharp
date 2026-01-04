@@ -3,7 +3,7 @@ namespace Luny.Engine.Events
 	/// <summary>
 	/// LunyObject lifecycle events.
 	/// </summary>
-	public enum ObjectLifecycleEvents
+	public enum LunyObjectLifecycleEvents
 	{
 		/// <summary>
 		/// Runs immediately after object was instantiated.

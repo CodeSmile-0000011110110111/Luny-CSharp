@@ -7,7 +7,7 @@ namespace Luny.Engine.Services
 	/// Engine-agnostic debug and logging service.
 	/// CAUTION: Implementations must inherit from both IDebugService interface and DebugServiceBase class!
 	/// </summary>
-	public interface IDebugService : IEngineService
+	public interface IDebugService : ILunyEngineService
 	{
 		void LogInfo(String message);
 		void LogWarning(String message);

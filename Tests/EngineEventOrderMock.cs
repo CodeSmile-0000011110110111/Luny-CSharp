@@ -1,5 +1,4 @@
 using Luny.Attributes;
-using Luny.Engine;
 using Luny.Engine.Registries;
 using System;
 
@@ -10,7 +9,7 @@ namespace Luny.Tests
 	/// Only instantiated in smoke test scenes.
 	/// </summary>
 	[LunyTestable]
-	internal sealed class EngineEventOrderMock : IEngineObserver
+	internal sealed class EngineEventOrderMock : ILunyEngineObserver
 	{
 		private Boolean _didRunStartup;
 		private Int32 _fixedStepRunCount;

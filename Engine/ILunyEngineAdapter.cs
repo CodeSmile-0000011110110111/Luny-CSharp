@@ -6,26 +6,26 @@ namespace Luny.Engine
 	/// <summary>
 	/// Marker interface for the native engine adapter.
 	/// </summary>
-	public interface IEngineAdapter
+	public interface ILunyEngineAdapter
 	{
-		static IEngineAdapter ValidateAdapterSingletonInstance(IEngineAdapter existingInstance, Object current)
+		static ILunyEngineAdapter ValidateAdapterSingletonInstance(ILunyEngineAdapter existingInstance, Object current)
 		{
 			if (existingInstance != null)
 			{
-				throw new LunyLifecycleException($"Duplicate {nameof(IEngineAdapter)} singleton detected! " +
+				throw new LunyLifecycleException($"Duplicate {nameof(ILunyEngineAdapter)} singleton detected! " +
 				                                 $"Existing: {existingInstance}, Duplicate: {current}");
 			}
 
-			if (current is not IEngineAdapter adapter)
-				throw new LunyLifecycleException($"New {nameof(IEngineAdapter)} instance is null or incorrect type: {current}");
+			if (current is not ILunyEngineAdapter adapter)
+				throw new LunyLifecycleException($"New {nameof(ILunyEngineAdapter)} instance is null or incorrect type: {current}");
 
 			return adapter;
 		}
 
-		static void AssertNotNull(IEngineAdapter adapter)
+		static void AssertNotNull(ILunyEngineAdapter adapter)
 		{
 			if (adapter == null)
-				throw new LunyLifecycleException($"{nameof(IEngineAdapter)} is null");
+				throw new LunyLifecycleException($"{nameof(ILunyEngineAdapter)} is null");
 		}
 
 		static void AssertLunyEngineNotNull(ILunyEngine lunyEngine)
@@ -34,7 +34,7 @@ namespace Luny.Engine
 				throw new LunyLifecycleException($"{nameof(ILunyEngine)} is null");
 		}
 
-		static void AssertNotPrematurelyRemoved(IEngineAdapter adapter, ILunyEngine lunyEngine)
+		static void AssertNotPrematurelyRemoved(ILunyEngineAdapter adapter, ILunyEngine lunyEngine)
 		{
 			if (adapter != null)
 			{
@@ -45,13 +45,13 @@ namespace Luny.Engine
 			}
 		}
 
-		static void ShutdownLunyEngine(IEngineAdapter adapter, ILunyEngine lunyEngine)
+		static void ShutdownLunyEngine(ILunyEngineAdapter adapter, ILunyEngine lunyEngine)
 		{
 			LunyLogger.LogInfo("Shutting down...", adapter);
 			lunyEngine?.OnShutdown();
 		}
 
-		static void ShutdownComplete(IEngineAdapter adapter)
+		static void ShutdownComplete(ILunyEngineAdapter adapter)
 		{
 			LunyLogger.LogInfo("Shutdown complete.", adapter);
 			LunyLogger.Logger = null;

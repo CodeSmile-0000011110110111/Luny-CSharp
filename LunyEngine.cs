@@ -25,7 +25,7 @@ namespace Luny
 		ITimeService Time { get; }
 
 		// Diagnostics
-		IEngineProfiler Profiler { get; }
+		ILunyEngineProfiler Profiler { get; }
 
 		// Lifecycle dispatch methods - receives callbacks from engine adapters
 		void OnStartup();
@@ -35,14 +35,14 @@ namespace Luny
 		void OnShutdown();
 
 		// Observer management
-		void EnableObserver<T>() where T : IEngineObserver;
-		void DisableObserver<T>() where T : IEngineObserver;
-		Boolean IsObserverEnabled<T>() where T : IEngineObserver;
+		void EnableObserver<T>() where T : ILunyEngineObserver;
+		void DisableObserver<T>() where T : ILunyEngineObserver;
+		Boolean IsObserverEnabled<T>() where T : ILunyEngineObserver;
 
 		// Service access
-		TService GetService<TService>() where TService : class, IEngineService;
-		Boolean TryGetService<TService>(out TService service) where TService : class, IEngineService;
-		Boolean HasService<TService>() where TService : class, IEngineService;
+		TService GetService<TService>() where TService : class, ILunyEngineService;
+		Boolean TryGetService<TService>(out TService service) where TService : class, ILunyEngineService;
+		Boolean HasService<TService>() where TService : class, ILunyEngineService;
 	}
 
 	/// <summary>
@@ -53,11 +53,11 @@ namespace Luny
 		private static LunyEngine s_Instance;
 		private static Boolean s_IsDisposed;
 
-		private EngineServiceRegistry<IEngineService> _serviceRegistry;
-		private EngineObserverRegistry _observerRegistry;
+		private LunyServiceRegistry<ILunyEngineService> _serviceRegistry;
+		private LunyObserverRegistry _observerRegistry;
 		private LunyObjectRegistry _objectRegistry;
 		private LunyObjectLifecycleManager _lifecycleManager;
-		private EngineProfiler _profiler;
+		private LunyEngineProfiler _profiler;
 		private ITimeServiceInternal _timeInternal;
 
 		public ILunyObjectRegistry Objects => _objectRegistry;
@@ -67,7 +67,7 @@ namespace Luny
 		/// Gets the engine profiler for performance monitoring.
 		/// Profiling methods are no-ops in release builds unless LUNY_PROFILE is defined.
 		/// </summary>
-		public IEngineProfiler Profiler => _profiler;
+		public ILunyEngineProfiler Profiler => _profiler;
 
 		/// <summary>
 		/// Gets the singleton instance, creating it on first access.
@@ -75,7 +75,7 @@ namespace Luny
 		public static ILunyEngine Instance => s_Instance;
 
 		// We only pass the engine adapter instance to signal that this must only be called by the engine adapter
-		internal static ILunyEngine CreateInstance(IEngineAdapter engineAdapter)
+		internal static ILunyEngine CreateInstance(ILunyEngineAdapter engineAdapter)
 		{
 			if (s_IsDisposed)
 				throw new LunyLifecycleException($"{nameof(LunyEngine)} instance already disposed. It must not be created again.");
@@ -111,7 +111,7 @@ namespace Luny
 
 			LunyObjectID.Reset();
 
-			_serviceRegistry = new EngineServiceRegistry<IEngineService>();
+			_serviceRegistry = new LunyServiceRegistry<ILunyEngineService>();
 			AcquireMandatoryServices();
 
 			_objectRegistry = new LunyObjectRegistry();
@@ -121,8 +121,8 @@ namespace Luny
 			_timeInternal.SetLunyFrameCount(1); // ensure we always start in frame "1"
 
 			var isSmokeTestingScene = IsSmokeTestScene(Scene);
-			_observerRegistry = new EngineObserverRegistry(isSmokeTestingScene);
-			_profiler = new EngineProfiler(Time);
+			_observerRegistry = new LunyObserverRegistry(isSmokeTestingScene);
+			_profiler = new LunyEngineProfiler(Time);
 
 			LunyLogger.LogInfo("Initialization complete.", this);
 		}
@@ -143,13 +143,13 @@ namespace Luny
 				}
 				catch (Exception e)
 				{
-					_profiler.RecordError(observer, EngineLifecycleEvents.OnStartup, e);
+					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnStartup, e);
 					/* keep dispatch resilient */
 					LunyLogger.LogException(e);
 				}
 				finally
 				{
-					_profiler.EndObserver(observer, EngineLifecycleEvents.OnStartup);
+					_profiler.EndObserver(observer, LunyEngineLifecycleEvents.OnStartup);
 				}
 			}
 
@@ -172,13 +172,13 @@ namespace Luny
 				}
 				catch (Exception e)
 				{
-					_profiler.RecordError(observer, EngineLifecycleEvents.OnFixedStep, e);
+					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnFixedStep, e);
 					/* keep dispatch resilient */
 					LunyLogger.LogException(e);
 				}
 				finally
 				{
-					_profiler.EndObserver(observer, EngineLifecycleEvents.OnFixedStep);
+					_profiler.EndObserver(observer, LunyEngineLifecycleEvents.OnFixedStep);
 				}
 			}
 		}
@@ -202,13 +202,13 @@ namespace Luny
 				}
 				catch (Exception e)
 				{
-					_profiler.RecordError(observer, EngineLifecycleEvents.OnUpdate, e);
+					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnUpdate, e);
 					/* keep dispatch resilient */
 					LunyLogger.LogException(e);
 				}
 				finally
 				{
-					_profiler.EndObserver(observer, EngineLifecycleEvents.OnUpdate);
+					_profiler.EndObserver(observer, LunyEngineLifecycleEvents.OnUpdate);
 				}
 			}
 		}
@@ -229,13 +229,13 @@ namespace Luny
 				}
 				catch (Exception e)
 				{
-					_profiler.RecordError(observer, EngineLifecycleEvents.OnLateUpdate, e);
+					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnLateUpdate, e);
 					/* keep dispatch resilient */
 					LunyLogger.LogException(e);
 				}
 				finally
 				{
-					_profiler.EndObserver(observer, EngineLifecycleEvents.OnLateUpdate);
+					_profiler.EndObserver(observer, LunyEngineLifecycleEvents.OnLateUpdate);
 				}
 			}
 
@@ -262,13 +262,13 @@ namespace Luny
 				}
 				catch (Exception e)
 				{
-					_profiler.RecordError(observer, EngineLifecycleEvents.OnShutdown, e);
+					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnShutdown, e);
 					/* keep dispatch resilient */
 					LunyLogger.LogException(e);
 				}
 				finally
 				{
-					_profiler.EndObserver(observer, EngineLifecycleEvents.OnShutdown);
+					_profiler.EndObserver(observer, LunyEngineLifecycleEvents.OnShutdown);
 				}
 			}
 
@@ -279,14 +279,14 @@ namespace Luny
 			Dispose();
 		}
 
-		public void EnableObserver<T>() where T : IEngineObserver => _observerRegistry.EnableObserver<T>();
-		public void DisableObserver<T>() where T : IEngineObserver => _observerRegistry.DisableObserver<T>();
-		public Boolean IsObserverEnabled<T>() where T : IEngineObserver => _observerRegistry.IsObserverEnabled<T>();
+		public void EnableObserver<T>() where T : ILunyEngineObserver => _observerRegistry.EnableObserver<T>();
+		public void DisableObserver<T>() where T : ILunyEngineObserver => _observerRegistry.DisableObserver<T>();
+		public Boolean IsObserverEnabled<T>() where T : ILunyEngineObserver => _observerRegistry.IsObserverEnabled<T>();
 
-		public Boolean HasService<TService>() where TService : class, IEngineService => _serviceRegistry.Has<TService>();
-		public TService GetService<TService>() where TService : class, IEngineService => _serviceRegistry.Get<TService>();
+		public Boolean HasService<TService>() where TService : class, ILunyEngineService => _serviceRegistry.Has<TService>();
+		public TService GetService<TService>() where TService : class, ILunyEngineService => _serviceRegistry.Get<TService>();
 
-		public Boolean TryGetService<TService>(out TService service) where TService : class, IEngineService =>
+		public Boolean TryGetService<TService>(out TService service) where TService : class, ILunyEngineService =>
 			_serviceRegistry.TryGet(out service);
 
 		private void Dispose()
@@ -311,6 +311,6 @@ namespace Luny
 		~LunyEngine() => LunyLogger.LogInfo($"finalized {GetHashCode()}", this);
 
 		// TODO: HasObserver?
-		public T GetObserver<T>() where T : IEngineObserver => _observerRegistry.GetObserver<T>();
+		public T GetObserver<T>() where T : ILunyEngineObserver => _observerRegistry.GetObserver<T>();
 	}
 }
