@@ -1,4 +1,8 @@
 using Luny.Engine;
+using Luny.Engine.Diagnostics;
+using Luny.Engine.Events;
+using Luny.Engine.Identity;
+using Luny.Engine.Registries;
 using Luny.Engine.Services;
 using Luny.Exceptions;
 using System;
@@ -105,7 +109,7 @@ namespace Luny
 		{
 			LunyLogger.LogInfo("Initializing...", this);
 
-			LunyID.Reset();
+			LunyObjectID.Reset();
 
 			_serviceRegistry = new EngineServiceRegistry<IEngineService>();
 			AcquireMandatoryServices();

@@ -1,9 +1,11 @@
 using Luny.Engine.Bridge;
+using Luny.Engine.Identity;
+using Luny.Engine.Registries;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Luny.Engine
+namespace Luny.Engine.Events
 {
 	internal interface ILunyObjectLifecycleManagerInternal
 	{
@@ -22,7 +24,7 @@ namespace Luny.Engine
 		private ILunyObjectRegistry _objects;
 		private Queue<ILunyObject> _pendingReady = new();
 		private Queue<ILunyObject> _pendingDestroy = new();
-		private Dictionary<LunyID, ILunyObject> _pendingReadyWaitingForEnable = new();
+		private Dictionary<LunyObjectID, ILunyObject> _pendingReadyWaitingForEnable = new();
 
 		public LunyObjectLifecycleManager(ILunyObjectRegistry objectRegistry) =>
 			_objects = objectRegistry ?? throw new ArgumentNullException(nameof(objectRegistry));
@@ -35,7 +37,7 @@ namespace Luny.Engine
 			if (lunyObject.IsEnabled)
 				_pendingReady.Enqueue(lunyObject);
 			else
-				_pendingReadyWaitingForEnable[lunyObject.LunyID] = lunyObject;
+				_pendingReadyWaitingForEnable[lunyObject.LunyObjectID] = lunyObject;
 		}
 
 		/// <summary>
@@ -53,7 +55,7 @@ namespace Luny.Engine
 		/// </summary>
 		public void OnObjectEnabled(ILunyObject lunyObject)
 		{
-			if (_pendingReadyWaitingForEnable.Remove(lunyObject.LunyID, out var obj))
+			if (_pendingReadyWaitingForEnable.Remove(lunyObject.LunyObjectID, out var obj))
 				_pendingReady.Enqueue(obj);
 		}
 

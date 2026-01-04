@@ -1,5 +1,6 @@
 using Luny.Attributes;
 using Luny.Engine;
+using Luny.Engine.Registries;
 using System;
 
 namespace Luny.Tests

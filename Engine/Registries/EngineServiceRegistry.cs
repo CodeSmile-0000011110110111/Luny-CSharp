@@ -1,10 +1,11 @@
+using Luny.Engine.Identity;
 using Luny.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Luny.Engine
+namespace Luny.Engine.Registries
 {
 	/// <summary>
 	/// Marker interface for engine-agnostic services: APIs such as Debug, Input, etc.

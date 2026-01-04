@@ -1,3 +1,5 @@
+using Luny.Engine.Events;
+using Luny.Engine.Identity;
 using Luny.Exceptions;
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -11,14 +13,14 @@ namespace Luny.Engine.Bridge
 	/// </summary>
 	public interface ILunyObject
 	{
-		LunyID LunyID { get; }
-		NativeID NativeID { get; }
+		LunyObjectID LunyObjectID { get; }
+		LunyNativeObjectID NativeObjectID { get; }
 		String Name { get; }
 		Boolean IsValid { get; }
 		Boolean IsEnabled { get; set; }
 		SystemObject NativeObject { get; }
 		void Destroy();
-		T As<T>() where T : class;
+		T Cast<T>() where T : class;
 	}
 
 	/// <summary>
@@ -64,12 +66,12 @@ namespace Luny.Engine.Bridge
 		/// <summary>
 		/// LunyScript-specific unique identifier. This ID is distinct from engine's native object ID!
 		/// </summary>
-		public LunyID LunyID { get; }
+		public LunyObjectID LunyObjectID { get; }
 
 		/// <summary>
 		/// Engine-specific unique identifier, subject to engine's behaviour (ie may change between runs, or not).
 		/// </summary>
-		public abstract NativeID NativeID { get; }
+		public abstract LunyNativeObjectID NativeObjectID { get; }
 
 		/// <summary>
 		/// The name of the object in the scene hierarchy.
@@ -108,7 +110,7 @@ namespace Luny.Engine.Bridge
 				throw new LunyLifecycleException($"{this}: missing native object!");
 
 			_nativeObject = nativeObject;
-			LunyID = LunyID.Generate();
+			LunyObjectID = LunyObjectID.Generate();
 
 			LunyEngine.Instance.Objects.Register(this);
 		}
@@ -123,7 +125,7 @@ namespace Luny.Engine.Bridge
 		/// </summary>
 		/// <typeparam name="T"></typeparam>
 		/// <returns></returns>
-		public T As<T>() where T : class => _nativeObject as T;
+		public T Cast<T>() where T : class => _nativeObject as T;
 
 		internal void InvokeOnDestroy()
 		{
@@ -168,6 +170,6 @@ namespace Luny.Engine.Bridge
 		/// <exception cref="InvalidOperationException">Throws if Destroy() was not called before.</exception>
 		public abstract void DestroyNativeObject();
 
-		public override String ToString() => $"{(IsEnabled ? "☑" : "☐")} {Name} ({LunyID}, {NativeID})";
+		public override String ToString() => $"{(IsEnabled ? "☑" : "☐")} {Name} ({LunyObjectID}, {NativeObjectID})";
 	}
 }

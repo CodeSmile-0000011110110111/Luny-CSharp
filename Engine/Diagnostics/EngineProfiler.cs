@@ -1,10 +1,12 @@
+using Luny.Engine.Events;
+using Luny.Engine.Registries;
 using Luny.Engine.Services;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Luny.Engine
+namespace Luny.Engine.Diagnostics
 {
 	/// <summary>
 	/// Concrete implementation of engine-level profiling.

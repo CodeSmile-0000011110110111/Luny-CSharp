@@ -1,6 +1,6 @@
 using System;
 
-namespace Luny
+namespace Luny.Engine.Events
 {
 	/// <summary>
 	/// LunyScript lifecycle events.

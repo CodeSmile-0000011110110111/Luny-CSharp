@@ -1,3 +1,5 @@
+using Luny.Engine.Registries;
+
 namespace Luny.Engine.Services
 {
 	/// <summary>

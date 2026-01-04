@@ -1,4 +1,4 @@
-namespace Luny
+namespace Luny.Engine.Events
 {
 	/// <summary>
 	/// LunyObject lifecycle events.

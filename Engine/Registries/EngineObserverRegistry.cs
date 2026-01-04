@@ -1,9 +1,10 @@
 using Luny.Attributes;
+using Luny.Engine.Identity;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace Luny.Engine
+namespace Luny.Engine.Registries
 {
 	/// <summary>
 	/// Lifecycle observer interface - receives callbacks from LunyEngine.

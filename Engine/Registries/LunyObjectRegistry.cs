@@ -1,8 +1,9 @@
 using Luny.Engine.Bridge;
+using Luny.Engine.Identity;
 using System;
 using System.Collections.Generic;
 
-namespace Luny.Engine
+namespace Luny.Engine.Registries
 {
 	public interface ILunyObjectRegistry
 	{
@@ -10,9 +11,9 @@ namespace Luny.Engine
 		IEnumerable<ILunyObject> AllObjects { get; }
 		void Register(ILunyObject lunyObject);
 		Boolean Unregister(ILunyObject lunyObject);
-		Boolean Unregister(LunyID lunyID);
-		ILunyObject GetByLunyID(LunyID lunyID);
-		ILunyObject GetByNativeID(NativeID nativeID);
+		Boolean Unregister(LunyObjectID lunyObjectID);
+		ILunyObject GetByLunyID(LunyObjectID lunyObjectID);
+		ILunyObject GetByNativeID(LunyNativeObjectID lunyNativeObjectID);
 	}
 
 	/// <summary>
@@ -21,8 +22,8 @@ namespace Luny.Engine
 	/// </summary>
 	internal sealed class LunyObjectRegistry : ILunyObjectRegistry
 	{
-		private Dictionary<LunyID, ILunyObject> _objectsByLunyID = new();
-		private Dictionary<NativeID, ILunyObject> _objectsByNativeID = new();
+		private Dictionary<LunyObjectID, ILunyObject> _objectsByLunyID = new();
+		private Dictionary<LunyNativeObjectID, ILunyObject> _objectsByNativeID = new();
 
 		/// <summary>
 		/// Gets the total number of registered objects.
@@ -42,8 +43,8 @@ namespace Luny.Engine
 			if (lunyObject == null)
 				throw new ArgumentNullException(nameof(lunyObject));
 
-			var lunyID = lunyObject.LunyID;
-			var nativeID = lunyObject.NativeID;
+			var lunyID = lunyObject.LunyObjectID;
+			var nativeID = lunyObject.NativeObjectID;
 
 #if DEBUG
 			if (_objectsByLunyID.ContainsKey(lunyID))
@@ -62,17 +63,17 @@ namespace Luny.Engine
 			if (lunyObject == null)
 				return false;
 
-			return Unregister(lunyObject.LunyID);
+			return Unregister(lunyObject.LunyObjectID);
 		}
 
 		/// <summary>
 		/// Unregisters an object by its LunyID.
 		/// </summary>
-		public Boolean Unregister(LunyID lunyID)
+		public Boolean Unregister(LunyObjectID lunyObjectID)
 		{
-			if (_objectsByLunyID.Remove(lunyID, out var lunyObject))
+			if (_objectsByLunyID.Remove(lunyObjectID, out var lunyObject))
 			{
-				_objectsByNativeID.Remove(lunyObject.NativeID);
+				_objectsByNativeID.Remove(lunyObject.NativeObjectID);
 				return true;
 			}
 			return false;
@@ -81,18 +82,18 @@ namespace Luny.Engine
 		/// <summary>
 		/// Finds an object by its LunyID.
 		/// </summary>
-		public ILunyObject GetByLunyID(LunyID lunyID)
+		public ILunyObject GetByLunyID(LunyObjectID lunyObjectID)
 		{
-			_objectsByLunyID.TryGetValue(lunyID, out var lunyObject);
+			_objectsByLunyID.TryGetValue(lunyObjectID, out var lunyObject);
 			return lunyObject;
 		}
 
 		/// <summary>
 		/// Finds an object by its NativeID.
 		/// </summary>
-		public ILunyObject GetByNativeID(NativeID nativeID)
+		public ILunyObject GetByNativeID(LunyNativeObjectID lunyNativeObjectID)
 		{
-			_objectsByNativeID.TryGetValue(nativeID, out var lunyObject);
+			_objectsByNativeID.TryGetValue(lunyNativeObjectID, out var lunyObject);
 			return lunyObject;
 		}
 
