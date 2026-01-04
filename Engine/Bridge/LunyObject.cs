@@ -134,16 +134,18 @@ namespace Luny.Engine.Bridge
 		// LifecycleManager calls InvokeOnReady
 		internal void InvokeOnReady() => OnReady?.Invoke();
 
-		internal void InvokeOnEnable()
+		internal void InvokeOnEnableOrOnDisable(Boolean isEnabled)
 		{
-			LifecycleManager.OnObjectEnabled(this);
-			OnEnable?.Invoke();
-		}
-
-		internal void InvokeOnDisable()
-		{
-			LifecycleManager.OnObjectDisabled(this);
-			OnDisable?.Invoke();
+			if (isEnabled)
+			{
+				LifecycleManager.OnObjectEnabled(this);
+				OnEnable?.Invoke();
+			}
+			else
+			{
+				LifecycleManager.OnObjectDisabled(this);
+				OnDisable?.Invoke();
+			}
 		}
 
 		/// <summary>
@@ -156,7 +158,7 @@ namespace Luny.Engine.Bridge
 			OnCreate?.Invoke();
 
 			if (IsEnabled)
-				InvokeOnEnable();
+				InvokeOnEnableOrOnDisable(true);
 		}
 
 		/// <summary>
