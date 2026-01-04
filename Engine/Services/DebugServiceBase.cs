@@ -14,11 +14,7 @@ namespace Luny.Engine.Services
 		void LogException(Exception exception);
 	}
 
-	internal interface IDebugServiceInternal
-	{
-	}
+	internal interface IDebugServiceInternal {}
 
-	public abstract class DebugServiceBase : IDebugServiceInternal
-	{
-	}
+	public abstract class DebugServiceBase : IDebugServiceInternal {}
 }

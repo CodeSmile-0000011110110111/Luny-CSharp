@@ -13,11 +13,7 @@ namespace Luny.Engine.Services
 		void PausePlayer();
 	}
 
-	internal interface IEditorServiceInternal
-	{
-	}
+	internal interface IEditorServiceInternal {}
 
-	public abstract class EditorServiceBase : IEditorServiceInternal
-	{
-	}
+	public abstract class EditorServiceBase : IEditorServiceInternal {}
 }

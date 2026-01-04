@@ -9,12 +9,6 @@ namespace Luny.Engine.Services
 	public interface IApplicationService : IEngineService
 	{
 		/// <summary>
-		/// Quits the application with optional exit code.
-		/// </summary>
-		/// <param name="exitCode">Exit code (default: 0)</param>
-		void Quit(Int32 exitCode = 0);
-
-		/// <summary>
 		/// True if running in the editor.
 		/// </summary>
 		Boolean IsEditor { get; }
@@ -23,13 +17,15 @@ namespace Luny.Engine.Services
 		/// True if the application is playing (not paused in editor).
 		/// </summary>
 		Boolean IsPlaying { get; }
+
+		/// <summary>
+		/// Quits the application with optional exit code.
+		/// </summary>
+		/// <param name="exitCode">Exit code (default: 0)</param>
+		void Quit(Int32 exitCode = 0);
 	}
 
-	internal interface IApplicationServiceInternal
-	{
-	}
+	internal interface IApplicationServiceInternal {}
 
-	public abstract class ApplicationServiceBase : IApplicationServiceInternal
-	{
-	}
+	public abstract class ApplicationServiceBase : IApplicationServiceInternal {}
 }

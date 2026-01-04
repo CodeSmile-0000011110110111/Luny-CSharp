@@ -27,11 +27,7 @@ namespace Luny.Engine.Services
 		ILunyObject FindObjectByName(String name);
 	}
 
-	internal interface ISceneServiceInternal
-	{
-	}
+	internal interface ISceneServiceInternal {}
 
-	public abstract class SceneServiceBase : ISceneServiceInternal
-	{
-	}
+	public abstract class SceneServiceBase : ISceneServiceInternal {}
 }
