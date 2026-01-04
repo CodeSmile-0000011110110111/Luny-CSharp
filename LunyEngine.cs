@@ -2,6 +2,7 @@ using Luny.Diagnostics;
 using Luny.Exceptions;
 using Luny.Registries;
 using Luny.Services;
+using Luny.Core;
 using System;
 
 namespace Luny
@@ -11,6 +12,10 @@ namespace Luny
 	/// </summary>
 	public interface ILunyEngine
 	{
+		// Registries & Managers
+		Luny.Registries.ILunyObjectRegistry Objects { get; }
+		Luny.Core.ILunyObjectLifecycleManager Lifecycle { get; }
+
 		// Mandatory services
 		IApplicationService Application { get; }
 		IDebugService Debug { get; }
@@ -49,8 +54,13 @@ namespace Luny
 
 		private EngineServiceRegistry<IEngineService> _serviceRegistry;
 		private EngineObserverRegistry _observerRegistry;
+		private ILunyObjectRegistry _objectRegistry;
+		private ILunyObjectLifecycleManager _lifecycleManager;
 		private EngineProfiler _profiler;
 		private ITimeServiceInternal _timeInternal;
+
+		public ILunyObjectRegistry Objects => _objectRegistry;
+		public ILunyObjectLifecycleManager Lifecycle => _lifecycleManager;
 
 		/// <summary>
 		/// Gets the engine profiler for performance monitoring.
@@ -103,6 +113,9 @@ namespace Luny
 			_serviceRegistry = new EngineServiceRegistry<IEngineService>();
 			AcquireMandatoryServices();
 
+			_objectRegistry = new LunyObjectRegistry();
+			_lifecycleManager = new LunyObjectLifecycleManager(_objectRegistry);
+
 			_timeInternal = (ITimeServiceInternal)Time;
 			_timeInternal.SetLunyFrameCount(1); // ensure we always start in frame "1"
 
@@ -147,6 +160,8 @@ namespace Luny
 		/// </summary>
 		public void OnFixedStep(Double fixedDeltaTime)
 		{
+			_lifecycleManager.ProcessPendingReady();
+
 			foreach (var observer in _observerRegistry.EnabledObservers)
 			{
 				_profiler.BeginObserver(observer);
@@ -173,6 +188,7 @@ namespace Luny
 		public void OnUpdate(Double deltaTime)
 		{
 			// TODO: send "OnPreUpdate"
+			_lifecycleManager.ProcessPendingReady();
 
 			foreach (var observer in _observerRegistry.EnabledObservers)
 			{
@@ -223,6 +239,7 @@ namespace Luny
 			}
 
 			// TODO: run structural changes here, ie "OnPostUpdate"
+			_lifecycleManager.ProcessPendingDestroy();
 
 			// next frame
 			_timeInternal.SetLunyFrameCount(Time.FrameCount + 1);
@@ -255,6 +272,7 @@ namespace Luny
 			}
 
 			LunyLogger.LogInfo($"{nameof(OnShutdown)} complete.", this);
+			_lifecycleManager.ProcessPendingDestroy();
 			Dispose();
 		}
 
@@ -275,6 +293,10 @@ namespace Luny
 
 			_serviceRegistry = null;
 			_observerRegistry = null;
+			_objectRegistry?.Dispose();
+			_objectRegistry = null;
+			_lifecycleManager?.Dispose();
+			_lifecycleManager = null;
 			_profiler = null;
 			_timeInternal = null;
 			s_Instance = null;
