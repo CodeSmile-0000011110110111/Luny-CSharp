@@ -34,7 +34,7 @@ namespace Luny.Engine.Events
 		/// </summary>
 		public void OnObjectCreated(ILunyObject lunyObject)
 		{
-			if (lunyObject.Enabled)
+			if (lunyObject.IsEnabled)
 				_pendingReady.Enqueue(lunyObject);
 			else
 				_pendingReadyWaitingForEnable[lunyObject.LunyObjectID] = lunyObject;
@@ -85,7 +85,7 @@ namespace Luny.Engine.Events
 			{
 				var obj = _pendingDestroy.Dequeue();
 				if (obj is LunyObject lunyObjectImpl)
-					lunyObjectImpl.DestroyNativeObject();
+					lunyObjectImpl.DestroyNativeObjectInternal();
 			}
 		}
 

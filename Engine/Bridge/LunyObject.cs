@@ -74,11 +74,19 @@ namespace Luny.Engine.Bridge
 		/// <remarks>
 		/// For engines using the "Paused" concept: enabled == "not paused" / disabled == "paused".
 		/// </remarks>
-		Boolean Enabled { get; set; }
+		Boolean IsEnabled { get; set; }
 		/// <summary>
 		/// Returns true only if BOTH the object itself AND all of its parents are enabled. Otherwise returns false.
 		/// </summary>
-		Boolean EnabledInHierarchy { get; }
+		Boolean IsEnabledInHierarchy { get; }
+
+		/// <summary>
+		/// Whether the object is visible (gets rendered).
+		/// CAUTION: This property does not imply that the object can be "seen"! IsVisible might be true while the object isn't visible
+		/// on the screen, for example because it's outside the camera's viewport, obstructed by other objects closer to the camera,
+		/// scaled infinitely small, completely transparent, or missing a resource (shader, texture, mesh) required to display it.
+		/// </summary>
+		Boolean IsVisible { get; set; }
 
 		/// <summary>
 		/// Gets the underlying engine-native object cast to T.
@@ -114,8 +122,9 @@ namespace Luny.Engine.Bridge
 
 		private readonly LunyObjectID _lunyObjectID;
 		private readonly LunyNativeObjectID _nativeObjectID;
-		private readonly SystemObject _nativeObject;
-		private Boolean _enabled;
+		private SystemObject _nativeObject;
+		private Boolean _isEnabled;
+		private Boolean _isVisible;
 		private Boolean _isDestroyed;
 #if DEBUG
 		private Boolean _isActivated;
@@ -139,43 +148,45 @@ namespace Luny.Engine.Bridge
 
 		public Boolean IsValid => !_isDestroyed && IsNativeObjectValid();
 
-		public Boolean Enabled
+		public Boolean IsEnabled
 		{
-			get => _enabled && IsValid;
+			get => _isEnabled && IsValid;
 			set
 			{
-				if (_enabled != value && IsValid)
+				if (_isEnabled != value && IsValid)
 				{
-					_enabled = value;
-					if (_enabled)
-					{
-						SetNativeObjectEnabled();
-						LifecycleManager.OnObjectEnabled(this);
-						OnEnable?.Invoke();
-					}
-					else
-					{
-						SetNativeObjectDisabled();
-						LifecycleManager.OnObjectDisabled(this);
-						OnDisable?.Invoke();
-					}
+					_isEnabled = value;
+					SetEnabledState(_isEnabled);
 				}
 			}
 		}
 
-		public Boolean EnabledInHierarchy => _enabled && IsValid && GetNativeObjectEnabledInHierarchy();
+		public Boolean IsEnabledInHierarchy => _isEnabled && IsValid && GetNativeObjectEnabledInHierarchy();
+		public Boolean IsVisible
+		{
+			get => _isVisible && IsValid;
+			set
+			{
+				if (_isVisible != value && IsValid)
+				{
+					_isVisible = value;
+					SetVisibleState(_isVisible);
+				}
+			}
+		}
 
 		private LunyObject() {} // Hidden ctor
 
 		/// <summary>
 		/// Instantiates a LunyObject instance.
 		/// </summary>
-		protected LunyObject(SystemObject nativeObject, Int64 nativeObjectID, Boolean isNativeObjectEnabled)
+		protected LunyObject(SystemObject nativeObject, Int64 nativeObjectID, Boolean isNativeObjectEnabled, Boolean isNativeObjectVisible)
 		{
 			if (nativeObject == null)
 				throw new LunyLifecycleException($"{this}: {nameof(LunyObject)} initialized with a <null> reference");
 
-			_enabled = isNativeObjectEnabled;
+			_isEnabled = isNativeObjectEnabled;
+			_isVisible = isNativeObjectVisible;
 			_nativeObject = nativeObject;
 			_nativeObjectID = nativeObjectID;
 			_lunyObjectID = LunyObjectID.Generate();
@@ -195,11 +206,9 @@ namespace Luny.Engine.Bridge
 			LifecycleManager.OnObjectCreated(this);
 			OnCreate?.Invoke();
 
-			if (Enabled)
-			{
-				LifecycleManager.OnObjectEnabled(this);
-				OnEnable?.Invoke();
-			}
+			SetVisibleState(_isVisible);
+			if (_isEnabled)
+				SetEnabledState(_isEnabled); // will trigger OnEnable
 		}
 
 		public T Cast<T>() where T : class => _nativeObject as T;
@@ -210,7 +219,7 @@ namespace Luny.Engine.Bridge
 			if (!IsValid)
 				return;
 
-			Enabled = false; // may trigger OnDisable
+			IsEnabled = false; // may trigger OnDisable
 			OnDestroy?.Invoke();
 			LifecycleManager.OnObjectDestroyed(this);
 
@@ -218,11 +227,44 @@ namespace Luny.Engine.Bridge
 			_isDestroyed = true;
 		}
 
+		private void SetVisibleState(Boolean visible)
+		{
+			if (visible)
+				SetNativeObjectVisible();
+			else
+				SetNativeObjectInvisible();
+		}
+
+		private void SetEnabledState(Boolean enabled)
+		{
+			if (enabled)
+			{
+				SetNativeObjectEnabled();
+				LifecycleManager.OnObjectEnabled(this);
+				OnEnable?.Invoke();
+			}
+			else
+			{
+				SetNativeObjectDisabled();
+				LifecycleManager.OnObjectDisabled(this);
+				OnDisable?.Invoke();
+			}
+		}
+
 		// LunyObjectLifecycleManager calls this
 		internal void InvokeOnReady() => OnReady?.Invoke();
 
-		// Should only be called internally by LunyObjectLifecycleManager
-		protected internal abstract void DestroyNativeObject();
+		// Should only be called internally by LunyObjectLifecycleManager from pending destroy queue processing
+		internal void DestroyNativeObjectInternal()
+		{
+			if (!_isDestroyed)
+				throw new LunyLifecycleException($"{this}: {nameof(DestroyNativeObjectInternal)}() called without {nameof(Destroy)}()!");
+
+			DestroyNativeObject();
+			_nativeObject = null;
+		}
+
+		protected abstract void DestroyNativeObject();
 		protected abstract Boolean IsNativeObjectValid();
 		protected abstract String GetNativeObjectName();
 		protected abstract void SetNativeObjectName(String name);
@@ -230,7 +272,9 @@ namespace Luny.Engine.Bridge
 		protected abstract Boolean GetNativeObjectEnabled();
 		protected abstract void SetNativeObjectEnabled();
 		protected abstract void SetNativeObjectDisabled();
+		protected abstract void SetNativeObjectVisible();
+		protected abstract void SetNativeObjectInvisible();
 
-		public override String ToString() => $"{(Enabled ? "☑" : "☐")} {Name} ({LunyObjectID}, {NativeObjectID})";
+		public override String ToString() => $"{(IsEnabled ? "☑" : "☐")} {Name} ({LunyObjectID}, {NativeObjectID})";
 	}
 }
