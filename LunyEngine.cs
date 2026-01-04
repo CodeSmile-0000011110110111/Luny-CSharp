@@ -1,8 +1,6 @@
-using Luny.Diagnostics;
+using Luny.Engine;
+using Luny.Engine.Services;
 using Luny.Exceptions;
-using Luny.Registries;
-using Luny.Services;
-using Luny.Core;
 using System;
 
 namespace Luny
@@ -13,8 +11,7 @@ namespace Luny
 	public interface ILunyEngine
 	{
 		// Registries & Managers
-		Luny.Registries.ILunyObjectRegistry Objects { get; }
-		Luny.Core.ILunyObjectLifecycleManager Lifecycle { get; }
+		ILunyObjectRegistry Objects { get; }
 
 		// Mandatory services
 		IApplicationService Application { get; }
@@ -54,13 +51,13 @@ namespace Luny
 
 		private EngineServiceRegistry<IEngineService> _serviceRegistry;
 		private EngineObserverRegistry _observerRegistry;
-		private ILunyObjectRegistry _objectRegistry;
-		private ILunyObjectLifecycleManager _lifecycleManager;
+		private LunyObjectRegistry _objectRegistry;
+		private LunyObjectLifecycleManager _lifecycleManager;
 		private EngineProfiler _profiler;
 		private ITimeServiceInternal _timeInternal;
 
 		public ILunyObjectRegistry Objects => _objectRegistry;
-		public ILunyObjectLifecycleManager Lifecycle => _lifecycleManager;
+		internal ILunyObjectLifecycleManagerInternal Lifecycle => _lifecycleManager;
 
 		/// <summary>
 		/// Gets the engine profiler for performance monitoring.
@@ -271,8 +268,10 @@ namespace Luny
 				}
 			}
 
+			_lifecycleManager.Shutdown(_objectRegistry);
+			_objectRegistry.Shutdown();
+
 			LunyLogger.LogInfo($"{nameof(OnShutdown)} complete.", this);
-			_lifecycleManager.ProcessPendingDestroy();
 			Dispose();
 		}
 
@@ -293,9 +292,7 @@ namespace Luny
 
 			_serviceRegistry = null;
 			_observerRegistry = null;
-			_objectRegistry?.Dispose();
 			_objectRegistry = null;
-			_lifecycleManager?.Dispose();
 			_lifecycleManager = null;
 			_profiler = null;
 			_timeInternal = null;

@@ -1,5 +1,5 @@
 using Luny.Attributes;
-using Luny.Diagnostics;
+using Luny.Engine;
 using System;
 
 namespace Luny.Tests

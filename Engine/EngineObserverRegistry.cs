@@ -1,26 +1,39 @@
 using Luny.Attributes;
-using Luny.Diagnostics;
-using Luny.Services;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace Luny.Registries
+namespace Luny.Engine
 {
+	/// <summary>
+	/// Lifecycle observer interface - receives callbacks from LunyEngine.
+	/// </summary>
+	public interface IEngineObserver
+	{
+		public Boolean Enabled => true;
+
+		void OnStartup();
+		void OnFixedStep(Double fixedDeltaTime);
+		void OnUpdate(Double deltaTime);
+		void OnLateUpdate(Double deltaTime);
+		void OnShutdown();
+	}
+
+	public interface IEngineObserverRegistry {}
+
 	/// <summary>
 	/// Registry that discovers, manages, and enables/disables lifecycle observers.
 	/// </summary>
-	internal sealed class EngineObserverRegistry
+	internal sealed class EngineObserverRegistry : IEngineObserverRegistry
 	{
 		private readonly Dictionary<Type, IEngineObserver> _registeredObservers = new();
 		private readonly List<IEngineObserver> _enabledObservers = new();
 
 		public IEnumerable<IEngineObserver> EnabledObservers => _enabledObservers;
 
-		public EngineObserverRegistry(Boolean isSmokeTestScene)
-		{
-			DiscoverAndInstantiateObservers(isSmokeTestScene);
-		}
+		public EngineObserverRegistry(Boolean isSmokeTestScene) => DiscoverAndInstantiateObservers(isSmokeTestScene);
+
+		~EngineObserverRegistry() => LunyLogger.LogInfo($"finalized {GetHashCode()}", this);
 
 		private void DiscoverAndInstantiateObservers(Boolean isSmokeTestScene)
 		{

@@ -1,6 +1,6 @@
 using System;
 
-namespace Luny.Services
+namespace Luny.Engine.Services
 {
 	/// <summary>
 	/// Engine-agnostic application control.

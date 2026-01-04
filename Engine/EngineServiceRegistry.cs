@@ -1,17 +1,24 @@
-using Luny.Diagnostics;
 using Luny.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Luny.Registries
+namespace Luny.Engine
 {
+	/// <summary>
+	/// Marker interface for engine-agnostic services: APIs such as Debug, Input, etc.
+	/// Implementations are auto-discovered and registered at startup.
+	/// </summary>
+	public interface IEngineService {}
+
+	public interface IEngineServiceRegistry {}
+
 	/// <summary>
 	/// Generic service registry that discovers and holds engine services.
 	/// </summary>
 	/// <typeparam name="T">Service interface type that must implement IEngineProvider</typeparam>
-	internal sealed class EngineServiceRegistry<T> where T : class, IEngineService
+	internal sealed class EngineServiceRegistry<T> : IEngineServiceRegistry where T : class, IEngineService
 	{
 		private readonly Dictionary<Type, T> _registeredServices = new();
 
@@ -36,6 +43,7 @@ namespace Luny.Registries
 		}
 
 		internal EngineServiceRegistry() => DiscoverAndInstantiateServices();
+		~EngineServiceRegistry() => LunyLogger.LogInfo($"finalized {GetHashCode()}", this);
 
 		private void DiscoverAndInstantiateServices()
 		{

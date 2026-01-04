@@ -1,4 +1,4 @@
-namespace Luny.Proxies.Enums
+namespace Luny.Engine.Bridge.Enums
 {
 	public enum PrimitiveType
 	{

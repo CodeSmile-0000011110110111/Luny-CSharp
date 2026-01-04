@@ -1,8 +1,8 @@
-using Luny.Proxies;
+using Luny.Engine.Bridge;
 using System;
 using System.Collections.Generic;
 
-namespace Luny.Services
+namespace Luny.Engine.Services
 {
 	/// <summary>
 	/// Engine-agnostic scene information service.

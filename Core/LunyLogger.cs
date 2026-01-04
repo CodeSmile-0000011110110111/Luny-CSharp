@@ -1,9 +1,9 @@
-using Luny.Services;
+using Luny.Engine.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Luny.Diagnostics
+namespace Luny
 {
 	public interface ILunyLogger
 	{

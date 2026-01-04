@@ -1,11 +1,10 @@
+using Luny.Engine;
 using System;
-using System.Diagnostics;
 
 namespace Luny.Exceptions
 {
 	internal sealed class LunyThrow
 	{
-
 #if GODOT
 		[StackTraceHidden] // not supported by Unity 6
 #endif
