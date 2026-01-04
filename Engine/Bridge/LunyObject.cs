@@ -13,22 +13,6 @@ namespace Luny.Engine.Bridge
 	/// </summary>
 	public interface ILunyObject
 	{
-		LunyObjectID LunyObjectID { get; }
-		LunyNativeObjectID NativeObjectID { get; }
-		String Name { get; }
-		Boolean IsValid { get; }
-		Boolean IsEnabled { get; set; }
-		SystemObject NativeObject { get; }
-		void Destroy();
-		T Cast<T>() where T : class;
-	}
-
-	/// <summary>
-	/// Engine-agnostic base class for wrapping engine objects/nodes.
-	/// Provides unified access to common object properties and operations.
-	/// </summary>
-	public abstract class LunyObject : ILunyObject
-	{
 		/// <summary>
 		/// Sent once when the object is "created". First event the object invokes.
 		/// Technically this happens when an object gets 'registered' with Luny and after the engine object's "create" event ran.
@@ -61,115 +45,192 @@ namespace Luny.Engine.Bridge
 		/// The object is already disabled when this event runs.
 		/// </summary>
 		public event Action OnDisable;
-		private readonly SystemObject _nativeObject;
-
 		/// <summary>
 		/// LunyScript-specific unique identifier. This ID is distinct from engine's native object ID!
 		/// </summary>
-		public LunyObjectID LunyObjectID { get; }
-
+		LunyObjectID LunyObjectID { get; }
 		/// <summary>
 		/// Engine-specific unique identifier, subject to engine's behaviour (ie may change between runs, or not).
+		/// Note: The ID must not change during the object's lifetime.
+		/// The ID is accessible even if the object has been destroyed to aid debugging.
 		/// </summary>
-		public abstract LunyNativeObjectID NativeObjectID { get; }
-
+		LunyNativeObjectID NativeObjectID { get; }
+		/// <summary>
+		/// Gets the underlying engine-native object as generic System.Object type (cast as necessary).
+		/// </summary>
+		SystemObject NativeObject { get; }
 		/// <summary>
 		/// The name of the object in the scene hierarchy.
 		/// </summary>
-		public abstract String Name { get; set; }
-
+		String Name { get; }
 		/// <summary>
 		/// Whether the underlying engine object is valid/exists.
 		/// </summary>
-		public abstract Boolean IsValid { get; }
-
+		Boolean IsValid { get; }
 		/// <summary>
-		/// Whether the engine object is receiving lifecycle events and runs scripts.
+		/// Whether the engine object is receiving lifecycle events, runs scripts, and is visible.
 		/// Matches the "Active", "Enabled", or "Paused" (inverted) state of an engine object.
 		/// </summary>
 		/// <remarks>
 		/// For engines using the "Paused" concept: enabled == "not paused" / disabled == "paused".
 		/// </remarks>
-		public abstract Boolean IsEnabled { get; set; }
-
+		Boolean Enabled { get; set; }
 		/// <summary>
-		/// Gets the underlying engine-native object as generic System.Object type (cast as necessary).
+		/// Returns true only if BOTH the object itself AND all of its parents are enabled. Otherwise returns false.
 		/// </summary>
-		public SystemObject NativeObject => _nativeObject;
-
-		[NotNull] private static ILunyObjectLifecycleManagerInternal LifecycleManager => ((LunyEngine)LunyEngine.Instance).Lifecycle;
-
-		private LunyObject() {}
-
-		/// <summary>
-		/// Instantiates a LunyObject instance.
-		/// </summary>
-		protected LunyObject(SystemObject nativeObject)
-		{
-			if (nativeObject == null)
-				throw new LunyLifecycleException($"{this}: missing native object!");
-
-			_nativeObject = nativeObject;
-			LunyObjectID = LunyObjectID.Generate();
-
-			LunyEngine.Instance.Objects.Register(this);
-		}
-
-		/// <summary>
-		/// Destroys this object, triggering OnDisable/OnDestroy events and performing/queuing native object destruction.
-		/// </summary>
-		public abstract void Destroy();
+		Boolean EnabledInHierarchy { get; }
 
 		/// <summary>
 		/// Gets the underlying engine-native object cast to T.
 		/// </summary>
 		/// <typeparam name="T"></typeparam>
 		/// <returns></returns>
-		public T Cast<T>() where T : class => _nativeObject as T;
-
-		internal void InvokeOnDestroy()
-		{
-			LifecycleManager.OnObjectDestroyed(this);
-			OnDestroy?.Invoke();
-		}
-
-		// LifecycleManager calls InvokeOnReady
-		internal void InvokeOnReady() => OnReady?.Invoke();
-
-		internal void InvokeOnEnableOrOnDisable(Boolean isEnabled)
-		{
-			if (isEnabled)
-			{
-				LifecycleManager.OnObjectEnabled(this);
-				OnEnable?.Invoke();
-			}
-			else
-			{
-				LifecycleManager.OnObjectDisabled(this);
-				OnDisable?.Invoke();
-			}
-		}
+		T Cast<T>() where T : class;
 
 		/// <summary>
 		/// Called when the framework decides to work with the object ("object awakes").
 		/// This sends the OnCreate event and - if Enabled - the OnEnable event.
+		/// Must only be called once prior to using the LunyObject instance.
 		/// </summary>
-		public void Activate()
+		void ActivateOnceBeforeUse();
+
+		/// <summary>
+		/// Destroys this object, triggering OnDisable/OnDestroy events and performing/queuing native object destruction.
+		/// </summary>
+		void Destroy();
+	}
+
+	/// <summary>
+	/// Engine-agnostic base class for wrapping engine objects/nodes.
+	/// Provides unified access to common object properties and operations.
+	/// </summary>
+	public abstract class LunyObject : ILunyObject
+	{
+		public event Action OnCreate;
+		public event Action OnDestroy;
+		public event Action OnReady;
+		public event Action OnEnable;
+		public event Action OnDisable;
+
+		private readonly LunyObjectID _lunyObjectID;
+		private readonly LunyNativeObjectID _nativeObjectID;
+		private readonly SystemObject _nativeObject;
+		private Boolean _enabled;
+		private Boolean _isDestroyed;
+#if DEBUG
+		private Boolean _isActivated;
+#endif
+
+		[NotNull] private static ILunyObjectLifecycleManagerInternal LifecycleManager => ((LunyEngine)LunyEngine.Instance).Lifecycle;
+
+		public LunyObjectID LunyObjectID => _lunyObjectID;
+		public LunyNativeObjectID NativeObjectID => _nativeObjectID;
+		public SystemObject NativeObject => _nativeObject;
+
+		public String Name
 		{
+			get => IsValid ? GetNativeObjectName() : $"<null:{_nativeObjectID}>";
+			set
+			{
+				if (IsValid && !String.IsNullOrEmpty(value))
+					SetNativeObjectName(value);
+			}
+		}
+
+		public Boolean IsValid => !_isDestroyed && IsNativeObjectValid();
+
+		public Boolean Enabled
+		{
+			get => _enabled && IsValid;
+			set
+			{
+				if (_enabled != value && IsValid)
+				{
+					_enabled = value;
+					if (_enabled)
+					{
+						SetNativeObjectEnabled();
+						LifecycleManager.OnObjectEnabled(this);
+						OnEnable?.Invoke();
+					}
+					else
+					{
+						SetNativeObjectDisabled();
+						LifecycleManager.OnObjectDisabled(this);
+						OnDisable?.Invoke();
+					}
+				}
+			}
+		}
+
+		public Boolean EnabledInHierarchy => _enabled && IsValid && GetNativeObjectEnabledInHierarchy();
+
+		private LunyObject() {} // Hidden ctor
+
+		/// <summary>
+		/// Instantiates a LunyObject instance.
+		/// </summary>
+		protected LunyObject(SystemObject nativeObject, Int64 nativeObjectID, Boolean isNativeObjectEnabled)
+		{
+			if (nativeObject == null)
+				throw new LunyLifecycleException($"{this}: {nameof(LunyObject)} initialized with a <null> reference");
+
+			_enabled = isNativeObjectEnabled;
+			_nativeObject = nativeObject;
+			_nativeObjectID = nativeObjectID;
+			_lunyObjectID = LunyObjectID.Generate();
+
+			LunyEngine.Instance.Objects.Register(this);
+		}
+
+		public void ActivateOnceBeforeUse()
+		{
+#if DEBUG
+			if (_isActivated)
+				throw new LunyLifecycleException($"{this} has already been activated!");
+
+			_isActivated = true;
+#endif
+
 			LifecycleManager.OnObjectCreated(this);
 			OnCreate?.Invoke();
 
-			if (IsEnabled)
-				InvokeOnEnableOrOnDisable(true);
+			if (Enabled)
+			{
+				LifecycleManager.OnObjectEnabled(this);
+				OnEnable?.Invoke();
+			}
 		}
 
-		/// <summary>
-		/// Destroys the underlying native engine object.
-		/// Should only be called internally by lifecycle managers when the destroy operation is being queued.
-		/// </summary>
-		/// <exception cref="InvalidOperationException">Throws if Destroy() was not called before.</exception>
-		public abstract void DestroyNativeObject();
+		public T Cast<T>() where T : class => _nativeObject as T;
 
-		public override String ToString() => $"{(IsEnabled ? "☑" : "☐")} {Name} ({LunyObjectID}, {NativeObjectID})";
+		public void Destroy()
+		{
+			// LunyLogger.LogInfo($"{nameof(UnityObject)}.{nameof(Destroy)}() => {this}", this);
+			if (!IsValid)
+				return;
+
+			Enabled = false; // may trigger OnDisable
+			OnDestroy?.Invoke();
+			LifecycleManager.OnObjectDestroyed(this);
+
+			// Mark as destroyed (native destruction happens at the end of the frame)
+			_isDestroyed = true;
+		}
+
+		// LunyObjectLifecycleManager calls this
+		internal void InvokeOnReady() => OnReady?.Invoke();
+
+		// Should only be called internally by LunyObjectLifecycleManager
+		protected internal abstract void DestroyNativeObject();
+		protected abstract Boolean IsNativeObjectValid();
+		protected abstract String GetNativeObjectName();
+		protected abstract void SetNativeObjectName(String name);
+		protected abstract Boolean GetNativeObjectEnabledInHierarchy();
+		protected abstract Boolean GetNativeObjectEnabled();
+		protected abstract void SetNativeObjectEnabled();
+		protected abstract void SetNativeObjectDisabled();
+
+		public override String ToString() => $"{(Enabled ? "☑" : "☐")} {Name} ({LunyObjectID}, {NativeObjectID})";
 	}
 }
