@@ -10,53 +10,71 @@ namespace Luny.Engine.Bridge
 	/// <summary>
 	/// Engine-agnostic interface for engine objects/nodes.
 	/// Provides unified access to common object properties and operations.
+	/// Safeguards all access to avoid exceptions when the engine-native object may have been destroyed.
 	/// </summary>
 	public interface ILunyObject
 	{
 		/// <summary>
-		/// Sent once when the object is "created". First event the object invokes.
-		/// Technically this happens when an object gets 'registered' with Luny and after the engine object's "create" event ran.
+		/// Sent once when the object is "created". Guaranteed to be the object's first lifecycle event.
+		/// Runs even if the object starts disabled.
 		/// </summary>
+		/// <remarks>
+		/// Runs only when an object gets 'registered' with Luny, not when the engine-native object is created. Engine-native
+		/// creation events (Unity: Awake / Godot: _init or ctor) will run before OnCreate.
+		/// </remarks>
+		/// <remarks>
+		/// OnEnable will run right after OnCreate if the object starts enabled.
+		/// If the object starts disabled, OnEnable will run once the object gets enabled.
+		/// </remarks>
 		public event Action OnCreate;
 		/// <summary>
-		/// Sent once when the object is "destroyed". Last event the object invokes. Runs regardless of object's "enabled" state.
-		/// Technically this occurs when the object is marked for deletion in Luny, but the engine's object still exists in disabled state.
+		/// Sent once when the object is "destroyed". Guaranteed to be the object's last lifecycle event.
+		/// Runs even for disabled objects.
 		/// </summary>
+		/// <remarks>
+		/// Runs when the object is marked for deletion in Luny. The engine's native object is set inactive, but not yet destroyed.
+		/// </remarks>
 		public event Action OnDestroy;
 		/// <summary>
-		/// Sent once just before the object first runs OnFixedStep/OnUpdate.
+		/// Sent once just before the object runs its first OnUpdate (or OnFixedUpdate, see below).
+		/// If the object starts disabled, OnReady is deferred until the object gets enabled.
+		/// If the object gets or is enabled, OnEnable is guaranteed to run before OnReady. Both run in the same frame.
 		/// </summary>
 		/// <remarks>
 		/// Depending on whether OnFixedStep happens to run in the frame the object becomes "ready", the event order is either:
-		///		OnCreate => OnEnable => OnReady => OnUpdate (first) => OnLateUpdate (first)
+		///		OnReady => OnUpdate (first) => OnLateUpdate (first)
 		/// or:
-		///		OnCreate => OnEnable => OnReady => OnFixedStep (first) => OnUpdate (first) => OnLateUpdate (first)
+		///		OnReady => OnFixedStep (first) => OnUpdate (first) => OnLateUpdate (first)
 		/// </remarks>
 		public event Action OnReady;
 		/// <summary>
-		/// Sent every time the object's enabled state changes to "enabled": visible, updating, interacting with other objects.
-		/// Runs right after OnCreate if the object is created in enabled state.
-		/// The object is already enabled when this event runs.
+		/// Sent every time the object's enabled state changes to "enabled": visible, updating, receiving events, interacting with other objects.
+		/// Also runs right after OnCreate if the object starts enabled.
+		/// The engine-native object is already set enabled when this event runs.
 		/// </summary>
+		/// <remarks>
+		/// OnDestroy event will run even when a disabled object gets destroyed.
+		/// </remarks>
 		public event Action OnEnable;
 		/// <summary>
-		/// Sent every time the object's enabled state changes to "disabled": hidden, not updating, not interacting with other objects.
-		/// If the object is enabled and gets destroyed, OnDisable runs right before OnDestroy.
-		/// The object is already disabled when this event runs.
+		/// Sent every time the object's enabled state changes to "disabled": hidden, not updating, not receiving events, not interacting with other objects.
+		/// If the object is enabled and gets destroyed, OnDisable will run before OnDestroy.
+		/// The engine-native object is already set disabled when this event runs.
 		/// </summary>
 		public event Action OnDisable;
+
 		/// <summary>
-		/// LunyScript-specific unique identifier. This ID is distinct from engine's native object ID!
+		/// LunyScript-specific unique, immutable identifier. This ID is distinct from engine's native object ID!
 		/// </summary>
 		LunyObjectID LunyObjectID { get; }
 		/// <summary>
-		/// Engine-specific unique identifier, subject to engine's behaviour (ie may change between runs, or not).
-		/// Note: The ID must not change during the object's lifetime.
-		/// The ID is accessible even if the object has been destroyed to aid debugging.
+		/// Engine-specific unique, immutable identifier, subject to engine's behaviour (ie may change between runs, or not).
+		/// The ID is valid even after the engine-native object has been destroyed to aid debugging.
 		/// </summary>
 		LunyNativeObjectID NativeObjectID { get; }
 		/// <summary>
-		/// Gets the underlying engine-native object as generic System.Object type (cast as necessary).
+		/// Gets the underlying engine-native object (GameObject, Node) as generic System.Object type.
+		/// Use the Cast<T> method to avoid manually casting the reference.
 		/// </summary>
 		SystemObject NativeObject { get; }
 		/// <summary>
@@ -64,22 +82,25 @@ namespace Luny.Engine.Bridge
 		/// </summary>
 		String Name { get; }
 		/// <summary>
-		/// Whether the underlying engine object is valid/exists.
+		/// Whether the underlying engine object is valid/exists. Most commonly this means "not null" but in some engines like Godot,
+		/// it also means the object is still in the scene hierarchy.
 		/// </summary>
 		Boolean IsValid { get; }
 		/// <summary>
-		/// Whether the engine object is receiving lifecycle events, runs scripts, and is visible.
-		/// Matches the "Active", "Enabled", or "Paused" (inverted) state of an engine object.
+		/// Whether the engine object is processing and visible.
+		/// Matches the "Active" state of Unity. Most events (update, input, collision, ..) will not run when the object is disabled.
+		/// OnDestroy is the exception: It will run for a disabled object when it gets destroyed.
 		/// </summary>
 		/// <remarks>
-		/// For engines using the "Paused" concept: enabled == "not paused" / disabled == "paused".
+		/// CAUTION: IsEnabled also toggles visibility. If the object's IsVisible is set to false,
+		/// and then is disabled and enabled again, it will also be visible. If you wish the object to remain invisible,
+		/// you will have to set IsVisible=false after re-enabling the object. This is a decent compromise supported by all engines.
 		/// </remarks>
 		Boolean IsEnabled { get; set; }
 		/// <summary>
 		/// Returns true only if BOTH the object itself AND all of its parents are enabled. Otherwise returns false.
 		/// </summary>
 		Boolean IsEnabledInHierarchy { get; }
-
 		/// <summary>
 		/// Whether the object is visible (gets rendered).
 		/// CAUTION: This property does not imply that the object can be "seen"! IsVisible might be true while the object isn't visible
@@ -89,7 +110,14 @@ namespace Luny.Engine.Bridge
 		Boolean IsVisible { get; set; }
 
 		/// <summary>
-		/// Gets the underlying engine-native object cast to T.
+		/// Gets the engine-native object as type T. Returns null for non-matching types.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <returns></returns>
+		T As<T>() where T : class;
+
+		/// <summary>
+		/// Gets the engine-native object cast to T. Throws if the type cast is invalid.
 		/// </summary>
 		/// <typeparam name="T"></typeparam>
 		/// <returns></returns>
@@ -98,12 +126,17 @@ namespace Luny.Engine.Bridge
 		/// <summary>
 		/// Called when the framework decides to work with the object ("object awakes").
 		/// This sends the OnCreate event and - if Enabled - the OnEnable event.
-		/// Must only be called once prior to using the LunyObject instance.
 		/// </summary>
+		/// <remarks>
+		/// Must only be called once prior to using the LunyObject instance.
+		/// LunyScript will automatically call this.
+		/// </remarks>
 		void ActivateOnceBeforeUse();
 
 		/// <summary>
-		/// Destroys this object, triggering OnDisable/OnDestroy events and performing/queuing native object destruction.
+		/// Marks this object for destruction.
+		/// Triggers OnDisable (if object is enabled) and OnDestroy events.
+		/// The engine-native object is destroyed at the end of the current frame.
 		/// </summary>
 		void Destroy();
 	}
@@ -211,7 +244,8 @@ namespace Luny.Engine.Bridge
 				SetEnabledState(_isEnabled); // will trigger OnEnable
 		}
 
-		public T Cast<T>() where T : class => _nativeObject as T;
+		public T As<T>() where T : class => _nativeObject as T;
+		public T Cast<T>() where T : class => (T)_nativeObject;
 
 		public void Destroy()
 		{
