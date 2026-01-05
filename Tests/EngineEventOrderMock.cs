@@ -20,39 +20,39 @@ namespace Luny.Tests
 
 		public EngineEventOrderMock() => LunyLogger.LogInfo($"{nameof(EngineEventOrderMock)} ctor", this);
 
-		public void OnStartup()
+		public void OnEngineStartup()
 		{
-			LunyLogger.LogInfo(nameof(OnStartup), this);
-			LunyAssert.IsFalse(_didRunStartup, $"{nameof(OnStartup)} called more than once");
-			LunyAssert.IsZero(_fixedStepRunCount, $"{nameof(OnFixedStep)} already ran before {nameof(OnStartup)}");
-			LunyAssert.IsZero(_updateRunCount, $"{nameof(OnUpdate)} already ran before {nameof(OnStartup)}");
-			LunyAssert.IsZero(_lateUpdateRunCount, $"{nameof(OnLateUpdate)} already ran before {nameof(OnStartup)}");
-			LunyAssert.IsFalse(_didRunShutdown, $"{nameof(OnShutdown)} already ran before {nameof(OnStartup)}");
+			LunyLogger.LogInfo(nameof(OnEngineStartup), this);
+			LunyAssert.IsFalse(_didRunStartup, $"{nameof(OnEngineStartup)} called more than once");
+			LunyAssert.IsZero(_fixedStepRunCount, $"{nameof(OnEngineFixedStep)} already ran before {nameof(OnEngineStartup)}");
+			LunyAssert.IsZero(_updateRunCount, $"{nameof(OnEngineUpdate)} already ran before {nameof(OnEngineStartup)}");
+			LunyAssert.IsZero(_lateUpdateRunCount, $"{nameof(OnEngineLateUpdate)} already ran before {nameof(OnEngineStartup)}");
+			LunyAssert.IsFalse(_didRunShutdown, $"{nameof(OnEngineShutdown)} already ran before {nameof(OnEngineStartup)}");
 			_didRunStartup = true;
 		}
 
-		public void OnFixedStep(Double fixedDeltaTime)
+		public void OnEngineFixedStep(Double fixedDeltaTime)
 		{
-			LunyLogger.LogInfo(nameof(OnFixedStep), this);
-			LunyAssert.IsTrue(_didRunStartup, $"{nameof(OnFixedStep)} ran before {nameof(OnStartup)}");
+			LunyLogger.LogInfo(nameof(OnEngineFixedStep), this);
+			LunyAssert.IsTrue(_didRunStartup, $"{nameof(OnEngineFixedStep)} ran before {nameof(OnEngineStartup)}");
 			_fixedStepRunCount++;
 		}
 
-		public void OnUpdate(Double deltaTime)
+		public void OnEngineUpdate(Double deltaTime)
 		{
-			LunyLogger.LogInfo(nameof(OnUpdate), this);
-			LunyAssert.IsTrue(_didRunStartup, $"{nameof(OnUpdate)} ran before {nameof(OnStartup)}");
+			LunyLogger.LogInfo(nameof(OnEngineUpdate), this);
+			LunyAssert.IsTrue(_didRunStartup, $"{nameof(OnEngineUpdate)} ran before {nameof(OnEngineStartup)}");
 			_updateRunCount++;
 		}
 
-		public void OnLateUpdate(Double deltaTime)
+		public void OnEngineLateUpdate(Double deltaTime)
 		{
-			LunyLogger.LogInfo(nameof(OnLateUpdate), this);
-			LunyAssert.IsTrue(_didRunStartup, $"{nameof(OnLateUpdate)} ran before {nameof(OnStartup)}");
+			LunyLogger.LogInfo(nameof(OnEngineLateUpdate), this);
+			LunyAssert.IsTrue(_didRunStartup, $"{nameof(OnEngineLateUpdate)} ran before {nameof(OnEngineStartup)}");
 
 			_lateUpdateRunCount++;
 			LunyAssert.AreEqual(_updateRunCount, _lateUpdateRunCount,
-				$"{nameof(OnLateUpdate)} and {nameof(OnUpdate)} did not run same number of times");
+				$"{nameof(OnEngineLateUpdate)} and {nameof(OnEngineUpdate)} did not run same number of times");
 
 			_shutdownAfterThisManyUpdates--;
 			if (_shutdownAfterThisManyUpdates <= 0)
@@ -63,24 +63,24 @@ namespace Luny.Tests
 			}
 		}
 
-		public void OnShutdown()
+		public void OnEngineShutdown()
 		{
-			LunyLogger.LogInfo(nameof(OnShutdown), this);
-			LunyAssert.IsTrue(_didRunStartup, $"{nameof(OnShutdown)} ran before {nameof(OnStartup)}");
-			LunyAssert.IsFalse(_didRunShutdown, $"{nameof(OnShutdown)} called more than once");
+			LunyLogger.LogInfo(nameof(OnEngineShutdown), this);
+			LunyAssert.IsTrue(_didRunStartup, $"{nameof(OnEngineShutdown)} ran before {nameof(OnEngineStartup)}");
+			LunyAssert.IsFalse(_didRunShutdown, $"{nameof(OnEngineShutdown)} called more than once");
 
 			_didRunShutdown = true;
 		}
 
 		public void PostShutdownVerification()
 		{
-			LunyAssert.IsTrue(_didRunStartup, $"{nameof(OnShutdown)} ran before {nameof(OnStartup)}");
-			LunyAssert.IsTrue(_didRunShutdown, $"{nameof(OnShutdown)} did not run");
-			LunyAssert.IsTrue(_fixedStepRunCount > 0, $"{nameof(OnFixedStep)} did not run");
-			LunyAssert.IsTrue(_updateRunCount > 0, $"{nameof(OnUpdate)} did not run");
-			LunyAssert.IsTrue(_lateUpdateRunCount > 0, $"{nameof(OnLateUpdate)} did not run");
+			LunyAssert.IsTrue(_didRunStartup, $"{nameof(OnEngineShutdown)} ran before {nameof(OnEngineStartup)}");
+			LunyAssert.IsTrue(_didRunShutdown, $"{nameof(OnEngineShutdown)} did not run");
+			LunyAssert.IsTrue(_fixedStepRunCount > 0, $"{nameof(OnEngineFixedStep)} did not run");
+			LunyAssert.IsTrue(_updateRunCount > 0, $"{nameof(OnEngineUpdate)} did not run");
+			LunyAssert.IsTrue(_lateUpdateRunCount > 0, $"{nameof(OnEngineLateUpdate)} did not run");
 			LunyAssert.AreEqual(_updateRunCount, _lateUpdateRunCount,
-				$"{nameof(OnLateUpdate)} and {nameof(OnUpdate)} did not run same number of times");
+				$"{nameof(OnEngineLateUpdate)} and {nameof(OnEngineUpdate)} did not run same number of times");
 		}
 	}
 }

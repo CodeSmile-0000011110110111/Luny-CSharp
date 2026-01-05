@@ -13,11 +13,11 @@ namespace Luny.Engine.Registries
 	{
 		public Boolean Enabled => true;
 
-		void OnStartup();
-		void OnFixedStep(Double fixedDeltaTime);
-		void OnUpdate(Double deltaTime);
-		void OnLateUpdate(Double deltaTime);
-		void OnShutdown();
+		void OnEngineStartup();
+		void OnEngineFixedStep(Double fixedDeltaTime);
+		void OnEngineUpdate(Double deltaTime);
+		void OnEngineLateUpdate(Double deltaTime);
+		void OnEngineShutdown();
 	}
 
 	public interface ILunyObserverRegistry {}

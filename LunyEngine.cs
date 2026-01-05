@@ -1,4 +1,5 @@
 using Luny.Engine;
+using Luny.Engine.Bridge;
 using Luny.Engine.Diagnostics;
 using Luny.Engine.Events;
 using Luny.Engine.Identity;
@@ -28,11 +29,11 @@ namespace Luny
 		ILunyEngineProfiler Profiler { get; }
 
 		// Lifecycle dispatch methods - receives callbacks from engine adapters
-		void OnStartup();
-		void OnFixedStep(Double fixedDeltaTime);
-		void OnUpdate(Double deltaTime);
-		void OnLateUpdate(Double deltaTime);
-		void OnShutdown();
+		void OnEngineStartup();
+		void OnEngineFixedStep(Double fixedDeltaTime);
+		void OnEngineUpdate(Double deltaTime);
+		void OnEngineLateUpdate(Double deltaTime);
+		void OnEngineShutdown();
 
 		// Observer management
 		void EnableObserver<T>() where T : ILunyEngineObserver;
@@ -75,7 +76,7 @@ namespace Luny
 		public static ILunyEngine Instance => s_Instance;
 
 		// We only pass the engine adapter instance to signal that this must only be called by the engine adapter
-		internal static ILunyEngine CreateInstance(ILunyEngineAdapter engineAdapter)
+		internal static ILunyEngine CreateInstance(ILunyEngineNativeAdapter engineAdapter)
 		{
 			if (s_IsDisposed)
 				throw new LunyLifecycleException($"{nameof(LunyEngine)} instance already disposed. It must not be created again.");
@@ -130,36 +131,36 @@ namespace Luny
 		/// <summary>
 		/// CAUTION: Must only be called by engine-native lifecycle adapter!
 		/// </summary>
-		public void OnStartup()
+		public void OnEngineStartup()
 		{
-			LunyLogger.LogInfo($"{nameof(OnStartup)} running...", this);
+			LunyLogger.LogInfo($"{nameof(OnEngineStartup)} running...", this);
 
 			foreach (var observer in _observerRegistry.EnabledObservers)
 			{
 				_profiler.BeginObserver(observer);
 				try
 				{
-					observer.OnStartup();
+					observer.OnEngineStartup();
 				}
 				catch (Exception e)
 				{
-					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnStartup, e);
+					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnEngineStartup, e);
 					/* keep dispatch resilient */
 					LunyLogger.LogException(e);
 				}
 				finally
 				{
-					_profiler.EndObserver(observer, LunyEngineLifecycleEvents.OnStartup);
+					_profiler.EndObserver(observer, LunyEngineLifecycleEvents.OnEngineStartup);
 				}
 			}
 
-			LunyLogger.LogInfo($"{nameof(OnStartup)} complete.", this);
+			LunyLogger.LogInfo($"{nameof(OnEngineStartup)} complete.", this);
 		}
 
 		/// <summary>
 		/// CAUTION: Must only be called by engine-native lifecycle adapter!
 		/// </summary>
-		public void OnFixedStep(Double fixedDeltaTime)
+		public void OnEngineFixedStep(Double fixedDeltaTime)
 		{
 			_lifecycleManager.ProcessPendingReady();
 
@@ -168,17 +169,17 @@ namespace Luny
 				_profiler.BeginObserver(observer);
 				try
 				{
-					observer.OnFixedStep(fixedDeltaTime);
+					observer.OnEngineFixedStep(fixedDeltaTime);
 				}
 				catch (Exception e)
 				{
-					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnFixedStep, e);
+					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnEngineFixedStep, e);
 					/* keep dispatch resilient */
 					LunyLogger.LogException(e);
 				}
 				finally
 				{
-					_profiler.EndObserver(observer, LunyEngineLifecycleEvents.OnFixedStep);
+					_profiler.EndObserver(observer, LunyEngineLifecycleEvents.OnEngineFixedStep);
 				}
 			}
 		}
@@ -186,7 +187,7 @@ namespace Luny
 		/// <summary>
 		/// CAUTION: Must only be called by engine-native lifecycle adapter!
 		/// </summary>
-		public void OnUpdate(Double deltaTime)
+		public void OnEngineUpdate(Double deltaTime)
 		{
 			// TODO: send "OnPreUpdate"
 			_lifecycleManager.ProcessPendingReady();
@@ -198,17 +199,17 @@ namespace Luny
 				{
 					// TODO: check if enabled state changed to true, if so send OnEnable
 
-					observer.OnUpdate(deltaTime);
+					observer.OnEngineUpdate(deltaTime);
 				}
 				catch (Exception e)
 				{
-					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnUpdate, e);
+					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnEngineUpdate, e);
 					/* keep dispatch resilient */
 					LunyLogger.LogException(e);
 				}
 				finally
 				{
-					_profiler.EndObserver(observer, LunyEngineLifecycleEvents.OnUpdate);
+					_profiler.EndObserver(observer, LunyEngineLifecycleEvents.OnEngineUpdate);
 				}
 			}
 		}
@@ -216,26 +217,26 @@ namespace Luny
 		/// <summary>
 		/// CAUTION: Must only be called by engine-native lifecycle adapter!
 		/// </summary>
-		public void OnLateUpdate(Double deltaTime)
+		public void OnEngineLateUpdate(Double deltaTime)
 		{
 			foreach (var observer in _observerRegistry.EnabledObservers)
 			{
 				_profiler.BeginObserver(observer);
 				try
 				{
-					observer.OnLateUpdate(deltaTime);
+					observer.OnEngineLateUpdate(deltaTime);
 
 					// TODO: check if enabled state changed to false, if so send OnDisable
 				}
 				catch (Exception e)
 				{
-					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnLateUpdate, e);
+					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnEngineLateUpdate, e);
 					/* keep dispatch resilient */
 					LunyLogger.LogException(e);
 				}
 				finally
 				{
-					_profiler.EndObserver(observer, LunyEngineLifecycleEvents.OnLateUpdate);
+					_profiler.EndObserver(observer, LunyEngineLifecycleEvents.OnEngineLateUpdate);
 				}
 			}
 
@@ -249,33 +250,33 @@ namespace Luny
 		/// <summary>
 		/// CAUTION: Must only be called by engine-native lifecycle adapter!
 		/// </summary>
-		public void OnShutdown()
+		public void OnEngineShutdown()
 		{
-			LunyLogger.LogInfo($"{nameof(OnShutdown)} running...", this);
+			LunyLogger.LogInfo($"{nameof(OnEngineShutdown)} running...", this);
 
 			foreach (var observer in _observerRegistry.EnabledObservers)
 			{
 				_profiler.BeginObserver(observer);
 				try
 				{
-					observer.OnShutdown();
+					observer.OnEngineShutdown();
 				}
 				catch (Exception e)
 				{
-					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnShutdown, e);
+					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnEngineShutdown, e);
 					/* keep dispatch resilient */
 					LunyLogger.LogException(e);
 				}
 				finally
 				{
-					_profiler.EndObserver(observer, LunyEngineLifecycleEvents.OnShutdown);
+					_profiler.EndObserver(observer, LunyEngineLifecycleEvents.OnEngineShutdown);
 				}
 			}
 
 			_lifecycleManager.Shutdown(_objectRegistry);
 			_objectRegistry.Shutdown();
 
-			LunyLogger.LogInfo($"{nameof(OnShutdown)} complete.", this);
+			LunyLogger.LogInfo($"{nameof(OnEngineShutdown)} complete.", this);
 			Dispose();
 		}
 
