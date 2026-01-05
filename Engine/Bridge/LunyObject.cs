@@ -2,6 +2,8 @@ using Luny.Engine.Identity;
 using Luny.Exceptions;
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using System.Text;
 using SystemObject = System.Object;
 
 namespace Luny.Engine.Bridge
@@ -155,12 +157,7 @@ namespace Luny.Engine.Bridge
 		private readonly LunyObjectID _lunyObjectID;
 		private readonly LunyNativeObjectID _nativeObjectID;
 		private SystemObject _nativeObject;
-		private Boolean _isEnabled;
-		private Boolean _isVisible;
-		private Boolean _isDestroyed;
-#if DEBUG
-		private Boolean _isActivated;
-#endif
+		private ObjectState _state;
 
 		[NotNull] private static ILunyObjectLifecycleManagerInternal LifecycleManager => ((LunyEngine)LunyEngine.Instance).Lifecycle;
 
@@ -178,32 +175,26 @@ namespace Luny.Engine.Bridge
 			}
 		}
 
-		public Boolean IsValid => !_isDestroyed && IsNativeObjectValid();
+		public Boolean IsValid => !_state.IsDestroyed && IsNativeObjectValid();
 
 		public Boolean IsEnabled
 		{
-			get => _isEnabled && IsValid;
+			get => _state.IsEnabled && IsValid;
 			set
 			{
-				if (_isEnabled != value && IsValid)
-				{
-					_isEnabled = value;
-					SetEnabledState(_isEnabled);
-				}
+				if (_state.IsEnabled != value && IsValid)
+					SetEnabledState(value);
 			}
 		}
 
-		public Boolean IsEnabledInHierarchy => _isEnabled && IsValid && GetNativeObjectEnabledInHierarchy();
+		public Boolean IsEnabledInHierarchy => _state.IsEnabled && IsValid && GetNativeObjectEnabledInHierarchy();
 		public Boolean IsVisible
 		{
-			get => _isVisible && IsValid;
+			get => _state.IsVisible && IsValid;
 			set
 			{
-				if (_isVisible != value && IsValid)
-				{
-					_isVisible = value;
-					SetVisibleState(_isVisible);
-				}
+				if (_state.IsVisible != value && IsValid)
+					SetVisibleState(value);
 			}
 		}
 
@@ -217,8 +208,8 @@ namespace Luny.Engine.Bridge
 			if (nativeObject == null)
 				throw new LunyLifecycleException($"{this}: {nameof(LunyObject)} initialized with a <null> reference");
 
-			_isEnabled = isNativeObjectEnabled;
-			_isVisible = isNativeObjectVisible;
+			_state.IsEnabled = isNativeObjectEnabled;
+			_state.IsVisible = isNativeObjectVisible;
 			_nativeObject = nativeObject;
 			_nativeObjectID = nativeObjectID;
 			_lunyObjectID = LunyObjectID.Generate();
@@ -229,18 +220,18 @@ namespace Luny.Engine.Bridge
 		public void ActivateOnceBeforeUse()
 		{
 #if DEBUG
-			if (_isActivated)
+			if (_state.IsActivated)
 				throw new LunyLifecycleException($"{this} has already been activated!");
 
-			_isActivated = true;
+			_state.IsActivated = true;
 #endif
 
 			LifecycleManager.OnObjectCreated(this);
 			OnCreate?.Invoke();
 
-			SetVisibleState(_isVisible);
-			if (_isEnabled)
-				SetEnabledState(_isEnabled); // will trigger OnEnable
+			SetVisibleState(_state.IsVisible);
+			if (_state.IsEnabled)
+				SetEnabledState(_state.IsEnabled); // will trigger OnEnable
 		}
 
 		public T As<T>() where T : class => _nativeObject as T;
@@ -257,13 +248,15 @@ namespace Luny.Engine.Bridge
 			LifecycleManager.OnObjectDestroyed(this);
 
 			// Mark as destroyed (native destruction happens at the end of the frame)
-			_isDestroyed = true;
+			_state.IsDestroyed = true;
 		}
 
 		~LunyObject() => LunyLogger.LogInfo($"finalized {GetHashCode()}", this);
 
 		private void SetVisibleState(Boolean visible)
 		{
+			_state.IsVisible = visible;
+
 			if (visible)
 				SetNativeObjectVisible();
 			else
@@ -272,6 +265,8 @@ namespace Luny.Engine.Bridge
 
 		private void SetEnabledState(Boolean enabled)
 		{
+			_state.IsEnabled = enabled;
+
 			if (enabled)
 			{
 				SetNativeObjectEnabled();
@@ -292,7 +287,7 @@ namespace Luny.Engine.Bridge
 		// Should only be called internally by LunyObjectLifecycleManager from pending destroy queue processing
 		internal void DestroyNativeObjectInternal()
 		{
-			if (!_isDestroyed)
+			if (!_state.IsDestroyed)
 				throw new LunyLifecycleException($"{this}: {nameof(DestroyNativeObjectInternal)}() called without {nameof(Destroy)}()!");
 
 			DestroyNativeObject();
@@ -311,5 +306,90 @@ namespace Luny.Engine.Bridge
 		protected abstract void SetNativeObjectInvisible();
 
 		public override String ToString() => $"{(IsEnabled ? "☑" : "☐")} {Name} ({LunyObjectID}, {NativeObjectID})";
+
+		private struct ObjectState
+		{
+			[Flags]
+			private enum StateFlags
+			{
+				Destroyed = 1 << 0,
+				Activated = 1 << 1,
+				Enabled = 1 << 2,
+				Visible = 1 << 3,
+			}
+
+			private StateFlags _flags;
+
+			public Boolean IsActivated
+			{
+				get => (_flags & StateFlags.Activated) != 0;
+				set => SetFlag(StateFlags.Activated, value);
+			}
+
+			public Boolean IsEnabled
+			{
+				get => (_flags & StateFlags.Enabled) != 0;
+				set => SetFlag(StateFlags.Enabled, value);
+			}
+
+			public Boolean IsVisible
+			{
+				get => (_flags & StateFlags.Visible) != 0;
+				set => SetFlag(StateFlags.Visible, value);
+			}
+
+			public Boolean IsDestroyed
+			{
+				get => (_flags & StateFlags.Destroyed) != 0;
+				set => SetFlag(StateFlags.Destroyed, value);
+			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			private void SetFlag(StateFlags flag, Boolean value)
+			{
+				if (value)
+					_flags |= flag;
+				else
+					_flags &= ~flag;
+			}
+
+			public override String ToString()
+			{
+				var sb = new StringBuilder("(");
+				var first = true;
+
+				if (IsDestroyed)
+				{
+					sb.Append(nameof(StateFlags.Destroyed));
+					first = false;
+				}
+				if (IsActivated)
+				{
+					AppendSeparatorIfNeeded();
+					sb.Append(nameof(StateFlags.Activated));
+					first = false;
+				}
+				if (IsEnabled)
+				{
+					AppendSeparatorIfNeeded();
+					sb.Append(nameof(StateFlags.Enabled));
+					first = false;
+				}
+				if (IsVisible)
+				{
+					AppendSeparatorIfNeeded();
+					sb.Append(nameof(StateFlags.Visible));
+				}
+
+				sb.Append(")");
+				return sb.ToString();
+
+				void AppendSeparatorIfNeeded()
+				{
+					if (!first)
+						sb.Append("|");
+				}
+			}
+		}
 	}
 }
