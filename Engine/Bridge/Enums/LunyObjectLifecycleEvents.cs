@@ -1,4 +1,4 @@
-namespace Luny.Engine.Events
+namespace Luny.Engine.Bridge.Enums
 {
 	/// <summary>
 	/// LunyObject lifecycle events.

@@ -22,30 +22,30 @@ namespace Luny.Engine.Bridge
 			return adapter;
 		}
 
-		static void AssertNotNull(ILunyEngineNativeAdapter adapter)
+		static void ThrowIfAdapterNull(ILunyEngineNativeAdapter adapter)
 		{
 			if (adapter == null)
 				throw new LunyLifecycleException($"{nameof(ILunyEngineNativeAdapter)} is null");
 		}
 
-		static void AssertLunyEngineNotNull(ILunyEngine lunyEngine)
+		static void ThrowIfLunyEngineNull(ILunyEngine lunyEngine)
 		{
 			if (lunyEngine == null)
 				throw new LunyLifecycleException($"{nameof(ILunyEngine)} is null");
 		}
 
-		static void AssertNotPrematurelyRemoved(ILunyEngineNativeAdapter adapter, ILunyEngine lunyEngine)
+		static void ThrowIfPrematurelyRemoved(ILunyEngineNativeAdapter adapter, ILunyEngine lunyEngine)
 		{
 			if (adapter != null)
 			{
 				if (lunyEngine != null)
-					ShutdownLunyEngine(adapter, lunyEngine);
+					Shutdown(adapter, lunyEngine);
 
 				throw new LunyLifecycleException($"{adapter} unexpectedly removed from Scene! It must not be destroyed/removed manually.");
 			}
 		}
 
-		static void ShutdownLunyEngine(ILunyEngineNativeAdapter adapter, ILunyEngine lunyEngine)
+		static void Shutdown(ILunyEngineNativeAdapter adapter, ILunyEngine lunyEngine)
 		{
 			LunyLogger.LogInfo("Shutting down...", adapter);
 			lunyEngine?.OnEngineShutdown();

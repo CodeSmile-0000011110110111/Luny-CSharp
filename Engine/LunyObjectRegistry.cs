@@ -3,7 +3,7 @@ using Luny.Engine.Identity;
 using System;
 using System.Collections.Generic;
 
-namespace Luny.Engine.Registries
+namespace Luny.Engine
 {
 	public interface ILunyObjectRegistry
 	{

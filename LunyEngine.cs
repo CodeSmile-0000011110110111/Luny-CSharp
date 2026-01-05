@@ -1,9 +1,7 @@
 using Luny.Engine;
 using Luny.Engine.Bridge;
 using Luny.Engine.Diagnostics;
-using Luny.Engine.Events;
 using Luny.Engine.Identity;
-using Luny.Engine.Registries;
 using Luny.Engine.Services;
 using Luny.Exceptions;
 using System;
@@ -46,10 +44,15 @@ namespace Luny
 		Boolean HasService<TService>() where TService : class, ILunyEngineService;
 	}
 
+	internal interface ILunyEngineInternal
+	{
+		static void SingletonDuplicationException() => throw new LunyLifecycleException($"Duplicate {nameof(LunyEngine)} singleton detected!");
+	}
+
 	/// <summary>
 	/// Singleton engine that discovers and manages services and lifecycle observers.
 	/// </summary>
-	public sealed partial class LunyEngine : ILunyEngine
+	public sealed partial class LunyEngine : ILunyEngine, ILunyEngineInternal
 	{
 		private static LunyEngine s_Instance;
 		private static Boolean s_IsDisposed;
@@ -75,13 +78,13 @@ namespace Luny
 		/// </summary>
 		public static ILunyEngine Instance => s_Instance;
 
-		// We only pass the engine adapter instance to signal that this must only be called by the engine adapter
 		internal static ILunyEngine CreateInstance(ILunyEngineNativeAdapter engineAdapter)
 		{
 			if (s_IsDisposed)
 				throw new LunyLifecycleException($"{nameof(LunyEngine)} instance already disposed. It must not be created again.");
 			if (s_Instance != null)
 				throw new LunyLifecycleException($"{nameof(LunyEngine)} instance already exists.");
+			// We only pass the engine adapter instance to signal that this must only be called by the engine adapter
 			if (engineAdapter == null)
 				throw new ArgumentNullException(nameof(engineAdapter), "Engine adapter cannot be null.");
 
@@ -103,7 +106,7 @@ namespace Luny
 		private LunyEngine()
 		{
 			if (s_Instance != null)
-				LunyThrow.SingletonDuplicationException(nameof(LunyEngine));
+				ILunyEngineInternal.SingletonDuplicationException();
 		}
 
 		private void Initialize()

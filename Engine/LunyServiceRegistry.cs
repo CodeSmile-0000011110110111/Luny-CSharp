@@ -5,21 +5,25 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Luny.Engine.Registries
+namespace Luny.Engine
 {
-	/// <summary>
-	/// Marker interface for engine-agnostic services: APIs such as Debug, Input, etc.
-	/// Implementations are auto-discovered and registered at startup.
-	/// </summary>
-	public interface ILunyEngineService {}
-
 	public interface ILunyServiceRegistry {}
+
+	internal interface ILunyServiceRegistryInternal
+	{
+		static void ThrowDoesNotImplementServiceInterface(Type serviceType) => throw new LunyServiceException(
+			$"{serviceType?.Name} must implement an interface derived from {nameof(ILunyEngineService)}.");
+
+		static void ThrowImplementsMultipleServiceInterfaces(Type serviceType, Type[] interfaces) => throw new LunyServiceException(
+			$"{serviceType?.Name} implements more than one {nameof(ILunyEngineService)}-derived interfaces: " +
+			String.Join(", ", interfaces?.Select(i => i.Name)));
+	}
 
 	/// <summary>
 	/// Generic service registry that discovers and holds engine services.
 	/// </summary>
 	/// <typeparam name="T">Service interface type that must implement IEngineProvider</typeparam>
-	internal sealed class LunyServiceRegistry<T> : ILunyServiceRegistry where T : class, ILunyEngineService
+	internal sealed class LunyServiceRegistry<T> : ILunyServiceRegistry, ILunyServiceRegistryInternal where T : class, ILunyEngineService
 	{
 		private readonly Dictionary<Type, T> _registeredServices = new();
 
@@ -31,14 +35,10 @@ namespace Luny.Engine.Registries
 				.ToArray();
 
 			// Must implement exactly one specific service interface
-			if (serviceInterfaces.Length != 1)
-			{
-				if (serviceInterfaces.Length == 0)
-					LunyThrow.ServiceMustImplementSpecificInterfaceException(implementationType.Name);
-
-				LunyThrow.ServiceImplementsMultipleInterfacesException(implementationType.Name,
-					String.Join(", ", serviceInterfaces.Select(i => i.Name)));
-			}
+			if (serviceInterfaces.Length == 0)
+				ILunyServiceRegistryInternal.ThrowDoesNotImplementServiceInterface(implementationType);
+			if (serviceInterfaces.Length >= 2)
+				ILunyServiceRegistryInternal.ThrowImplementsMultipleServiceInterfaces(implementationType, serviceInterfaces);
 
 			return serviceInterfaces[0];
 		}

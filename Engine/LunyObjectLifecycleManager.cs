@@ -1,11 +1,10 @@
 using Luny.Engine.Bridge;
 using Luny.Engine.Identity;
-using Luny.Engine.Registries;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Luny.Engine.Events
+namespace Luny.Engine
 {
 	internal interface ILunyObjectLifecycleManagerInternal
 	{
@@ -21,20 +20,20 @@ namespace Luny.Engine.Events
 	/// </summary>
 	internal sealed class LunyObjectLifecycleManager : ILunyObjectLifecycleManagerInternal
 	{
-		private ILunyObjectRegistry _objects;
+		private ILunyObjectRegistry _lunyObjects;
 		private Queue<ILunyObject> _pendingReady = new();
 		private Queue<ILunyObject> _pendingDestroy = new();
 		private Dictionary<LunyObjectID, ILunyObject> _pendingReadyWaitingForEnable = new();
 
 		public LunyObjectLifecycleManager(ILunyObjectRegistry objectRegistry) =>
-			_objects = objectRegistry ?? throw new ArgumentNullException(nameof(objectRegistry));
+			_lunyObjects = objectRegistry ?? throw new ArgumentNullException(nameof(objectRegistry));
 
 		/// <summary>
 		/// Queues an object for its OnReady event.
 		/// </summary>
 		public void OnObjectCreated(ILunyObject lunyObject)
 		{
-			if (lunyObject.IsEnabled)
+			if (lunyObject.IsEnabledInHierarchy)
 				_pendingReady.Enqueue(lunyObject);
 			else
 				_pendingReadyWaitingForEnable[lunyObject.LunyObjectID] = lunyObject;
@@ -46,7 +45,7 @@ namespace Luny.Engine.Events
 		public void OnObjectDestroyed(ILunyObject lunyObject)
 		{
 			_pendingDestroy.Enqueue(lunyObject);
-			_objects.Unregister(lunyObject);
+			_lunyObjects.Unregister(lunyObject);
 		}
 
 		/// <summary>
@@ -104,7 +103,7 @@ namespace Luny.Engine.Events
 			_pendingReady = null;
 			_pendingDestroy = null;
 			_pendingReadyWaitingForEnable = null;
-			_objects = null;
+			_lunyObjects = null;
 		}
 	}
 }

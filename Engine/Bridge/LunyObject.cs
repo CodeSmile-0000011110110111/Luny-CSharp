@@ -1,4 +1,3 @@
-using Luny.Engine.Events;
 using Luny.Engine.Identity;
 using Luny.Exceptions;
 using System;
@@ -260,6 +259,8 @@ namespace Luny.Engine.Bridge
 			// Mark as destroyed (native destruction happens at the end of the frame)
 			_isDestroyed = true;
 		}
+
+		~LunyObject() => LunyLogger.LogInfo($"finalized {GetHashCode()}", this);
 
 		private void SetVisibleState(Boolean visible)
 		{
