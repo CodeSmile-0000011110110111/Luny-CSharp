@@ -49,7 +49,7 @@ namespace Luny.Engine.Diagnostics
 	{
 		Int32 RollingAverageWindow { get; set; }
 
-		ILunyProfilerSnapshot TakeSnapshot();
+		ILunyEngineProfilerSnapshot TakeSnapshot();
 	}
 
 	/// <summary>
@@ -72,7 +72,7 @@ namespace Luny.Engine.Diagnostics
 
 		public LunyEngineProfiler(ITimeService timeService) => _timeService = timeService;
 
-		public ILunyProfilerSnapshot TakeSnapshot()
+		public ILunyEngineProfilerSnapshot TakeSnapshot()
 		{
 #if DEBUG || LUNY_DEBUG || LUNY_PROFILE
 			var categorized = new Dictionary<LunyEngineLifecycleEvents, IReadOnlyList<LunyObserverMetrics>>();
@@ -85,7 +85,7 @@ namespace Luny.Engine.Diagnostics
 					.ToList();
 			}
 
-			return new LunyProfilerSnapshot
+			return new LunyEngineProfilerSnapshot
 			{
 				CategorizedMetrics = categorized,
 				Timestamp = DateTime.UtcNow,
@@ -100,7 +100,7 @@ namespace Luny.Engine.Diagnostics
 #endif
 		}
 
-		~LunyEngineProfiler() => LunyLogger.LogInfo($"finalized {GetHashCode()}", this);
+		~LunyEngineProfiler() => LunyTraceLogger.LogInfoFinalized(this);
 
 		[Conditional("DEBUG")] [Conditional("LUNY_DEBUG")] [Conditional("LUNY_PROFILE")]
 		internal void BeginObserver(ILunyEngineObserver observer)

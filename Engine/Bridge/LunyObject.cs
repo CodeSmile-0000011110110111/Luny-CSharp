@@ -251,7 +251,7 @@ namespace Luny.Engine.Bridge
 			_state.IsDestroyed = true;
 		}
 
-		~LunyObject() => LunyLogger.LogInfo($"finalized {GetHashCode()}", this);
+		~LunyObject() => LunyTraceLogger.LogInfoFinalized(this);
 
 		private void SetVisibleState(Boolean visible)
 		{

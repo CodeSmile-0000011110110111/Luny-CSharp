@@ -60,7 +60,7 @@ namespace Luny.Engine
 
 		public void OnObjectDisabled(ILunyObject lunyObject) {}
 
-		~LunyObjectLifecycleManager() => LunyLogger.LogInfo($"finalized {GetHashCode()}", this);
+		~LunyObjectLifecycleManager() => LunyTraceLogger.LogInfoFinalized(this);
 
 		/// <summary>
 		/// Processes the OnReady queue. Should be called at the start of Update/FixedUpdate.

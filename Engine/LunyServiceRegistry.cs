@@ -1,4 +1,5 @@
 using Luny.Engine.Identity;
+using Luny.Engine.Services;
 using Luny.Exceptions;
 using System;
 using System.Collections.Generic;
@@ -44,13 +45,13 @@ namespace Luny.Engine
 		}
 
 		internal LunyServiceRegistry() => DiscoverAndInstantiateServices();
-		~LunyServiceRegistry() => LunyLogger.LogInfo($"finalized {GetHashCode()}", this);
+		~LunyServiceRegistry() => LunyTraceLogger.LogInfoFinalized(this);
 
 		private void DiscoverAndInstantiateServices()
 		{
 			var sw = Stopwatch.StartNew();
 
-			var serviceTypes = TypeDiscovery.FindAll<T>();
+			var serviceTypes = LunyTypeDiscovery.FindAll<T>();
 
 			foreach (var type in serviceTypes)
 			{

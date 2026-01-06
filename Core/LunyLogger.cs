@@ -76,15 +76,7 @@ namespace Luny
 		/// <summary>
 		/// Installs an engine-specific logger. Pass <c>null</c> to revert to the default console logger.
 		/// </summary>
-		public static ILunyLogger Logger
-		{
-			get => _logger;
-			set
-			{
-				_logger = value ?? _consoleLogger;
-				_logger?.LogInfo($"{nameof(LunyLogger)}.{nameof(Logger)} => {_logger}");
-			}
-		}
+		public static ILunyLogger Logger { get => _logger; set => _logger = value ?? _consoleLogger; }
 
 		/// <summary>
 		/// Enables internal Luny logging system. When enabled, all log messages are recorded
@@ -92,7 +84,7 @@ namespace Luny
 		/// </summary>
 		public static Boolean EnableInternalLogging { get; set; }
 
-		public static void Log(String message, Object context = null, LogLevel logLevel = LogLevel.Info)
+		public static void Log(String message, LogLevel logLevel, Object context = null)
 		{
 			var time = LunyEngine.Instance?.Time;
 			RecordInternalLog(logLevel, message, context, time);
@@ -113,9 +105,9 @@ namespace Luny
 			}
 		}
 
-		public static void LogInfo(String message, Object context = null) => Log(message, context);
-		public static void LogWarning(String message, Object context = null) => Log(message, context, LogLevel.Warning);
-		public static void LogError(String message, Object context = null) => Log(message, context, LogLevel.Error);
+		public static void LogInfo(String message, Object context = null) => Log(message, LogLevel.Info, context);
+		public static void LogWarning(String message, Object context = null) => Log(message, LogLevel.Warning, context);
+		public static void LogError(String message, Object context = null) => Log(message, LogLevel.Error, context);
 
 		public static void LogException(Exception exception, Object context = null)
 		{

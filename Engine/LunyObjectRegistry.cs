@@ -97,7 +97,7 @@ namespace Luny.Engine
 			return lunyObject;
 		}
 
-		~LunyObjectRegistry() => LunyLogger.LogInfo($"finalized {GetHashCode()}", this);
+		~LunyObjectRegistry() => LunyTraceLogger.LogInfoFinalized(this);
 
 		internal void Shutdown()
 		{

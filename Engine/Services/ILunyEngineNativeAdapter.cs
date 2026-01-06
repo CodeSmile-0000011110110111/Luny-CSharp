@@ -1,7 +1,7 @@
 ﻿using Luny.Exceptions;
 using System;
 
-namespace Luny.Engine.Bridge
+namespace Luny.Engine.Services
 {
 	/// <summary>
 	/// Marker interface for the native engine adapter.
@@ -47,14 +47,19 @@ namespace Luny.Engine.Bridge
 
 		static void Shutdown(ILunyEngineNativeAdapter adapter, ILunyEngine lunyEngine)
 		{
-			LunyLogger.LogInfo("Shutting down...", adapter);
+			LunyTraceLogger.LogInfoShuttingDown(adapter);
 			lunyEngine?.OnEngineShutdown();
 		}
 
 		static void ShutdownComplete(ILunyEngineNativeAdapter adapter)
 		{
-			LunyLogger.LogInfo("Shutdown complete.", adapter);
+			LunyTraceLogger.LogInfoShutdownComplete(adapter);
+		}
+
+		static void EndLogging()
+		{
 			LunyLogger.Logger = null;
+			GC.Collect(0, GCCollectionMode.Forced, true);
 		}
 	}
 }

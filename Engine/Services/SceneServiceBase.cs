@@ -13,7 +13,9 @@ namespace Luny.Engine.Services
 		/// <summary>
 		/// Gets the name of the currently active scene.
 		/// </summary>
-		String CurrentSceneName { get; }
+		String ActiveSceneName { get; }
+
+		void ReloadScene();
 
 		/// <summary>
 		/// Gets all objects in the current scene.
@@ -27,7 +29,5 @@ namespace Luny.Engine.Services
 		ILunyObject FindObjectByName(String name);
 	}
 
-	internal interface ISceneServiceInternal {}
-
-	public abstract class SceneServiceBase : ISceneServiceInternal {}
+	public abstract class SceneServiceBase : LunyEngineServiceBase {}
 }

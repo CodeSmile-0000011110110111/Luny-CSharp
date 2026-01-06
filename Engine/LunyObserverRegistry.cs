@@ -20,13 +20,13 @@ namespace Luny.Engine
 
 		public LunyObserverRegistry(Boolean isSmokeTestScene) => DiscoverAndInstantiateObservers(isSmokeTestScene);
 
-		~LunyObserverRegistry() => LunyLogger.LogInfo($"finalized {GetHashCode()}", this);
+		~LunyObserverRegistry() => LunyTraceLogger.LogInfoFinalized(this);
 
 		private void DiscoverAndInstantiateObservers(Boolean isSmokeTestScene)
 		{
 			var sw = Stopwatch.StartNew();
 
-			var observerTypes = TypeDiscovery.FindAll<ILunyEngineObserver>();
+			var observerTypes = LunyTypeDiscovery.FindAll<ILunyEngineObserver>();
 
 			// TODO: sort observers deterministically
 			// TODO: configure observer enabled states

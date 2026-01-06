@@ -84,6 +84,7 @@ namespace Luny
 				throw new LunyLifecycleException($"{nameof(LunyEngine)} instance already disposed. It must not be created again.");
 			if (s_Instance != null)
 				throw new LunyLifecycleException($"{nameof(LunyEngine)} instance already exists.");
+
 			// We only pass the engine adapter instance to signal that this must only be called by the engine adapter
 			if (engineAdapter == null)
 				throw new ArgumentNullException(nameof(engineAdapter), "Engine adapter cannot be null.");
@@ -99,7 +100,7 @@ namespace Luny
 		private static Boolean IsSmokeTestScene(ISceneService sceneService)
 		{
 			// FIXME: remove hardcoded strings, find a better way to determine test mode
-			var sceneName = sceneService.CurrentSceneName;
+			var sceneName = sceneService.ActiveSceneName;
 			return sceneName.StartsWith("Luny") && sceneName.EndsWith("SmokeTest");
 		}
 
@@ -111,7 +112,7 @@ namespace Luny
 
 		private void Initialize()
 		{
-			LunyLogger.LogInfo("Initializing...", this);
+			LunyTraceLogger.LogInfoInitializing(this);
 
 			LunyObjectID.Reset();
 
@@ -128,7 +129,7 @@ namespace Luny
 			_observerRegistry = new LunyObserverRegistry(isSmokeTestingScene);
 			_profiler = new LunyEngineProfiler(Time);
 
-			LunyLogger.LogInfo("Initialization complete.", this);
+			LunyTraceLogger.LogInfoInitializationComplete(this);
 		}
 
 		/// <summary>
@@ -136,7 +137,9 @@ namespace Luny
 		/// </summary>
 		public void OnEngineStartup()
 		{
-			LunyLogger.LogInfo($"{nameof(OnEngineStartup)} running...", this);
+			LunyTraceLogger.LogInfoStartingUp(this);
+
+			StartupServices();
 
 			foreach (var observer in _observerRegistry.EnabledObservers)
 			{
@@ -157,7 +160,7 @@ namespace Luny
 				}
 			}
 
-			LunyLogger.LogInfo($"{nameof(OnEngineStartup)} complete.", this);
+			LunyTraceLogger.LogInfoStartupComplete(this);
 		}
 
 		/// <summary>
@@ -255,7 +258,7 @@ namespace Luny
 		/// </summary>
 		public void OnEngineShutdown()
 		{
-			LunyLogger.LogInfo($"{nameof(OnEngineShutdown)} running...", this);
+			LunyTraceLogger.LogInfoShuttingDown(this);
 
 			foreach (var observer in _observerRegistry.EnabledObservers)
 			{
@@ -279,24 +282,7 @@ namespace Luny
 			_lifecycleManager.Shutdown(_objectRegistry);
 			_objectRegistry.Shutdown();
 
-			LunyLogger.LogInfo($"{nameof(OnEngineShutdown)} complete.", this);
-			Dispose();
-		}
-
-		public void EnableObserver<T>() where T : ILunyEngineObserver => _observerRegistry.EnableObserver<T>();
-		public void DisableObserver<T>() where T : ILunyEngineObserver => _observerRegistry.DisableObserver<T>();
-		public Boolean IsObserverEnabled<T>() where T : ILunyEngineObserver => _observerRegistry.IsObserverEnabled<T>();
-
-		public Boolean HasService<TService>() where TService : class, ILunyEngineService => _serviceRegistry.Has<TService>();
-		public TService GetService<TService>() where TService : class, ILunyEngineService => _serviceRegistry.Get<TService>();
-
-		public Boolean TryGetService<TService>(out TService service) where TService : class, ILunyEngineService =>
-			_serviceRegistry.TryGet(out service);
-
-		private void Dispose()
-		{
-			if (s_IsDisposed)
-				throw new LunyLifecycleException($"{nameof(LunyEngine)} already disposed!");
+			ShutdownServices();
 
 			_serviceRegistry = null;
 			_observerRegistry = null;
@@ -309,10 +295,23 @@ namespace Luny
 			// ensure we won't get re-instantiated after this point
 			s_IsDisposed = true;
 
-			LunyLogger.LogInfo("Disposed.", this);
+			LunyTraceLogger.LogInfoShutdownComplete(this);
 		}
 
-		~LunyEngine() => LunyLogger.LogInfo($"finalized {GetHashCode()}", this);
+		public void EnableObserver<T>() where T : ILunyEngineObserver => _observerRegistry.EnableObserver<T>();
+		public void DisableObserver<T>() where T : ILunyEngineObserver => _observerRegistry.DisableObserver<T>();
+		public Boolean IsObserverEnabled<T>() where T : ILunyEngineObserver => _observerRegistry.IsObserverEnabled<T>();
+
+		public Boolean HasService<TService>() where TService : class, ILunyEngineService => _serviceRegistry.Has<TService>();
+		public TService GetService<TService>() where TService : class, ILunyEngineService => _serviceRegistry.Get<TService>();
+
+		public Boolean TryGetService<TService>(out TService service) where TService : class, ILunyEngineService =>
+			_serviceRegistry.TryGet(out service);
+
+		private void StartupServices() => ((LunyEngineServiceBase)Scene).OnEngineStartup();
+		private void ShutdownServices() => ((LunyEngineServiceBase)Scene).OnEngineShutdown();
+
+		~LunyEngine() => LunyTraceLogger.LogInfoFinalized(this);
 
 		// TODO: HasObserver?
 		public T GetObserver<T>() where T : ILunyEngineObserver => _observerRegistry.GetObserver<T>();

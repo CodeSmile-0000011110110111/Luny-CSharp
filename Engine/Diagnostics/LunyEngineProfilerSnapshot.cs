@@ -7,7 +7,7 @@ namespace Luny.Engine.Diagnostics
 	/// Immutable snapshot of profiler state at a specific point in time.
 	/// Useful for querying performance metrics without blocking the profiler.
 	/// </summary>
-	public interface ILunyProfilerSnapshot
+	public interface ILunyEngineProfilerSnapshot
 	{
 		IReadOnlyDictionary<LunyEngineLifecycleEvents, IReadOnlyList<LunyObserverMetrics>> CategorizedMetrics { get; }
 		DateTime Timestamp { get; }
@@ -18,7 +18,7 @@ namespace Luny.Engine.Diagnostics
 	/// Immutable snapshot of profiler state at a specific point in time.
 	/// Useful for querying performance metrics without blocking the profiler.
 	/// </summary>
-	internal sealed class LunyProfilerSnapshot : ILunyProfilerSnapshot
+	internal sealed class LunyEngineProfilerSnapshot : ILunyEngineProfilerSnapshot
 	{
 		public IReadOnlyDictionary<LunyEngineLifecycleEvents, IReadOnlyList<LunyObserverMetrics>> CategorizedMetrics { get; internal set; }
 		public DateTime Timestamp { get; internal set; }
