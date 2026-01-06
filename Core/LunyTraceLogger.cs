@@ -1,5 +1,4 @@
-﻿using Luny.Engine.Bridge;
-using Luny.Engine.Services;
+﻿using Luny.Engine.Services;
 using System;
 using System.Diagnostics;
 
@@ -16,7 +15,7 @@ namespace Luny
 		}
 
 		[DebuggerHidden] [Conditional("DEBUG")] [Conditional("LUNY_DEBUG")]
-		public static void LogInfoInitializationComplete(Object source)
+		public static void LogInfoInitialized(Object source)
 		{
 #if DEBUG || LUNY_DEBUG
 			LunyLogger.LogInfo("Initialization complete.", source);

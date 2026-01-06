@@ -1,5 +1,4 @@
 using Luny.Engine;
-using Luny.Engine.Bridge;
 using Luny.Engine.Diagnostics;
 using Luny.Engine.Identity;
 using Luny.Engine.Services;
@@ -101,6 +100,12 @@ namespace Luny
 		{
 			// FIXME: remove hardcoded strings, find a better way to determine test mode
 			var sceneName = sceneService.ActiveSceneName;
+			if (sceneName == null)
+			{
+				LunyLogger.LogWarning("IsSmokeTestScene ran too early, ActiveSceneName is null ...");
+				return false;
+			}
+
 			return sceneName.StartsWith("Luny") && sceneName.EndsWith("SmokeTest");
 		}
 
@@ -118,6 +123,7 @@ namespace Luny
 
 			_serviceRegistry = new LunyServiceRegistry<ILunyEngineService>();
 			AcquireMandatoryServices();
+			StartupServices(); // FIXME: move this into service registry
 
 			_objectRegistry = new LunyObjectRegistry();
 			_lifecycleManager = new LunyObjectLifecycleManager(_objectRegistry);
@@ -125,11 +131,11 @@ namespace Luny
 			_timeInternal = (ITimeServiceInternal)Time;
 			_timeInternal.SetLunyFrameCount(1); // ensure we always start in frame "1"
 
-			var isSmokeTestingScene = IsSmokeTestScene(Scene);
-			_observerRegistry = new LunyObserverRegistry(isSmokeTestingScene);
+			var isSmokeTestScene = IsSmokeTestScene(Scene);
+			_observerRegistry = new LunyObserverRegistry(isSmokeTestScene);
 			_profiler = new LunyEngineProfiler(Time);
 
-			LunyTraceLogger.LogInfoInitializationComplete(this);
+			LunyTraceLogger.LogInfoInitialized(this);
 		}
 
 		/// <summary>
@@ -138,8 +144,6 @@ namespace Luny
 		public void OnEngineStartup()
 		{
 			LunyTraceLogger.LogInfoStartingUp(this);
-
-			StartupServices();
 
 			foreach (var observer in _observerRegistry.EnabledObservers)
 			{
@@ -308,6 +312,7 @@ namespace Luny
 		public Boolean TryGetService<TService>(out TService service) where TService : class, ILunyEngineService =>
 			_serviceRegistry.TryGet(out service);
 
+		// FIXME: move this into service registry and use overarching base class
 		private void StartupServices() => ((LunyEngineServiceBase)Scene).OnEngineStartup();
 		private void ShutdownServices() => ((LunyEngineServiceBase)Scene).OnEngineShutdown();
 

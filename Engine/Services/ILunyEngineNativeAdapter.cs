@@ -8,6 +8,8 @@ namespace Luny.Engine.Services
 	/// </summary>
 	public interface ILunyEngineNativeAdapter
 	{
+		static bool IsApplicationQuitting;
+
 		static ILunyEngineNativeAdapter ValidateAdapterSingletonInstance(ILunyEngineNativeAdapter existingInstance, Object current)
 		{
 			if (existingInstance != null)
@@ -36,7 +38,7 @@ namespace Luny.Engine.Services
 
 		static void ThrowIfPrematurelyRemoved(ILunyEngineNativeAdapter adapter, ILunyEngine lunyEngine)
 		{
-			if (adapter != null)
+			if (!IsApplicationQuitting || adapter != null)
 			{
 				if (lunyEngine != null)
 					Shutdown(adapter, lunyEngine);
@@ -51,10 +53,7 @@ namespace Luny.Engine.Services
 			lunyEngine?.OnEngineShutdown();
 		}
 
-		static void ShutdownComplete(ILunyEngineNativeAdapter adapter)
-		{
-			LunyTraceLogger.LogInfoShutdownComplete(adapter);
-		}
+		static void ShutdownComplete(ILunyEngineNativeAdapter adapter) => LunyTraceLogger.LogInfoShutdownComplete(adapter);
 
 		static void EndLogging()
 		{
