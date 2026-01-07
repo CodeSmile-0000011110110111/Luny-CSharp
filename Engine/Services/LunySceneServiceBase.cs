@@ -1,6 +1,7 @@
 using Luny.Engine.Bridge;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Luny.Engine.Services
 {
@@ -10,6 +11,8 @@ namespace Luny.Engine.Services
 	/// </summary>
 	public interface ILunySceneService : ILunyEngineService
 	{
+		[MaybeNull] ILunyScene CurrentScene { get; }
+
 		/// <summary>
 		/// Gets the name of the currently active scene.
 		/// </summary>
@@ -31,5 +34,11 @@ namespace Luny.Engine.Services
 
 	internal interface ILunySceneServiceInternal {}
 
-	public abstract class LunySceneServiceBase : LunyEngineServiceBase, ILunySceneServiceInternal {}
+	public abstract class LunySceneServiceBase : LunyEngineServiceBase, ILunySceneServiceInternal
+	{
+		private ILunyScene _currentScene;
+		[MaybeNull] public ILunyScene CurrentScene { get => _currentScene; protected set => _currentScene = value; }
+
+		public override String ToString() => _currentScene != null ? _currentScene.ToString() : $"<null:{GetType().Name}>";
+	}
 }

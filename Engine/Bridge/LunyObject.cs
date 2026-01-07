@@ -116,13 +116,12 @@ namespace Luny.Engine.Bridge
 		/// <typeparam name="T"></typeparam>
 		/// <returns></returns>
 		T As<T>() where T : class;
-
 		/// <summary>
 		/// Gets the engine-native object cast to T. Throws if the type cast is invalid.
 		/// </summary>
 		/// <typeparam name="T"></typeparam>
 		/// <returns></returns>
-		T Cast<T>() where T : class;
+		T Cast<T>();
 
 		/// <summary>
 		/// Called when the framework decides to work with the object ("object awakes").
@@ -143,8 +142,7 @@ namespace Luny.Engine.Bridge
 	}
 
 	/// <summary>
-	/// Engine-agnostic base class for wrapping engine objects/nodes.
-	/// Provides unified access to common object properties and operations.
+	/// Proxy for engine-native objects/nodes/actors/...
 	/// </summary>
 	public abstract class LunyObject : ILunyObject
 	{
@@ -206,7 +204,7 @@ namespace Luny.Engine.Bridge
 		protected LunyObject(SystemObject nativeObject, Int64 nativeObjectID, Boolean isNativeObjectEnabled, Boolean isNativeObjectVisible)
 		{
 			if (nativeObject == null)
-				throw new LunyLifecycleException($"{this}: {nameof(LunyObject)} initialized with a <null> reference");
+				throw new LunyBridgeException($"{this}: {nameof(LunyObject)} initialized with a <null> reference");
 
 			_state.IsEnabled = isNativeObjectEnabled;
 			_state.IsVisible = isNativeObjectVisible;
@@ -235,7 +233,7 @@ namespace Luny.Engine.Bridge
 		}
 
 		public T As<T>() where T : class => _nativeObject as T;
-		public T Cast<T>() where T : class => (T)_nativeObject;
+		public T Cast<T>() => (T)_nativeObject;
 
 		public void Destroy()
 		{

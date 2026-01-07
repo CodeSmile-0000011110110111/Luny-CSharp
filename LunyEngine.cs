@@ -136,6 +136,7 @@ namespace Luny
 
 		private void PreUpdate()
 		{
+			_serviceRegistry.PreUpdate();
 			_lifecycleManager.PreUpdate();
 		}
 
