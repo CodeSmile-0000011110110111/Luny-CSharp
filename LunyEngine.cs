@@ -5,7 +5,6 @@ using Luny.Engine.Identity;
 using Luny.Engine.Services;
 using Luny.Exceptions;
 using System;
-using System.Threading.Tasks;
 
 namespace Luny
 {
@@ -14,9 +13,6 @@ namespace Luny
 	/// </summary>
 	public interface ILunyEngine
 	{
-		// Registries & Managers
-		ILunyObjectRegistry Objects { get; }
-
 		// Mandatory services
 		ILunyApplicationService Application { get; }
 		ILunyDebugService Debug { get; }
@@ -40,9 +36,9 @@ namespace Luny
 		Boolean IsObserverEnabled<T>() where T : ILunyEngineObserver;
 
 		// Service access
-		TService GetService<TService>() where TService : LunyEngineServiceBase;
-		Boolean TryGetService<TService>(out TService service) where TService : LunyEngineServiceBase;
-		Boolean HasService<TService>() where TService : LunyEngineServiceBase;
+		// TService GetService<TService>() where TService : LunyEngineServiceBase;
+		// Boolean TryGetService<TService>(out TService service) where TService : LunyEngineServiceBase;
+		// Boolean HasService<TService>() where TService : LunyEngineServiceBase;
 	}
 
 	internal interface ILunyEngineInternal
@@ -69,7 +65,7 @@ namespace Luny
 		private LunyEngineProfiler _profiler;
 		private ILunyTimeServiceInternal _timeInternal;
 
-		public ILunyObjectRegistry Objects => _objectRegistry;
+		internal ILunyObjectRegistryInternal Objects => _objectRegistry;
 		internal ILunyObjectLifecycleManagerInternal Lifecycle => _lifecycleManager;
 
 		/// <summary>
@@ -124,16 +120,6 @@ namespace Luny
 			LunyTraceLogger.LogInfoInitialized(this);
 		}
 
-		public void EnableObserver<T>() where T : ILunyEngineObserver => _observerRegistry.EnableObserver<T>();
-		public void DisableObserver<T>() where T : ILunyEngineObserver => _observerRegistry.DisableObserver<T>();
-		public Boolean IsObserverEnabled<T>() where T : ILunyEngineObserver => _observerRegistry.IsObserverEnabled<T>();
-
-		public Boolean HasService<TService>() where TService : LunyEngineServiceBase => _serviceRegistry.Has<TService>();
-		public TService GetService<TService>() where TService : LunyEngineServiceBase => _serviceRegistry.Get<TService>();
-
-		public Boolean TryGetService<TService>(out TService service) where TService : LunyEngineServiceBase =>
-			_serviceRegistry.TryGet(out service);
-
 		private void Startup()
 		{
 			var sceneService = (ILunySceneServiceInternal)Scene;
@@ -143,13 +129,12 @@ namespace Luny
 			_serviceRegistry.Startup();
 		}
 
-		private void OnSceneLoaded(ILunyScene loadedScene)
-		{
-			LunyLogger.LogWarning($"Scene loaded: {loadedScene}", this);
-		}
+		private void OnSceneLoaded(ILunyScene loadedScene) => LunyLogger.LogWarning($"Scene loaded: {loadedScene}", this);
+
 		private void OnSceneUnloaded(ILunyScene unloadedScene)
 		{
 			LunyLogger.LogWarning($"Scene unloaded: {unloadedScene}", this);
+			_lifecycleManager.DestroyNativeNullObjects();
 		}
 
 		private void PreUpdate()
@@ -190,8 +175,5 @@ namespace Luny
 		}
 
 		~LunyEngine() => LunyTraceLogger.LogInfoFinalized(this);
-
-		// TODO: HasObserver?
-		public T GetObserver<T>() where T : ILunyEngineObserver => _observerRegistry.GetObserver<T>();
 	}
 }

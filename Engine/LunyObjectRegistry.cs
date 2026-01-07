@@ -5,7 +5,9 @@ using System.Collections.Generic;
 
 namespace Luny.Engine
 {
-	public interface ILunyObjectRegistry
+	public interface ILunyObjectRegistry {}
+
+	internal interface ILunyObjectRegistryInternal : ILunyObjectRegistry
 	{
 		Int32 Count { get; }
 		IEnumerable<ILunyObject> AllObjects { get; }
@@ -20,7 +22,7 @@ namespace Luny.Engine
 	/// Registry for tracking all active LunyObject instances.
 	/// Provides O(1) lookup by both LunyID and NativeID.
 	/// </summary>
-	internal sealed class LunyObjectRegistry : ILunyObjectRegistry
+	internal sealed class LunyObjectRegistry : ILunyObjectRegistryInternal
 	{
 		private Dictionary<LunyObjectID, ILunyObject> _objectsByLunyID = new();
 		private Dictionary<LunyNativeObjectID, ILunyObject> _objectsByNativeID = new();

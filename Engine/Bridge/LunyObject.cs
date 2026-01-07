@@ -116,6 +116,7 @@ namespace Luny.Engine.Bridge
 		/// <typeparam name="T"></typeparam>
 		/// <returns></returns>
 		T As<T>() where T : class;
+
 		/// <summary>
 		/// Gets the engine-native object cast to T. Throws if the type cast is invalid.
 		/// </summary>
@@ -212,7 +213,7 @@ namespace Luny.Engine.Bridge
 			_nativeObjectID = nativeObjectID;
 			_lunyObjectID = LunyObjectID.Generate();
 
-			LunyEngine.Instance.Objects.Register(this);
+			((LunyEngine)LunyEngine.Instance).Objects.Register(this);
 		}
 
 		public void ActivateOnceBeforeUse()
@@ -238,7 +239,7 @@ namespace Luny.Engine.Bridge
 		public void Destroy()
 		{
 			// LunyLogger.LogInfo($"{nameof(UnityObject)}.{nameof(Destroy)}() => {this}", this);
-			if (!IsValid)
+			if (_state.IsDestroyed)
 				return;
 
 			IsEnabled = false; // may trigger OnDisable

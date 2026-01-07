@@ -20,12 +20,12 @@ namespace Luny.Engine
 	/// </summary>
 	internal sealed class LunyObjectLifecycleManager : ILunyObjectLifecycleManagerInternal
 	{
-		private ILunyObjectRegistry _lunyObjects;
+		private ILunyObjectRegistryInternal _lunyObjects;
 		private Queue<ILunyObject> _pendingReady = new();
 		private Queue<ILunyObject> _pendingDestroy = new();
 		private Dictionary<LunyObjectID, ILunyObject> _pendingReadyWaitingForEnable = new();
 
-		public LunyObjectLifecycleManager(ILunyObjectRegistry objectRegistry) =>
+		public LunyObjectLifecycleManager(ILunyObjectRegistryInternal objectRegistry) =>
 			_lunyObjects = objectRegistry ?? throw new ArgumentNullException(nameof(objectRegistry));
 
 		/// <summary>
@@ -65,6 +65,19 @@ namespace Luny.Engine
 		public void PreUpdate() => ProcessPendingReady();
 		public void PostUpdate() => ProcessPendingDestroy();
 
+		internal void DestroyNativeNullObjects()
+		{
+			var allObjects = _lunyObjects.AllObjects.ToList(); // need to operate on a copy
+			foreach (var lunyObject in allObjects)
+			{
+				if (!lunyObject.IsValid)
+				{
+					LunyLogger.LogWarning($"Object {lunyObject} is no longer valid, destroying.", this);
+					lunyObject.Destroy();
+				}
+			}
+		}
+
 		private void ProcessPendingReady()
 		{
 			while (_pendingReady.Count > 0)
@@ -77,6 +90,9 @@ namespace Luny.Engine
 
 		private void ProcessPendingDestroy()
 		{
+			if (_pendingDestroy.Count > 0)
+				LunyLogger.LogWarning($"Destroying {_pendingDestroy.Count} pending objects ...", this);
+
 			while (_pendingDestroy.Count > 0)
 			{
 				var obj = _pendingDestroy.Dequeue();
