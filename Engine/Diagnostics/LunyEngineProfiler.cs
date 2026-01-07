@@ -41,6 +41,9 @@ namespace Luny.Engine.Diagnostics
 		/// Where unsupported (Godot) the native engine adapter calls this at the end of the engine's update event.
 		/// </summary>
 		OnEngineLateUpdate = 1 << 6,
+
+		OnEngineSceneUnloaded = 1 << 8,
+		OnEngineSceneLoaded = 1 << 9,
 	}
 
 	/// <summary>

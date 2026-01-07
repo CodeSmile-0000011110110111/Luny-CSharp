@@ -101,5 +101,13 @@ namespace Luny
 			LunyLogger.LogInfo("Creating singleton instance...", type);
 #endif
 		}
+
+		[DebuggerHidden] [Conditional("DEBUG")] [Conditional("LUNY_DEBUG")]
+		public static void LogInfoEventCallback(String eventName, String message, Object source)
+		{
+#if DEBUG || LUNY_DEBUG
+			LunyLogger.LogInfo($"{eventName}: {message}", source);
+#endif
+		}
 	}
 }

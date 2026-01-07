@@ -213,7 +213,7 @@ namespace Luny.Engine.Bridge
 			_nativeObjectID = nativeObjectID;
 			_lunyObjectID = LunyObjectID.Generate();
 
-			((LunyEngine)LunyEngine.Instance).Objects.Register(this);
+			((ILunyObjectRegistryInternal)LunyEngine.Instance.Objects).Register(this);
 		}
 
 		public void ActivateOnceBeforeUse()

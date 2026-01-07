@@ -1,3 +1,4 @@
+using Luny.Engine.Bridge;
 using System;
 
 namespace Luny.Engine
@@ -16,5 +17,8 @@ namespace Luny.Engine
 		void OnEngineLateUpdate(Double deltaTime);
 		void OnEnginePostUpdate() {}
 		void OnEngineShutdown();
+
+		void OnSceneLoaded(ILunyScene loadedScene) {}
+		void OnSceneUnloaded(ILunyScene unloadedScene) {}
 	}
 }

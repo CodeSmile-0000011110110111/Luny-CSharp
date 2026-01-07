@@ -5,17 +5,19 @@ using System.Collections.Generic;
 
 namespace Luny.Engine
 {
-	public interface ILunyObjectRegistry {}
-
-	internal interface ILunyObjectRegistryInternal : ILunyObjectRegistry
+	public interface ILunyObjectRegistry
 	{
 		Int32 Count { get; }
 		IEnumerable<ILunyObject> AllObjects { get; }
+		ILunyObject GetByLunyID(LunyObjectID lunyObjectID);
+		ILunyObject GetByNativeID(LunyNativeObjectID lunyNativeObjectID);
+	}
+
+	internal interface ILunyObjectRegistryInternal : ILunyObjectRegistry
+	{
 		void Register(ILunyObject lunyObject);
 		Boolean Unregister(ILunyObject lunyObject);
 		Boolean Unregister(LunyObjectID lunyObjectID);
-		ILunyObject GetByLunyID(LunyObjectID lunyObjectID);
-		ILunyObject GetByNativeID(LunyNativeObjectID lunyNativeObjectID);
 	}
 
 	/// <summary>

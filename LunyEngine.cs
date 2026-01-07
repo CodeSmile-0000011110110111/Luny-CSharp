@@ -20,7 +20,7 @@ namespace Luny
 		ILunySceneService Scene { get; }
 		ILunyTimeService Time { get; }
 
-		// Diagnostics
+		ILunyObjectRegistry Objects { get; }
 		ILunyEngineProfiler Profiler { get; }
 
 		// Lifecycle dispatch methods - receives callbacks from engine adapters
@@ -65,7 +65,7 @@ namespace Luny
 		private LunyEngineProfiler _profiler;
 		private ILunyTimeServiceInternal _timeInternal;
 
-		internal ILunyObjectRegistryInternal Objects => _objectRegistry;
+		public ILunyObjectRegistry Objects => _objectRegistry;
 		internal ILunyObjectLifecycleManagerInternal Lifecycle => _lifecycleManager;
 
 		/// <summary>
@@ -129,12 +129,17 @@ namespace Luny
 			_serviceRegistry.Startup();
 		}
 
-		private void OnSceneLoaded(ILunyScene loadedScene) => LunyLogger.LogWarning($"Scene loaded: {loadedScene}", this);
+		private void OnSceneLoaded(ILunyScene loadedScene)
+		{
+			LunyTraceLogger.LogInfoEventCallback(nameof(OnSceneLoaded), loadedScene?.ToString(), this);
+			InvokeObserversOnSceneLoaded(loadedScene);
+		}
 
 		private void OnSceneUnloaded(ILunyScene unloadedScene)
 		{
-			LunyLogger.LogWarning($"Scene unloaded: {unloadedScene}", this);
+			LunyTraceLogger.LogInfoEventCallback(nameof(OnSceneLoaded), unloadedScene?.ToString(), this);
 			_lifecycleManager.DestroyNativeNullObjects();
+			InvokeObserversOnSceneUnloaded(unloadedScene);
 		}
 
 		private void PreUpdate()
