@@ -13,11 +13,6 @@ namespace Luny.Engine.Services
 	{
 		[MaybeNull] ILunyScene CurrentScene { get; }
 
-		/// <summary>
-		/// Gets the name of the currently active scene.
-		/// </summary>
-		String ActiveSceneName { get; }
-
 		void ReloadScene();
 
 		/// <summary>
