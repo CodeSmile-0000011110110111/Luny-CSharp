@@ -10,9 +10,11 @@ namespace Luny.Engine
 		public Boolean Enabled => true;
 
 		void OnEngineStartup();
+		void OnEnginePreUpdate() {}
 		void OnEngineFixedStep(Double fixedDeltaTime);
 		void OnEngineUpdate(Double deltaTime);
 		void OnEngineLateUpdate(Double deltaTime);
+		void OnEnginePostUpdate() {}
 		void OnEngineShutdown();
 	}
 }

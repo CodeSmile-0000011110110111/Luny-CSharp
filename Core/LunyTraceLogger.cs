@@ -1,4 +1,4 @@
-﻿using Luny.Engine.Services;
+﻿using Luny.Engine;
 using System;
 using System.Diagnostics;
 
@@ -74,7 +74,7 @@ namespace Luny
 		public static void LogInfoDestroying(ILunyEngineNativeAdapter adapter)
 		{
 #if DEBUG || LUNY_DEBUG
-			LunyLogger.LogInfo("Engine Adapter Destroying...", adapter);
+			LunyLogger.LogInfo("Destroying...", adapter);
 #endif
 		}
 
@@ -82,7 +82,7 @@ namespace Luny
 		public static void LogInfoDestroyed(ILunyEngineNativeAdapter adapter)
 		{
 #if DEBUG || LUNY_DEBUG
-			LunyLogger.LogInfo("Engine Adapter Destroyed. This is the end.", adapter);
+			LunyLogger.LogInfo("Destroyed. This is the end.", adapter);
 #endif
 		}
 
@@ -91,6 +91,14 @@ namespace Luny
 		{
 #if DEBUG || LUNY_DEBUG
 			LunyLogger.LogInfo($"finalized {source?.GetHashCode()}", source);
+#endif
+		}
+
+		[DebuggerHidden] [Conditional("DEBUG")] [Conditional("LUNY_DEBUG")]
+		public static void LogInfoCreateSingletonInstance(Type type)
+		{
+#if DEBUG || LUNY_DEBUG
+			LunyLogger.LogInfo("Creating singleton instance...", type);
 #endif
 		}
 	}

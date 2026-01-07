@@ -8,7 +8,7 @@ namespace Luny.Engine.Services
 	/// Engine-agnostic scene information service.
 	/// CAUTION: Implementations must inherit from both ISceneService interface and SceneServiceBase class!
 	/// </summary>
-	public interface ISceneService : ILunyEngineService
+	public interface ILunySceneService : ILunyEngineService
 	{
 		/// <summary>
 		/// Gets the name of the currently active scene.
@@ -29,5 +29,7 @@ namespace Luny.Engine.Services
 		ILunyObject FindObjectByName(String name);
 	}
 
-	public abstract class SceneServiceBase : LunyEngineServiceBase {}
+	internal interface ILunySceneServiceInternal {}
+
+	public abstract class LunySceneServiceBase : LunyEngineServiceBase, ILunySceneServiceInternal {}
 }

@@ -1,4 +1,3 @@
-using Luny.Attributes;
 using Luny.Engine.Identity;
 using System;
 using System.Collections.Generic;
@@ -18,11 +17,11 @@ namespace Luny.Engine
 
 		public IEnumerable<ILunyEngineObserver> EnabledObservers => _enabledObservers;
 
-		public LunyObserverRegistry(Boolean isSmokeTestScene) => DiscoverAndInstantiateObservers(isSmokeTestScene);
+		public LunyObserverRegistry() => DiscoverAndInstantiateObservers();
 
 		~LunyObserverRegistry() => LunyTraceLogger.LogInfoFinalized(this);
 
-		private void DiscoverAndInstantiateObservers(Boolean isSmokeTestScene)
+		private void DiscoverAndInstantiateObservers()
 		{
 			var sw = Stopwatch.StartNew();
 
@@ -33,9 +32,11 @@ namespace Luny.Engine
 
 			foreach (var type in observerTypes)
 			{
-				// Skip [LunyTestable] types unless in smoke test scenes
-				if (!isSmokeTestScene && type.HasAttribute<LunyTestableAttribute>())
+#if !DEBUG && !LUNY_DEBUG
+				// Skip [LunyTestable] types unless in DEBUG mode
+				if (type.HasAttribute<LunyTestableAttribute>())
 					continue;
+#endif
 
 				LunyLogger.LogInfo($"{type.FullName} registered", this);
 				var observer = (ILunyEngineObserver)Activator.CreateInstance(type);

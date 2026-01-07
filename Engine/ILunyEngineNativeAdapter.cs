@@ -1,7 +1,7 @@
 ﻿using Luny.Exceptions;
 using System;
 
-namespace Luny.Engine.Services
+namespace Luny.Engine
 {
 	/// <summary>
 	/// Marker interface for the native engine adapter.

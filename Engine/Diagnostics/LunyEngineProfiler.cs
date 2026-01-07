@@ -20,11 +20,14 @@ namespace Luny.Engine.Diagnostics
 		/// Runs once when application (runtime player) exits.
 		/// </summary>
 		OnEngineShutdown = 1 << 1,
-
-		// may add later:
-		//OnObserverEnable = 1 << 2,
-		//OnObserverDisable = 1 << 3,
-
+		/// <summary>
+		/// Runs at the beginning of a frame, before update and fixed step.
+		/// </summary>
+		OnEnginePreUpdate = 1 << 2,
+		/// <summary>
+		/// Runs at the end of a frame, after late update.
+		/// </summary>
+		OnEnginePostUpdate = 1 << 3,
 		/// <summary>
 		/// Runs in sync with engine's "fixed update" or "physics processing" event.
 		/// </summary>
@@ -62,7 +65,7 @@ namespace Luny.Engine.Diagnostics
 		private readonly Dictionary<Type, Dictionary<LunyEngineLifecycleEvents, LunyObserverMetrics>> _metrics = new();
 		private readonly Dictionary<ILunyEngineObserver, Stopwatch> _activeObservers = new();
 		private Int32 _rollingAverageWindow = 30;
-		private ITimeService _timeService;
+		private ILunyTimeService _timeService;
 
 		public Int32 RollingAverageWindow
 		{
@@ -70,7 +73,7 @@ namespace Luny.Engine.Diagnostics
 			set => _rollingAverageWindow = Math.Max(1, value); // Clamp to minimum 1
 		}
 
-		public LunyEngineProfiler(ITimeService timeService) => _timeService = timeService;
+		public LunyEngineProfiler(ILunyTimeService timeService) => _timeService = timeService;
 
 		public ILunyEngineProfilerSnapshot TakeSnapshot()
 		{

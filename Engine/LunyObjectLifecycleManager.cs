@@ -62,10 +62,10 @@ namespace Luny.Engine
 
 		~LunyObjectLifecycleManager() => LunyTraceLogger.LogInfoFinalized(this);
 
-		/// <summary>
-		/// Processes the OnReady queue. Should be called at the start of Update/FixedUpdate.
-		/// </summary>
-		public void ProcessPendingReady()
+		public void PreUpdate() => ProcessPendingReady();
+		public void PostUpdate() => ProcessPendingDestroy();
+
+		private void ProcessPendingReady()
 		{
 			while (_pendingReady.Count > 0)
 			{
@@ -75,10 +75,7 @@ namespace Luny.Engine
 			}
 		}
 
-		/// <summary>
-		/// Processes the destruction queue. Should be called at the end of the frame.
-		/// </summary>
-		public void ProcessPendingDestroy()
+		private void ProcessPendingDestroy()
 		{
 			while (_pendingDestroy.Count > 0)
 			{
@@ -95,7 +92,7 @@ namespace Luny.Engine
 			foreach (var lunyObject in allObjects)
 				lunyObject.Destroy();
 
-			ProcessPendingDestroy();
+			PostUpdate();
 
 			_pendingReady.Clear();
 			_pendingDestroy.Clear();

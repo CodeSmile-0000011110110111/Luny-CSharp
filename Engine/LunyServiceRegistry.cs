@@ -1,5 +1,4 @@
 using Luny.Engine.Identity;
-using Luny.Engine.Services;
 using Luny.Exceptions;
 using System;
 using System.Collections.Generic;
@@ -24,15 +23,15 @@ namespace Luny.Engine
 	/// Generic service registry that discovers and holds engine services.
 	/// </summary>
 	/// <typeparam name="T">Service interface type that must implement IEngineProvider</typeparam>
-	internal sealed class LunyServiceRegistry<T> : ILunyServiceRegistry, ILunyServiceRegistryInternal where T : class, ILunyEngineService
+	internal sealed class LunyServiceRegistry : ILunyServiceRegistry, ILunyServiceRegistryInternal
 	{
-		private readonly Dictionary<Type, T> _registeredServices = new();
+		private readonly Dictionary<Type, LunyEngineServiceBase> _registeredServices = new();
 
 		private static Type GetServiceInterface(Type implementationType)
 		{
 			// Get all interfaces that derive from IEngineServiceProvider (but are not IEngineServiceProvider itself)
 			var serviceInterfaces = implementationType.GetInterfaces()
-				.Where(i => i != typeof(T) && typeof(T).IsAssignableFrom(i))
+				.Where(i => i != typeof(ILunyEngineService) && typeof(ILunyEngineService).IsAssignableFrom(i))
 				.ToArray();
 
 			// Must implement exactly one specific service interface
@@ -44,14 +43,48 @@ namespace Luny.Engine
 			return serviceInterfaces[0];
 		}
 
-		internal LunyServiceRegistry() => DiscoverAndInstantiateServices();
+		internal LunyServiceRegistry()
+		{
+			DiscoverAndInstantiateServices();
+			InitializeServices();
+		}
+
 		~LunyServiceRegistry() => LunyTraceLogger.LogInfoFinalized(this);
+
+		private void InitializeServices()
+		{
+			foreach (var service in _registeredServices.Values)
+				service.Initialize();
+		}
+
+		internal void Startup()
+		{
+			foreach (var service in _registeredServices.Values)
+				service.Startup();
+		}
+
+		internal void Shutdown()
+		{
+			foreach (var service in _registeredServices.Values)
+				service.Shutdown();
+		}
+
+		internal void PreUpdate()
+		{
+			foreach (var service in _registeredServices.Values)
+				service.PreUpdate();
+		}
+		internal void PostUpdate()
+		{
+			foreach (var service in _registeredServices.Values)
+				service.PostUpdate();
+		}
 
 		private void DiscoverAndInstantiateServices()
 		{
 			var sw = Stopwatch.StartNew();
 
-			var serviceTypes = LunyTypeDiscovery.FindAll<T>();
+			var serviceTypes = LunyTypeDiscovery.FindAll<ILunyEngineService>();
 
 			foreach (var type in serviceTypes)
 			{
@@ -59,22 +92,33 @@ namespace Luny.Engine
 				var serviceInterface = GetServiceInterface(type);
 
 				LunyLogger.LogInfo($"{serviceInterface.Name} => {type.FullName} registered", this);
-				var service = (T)Activator.CreateInstance(type);
-				_registeredServices[serviceInterface] = service;
+				var service = Activator.CreateInstance(type) as LunyEngineServiceBase;
+				if (service == null)
+					throw new LunyServiceException($"{serviceInterface} does not inherit from {nameof(LunyEngineServiceBase)}");
+
+				var baseType = service.GetType().BaseType;
+				if (baseType == null || baseType == typeof(LunyEngineServiceBase))
+				{
+					throw new LunyServiceException($"{serviceInterface} implemented by {service.GetType().Name} does not inherit from " +
+					                               $"service-specific subclass of {nameof(LunyEngineServiceBase)}. Actual base class is: " +
+					                               $"{baseType?.Name}");
+				}
+
+				_registeredServices[baseType] = service;
 			}
 
 			sw.Stop();
 
 			var ms = (Int32)Math.Round(sw.Elapsed.TotalMilliseconds, MidpointRounding.AwayFromZero);
-			LunyLogger.LogInfo($"Registered {_registeredServices.Count} {typeof(T).Name} instances in {ms} ms.", this);
+			LunyLogger.LogInfo($"Registered {_registeredServices.Count} {nameof(LunyEngineServiceBase)} instances in {ms} ms.", this);
 		}
 
-		internal TService Get<TService>() where TService : class, T, ILunyEngineService =>
+		internal TService Get<TService>() where TService : LunyEngineServiceBase =>
 			_registeredServices.TryGetValue(typeof(TService), out var service)
 				? (TService)service
 				: throw new LunyServiceException($"Required service {typeof(TService).FullName} not registered.");
 
-		internal Boolean TryGet<TService>(out TService service) where TService : class, T, ILunyEngineService
+		internal Boolean TryGet<TService>(out TService service) where TService : LunyEngineServiceBase
 		{
 			if (_registeredServices.TryGetValue(typeof(TService), out var registeredService))
 			{
@@ -86,6 +130,6 @@ namespace Luny.Engine
 			return false;
 		}
 
-		internal Boolean Has<TService>() where TService : class, T, ILunyEngineService => _registeredServices.ContainsKey(typeof(TService));
+		internal Boolean Has<TService>() where TService : LunyEngineServiceBase => _registeredServices.ContainsKey(typeof(TService));
 	}
 }

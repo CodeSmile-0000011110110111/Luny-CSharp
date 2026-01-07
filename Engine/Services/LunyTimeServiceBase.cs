@@ -7,7 +7,7 @@ namespace Luny.Engine.Services
 	/// Implementations should use engine-native time sources (Time.frameCount, Time.realtimeSinceStartup, etc.)
 	/// CAUTION: Implementations must inherit from both ITimeService interface and TimeServiceBase class!
 	/// </summary>
-	public interface ITimeService : ILunyEngineService
+	public interface ILunyTimeService : ILunyEngineService
 	{
 		/// <summary>
 		/// Gets the total number of frames that have been rendered since the application started.
@@ -32,15 +32,18 @@ namespace Luny.Engine.Services
 		Double ElapsedSeconds { get; }
 	}
 
-	internal interface ITimeServiceInternal
+	internal interface ILunyTimeServiceInternal
 	{
 		void SetLunyFrameCount(Int64 frameCount);
+		void IncrementLunyFrameCount();
 	}
 
-	public abstract class TimeServiceBase : ITimeServiceInternal
+	public abstract class LunyTimeServiceBase : LunyEngineServiceBase, ILunyTimeServiceInternal
 	{
 		protected Int64 _lunyFrameCount;
 		public Int64 FrameCount => _lunyFrameCount;
-		void ITimeServiceInternal.SetLunyFrameCount(Int64 frameCount) => _lunyFrameCount = frameCount;
+
+		void ILunyTimeServiceInternal.SetLunyFrameCount(Int64 frameCount) => _lunyFrameCount = frameCount;
+		public void IncrementLunyFrameCount() => _lunyFrameCount++;
 	}
 }

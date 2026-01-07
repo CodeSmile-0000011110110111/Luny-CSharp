@@ -16,11 +16,11 @@ namespace Luny
 		ILunyObjectRegistry Objects { get; }
 
 		// Mandatory services
-		IApplicationService Application { get; }
-		IDebugService Debug { get; }
-		IEditorService Editor { get; }
-		ISceneService Scene { get; }
-		ITimeService Time { get; }
+		ILunyApplicationService Application { get; }
+		ILunyDebugService Debug { get; }
+		ILunyEditorService Editor { get; }
+		ILunySceneService Scene { get; }
+		ILunyTimeService Time { get; }
 
 		// Diagnostics
 		ILunyEngineProfiler Profiler { get; }
@@ -38,14 +38,18 @@ namespace Luny
 		Boolean IsObserverEnabled<T>() where T : ILunyEngineObserver;
 
 		// Service access
-		TService GetService<TService>() where TService : class, ILunyEngineService;
-		Boolean TryGetService<TService>(out TService service) where TService : class, ILunyEngineService;
-		Boolean HasService<TService>() where TService : class, ILunyEngineService;
+		TService GetService<TService>() where TService : LunyEngineServiceBase;
+		Boolean TryGetService<TService>(out TService service) where TService : LunyEngineServiceBase;
+		Boolean HasService<TService>() where TService : LunyEngineServiceBase;
 	}
 
 	internal interface ILunyEngineInternal
 	{
-		static void SingletonDuplicationException() => throw new LunyLifecycleException($"Duplicate {nameof(LunyEngine)} singleton detected!");
+		static void ThrowOnSingletonDuplication(LunyEngine instance)
+		{
+			if (instance != null)
+				throw new LunyLifecycleException($"Duplicate {nameof(LunyEngine)} singleton detected!");
+		}
 	}
 
 	/// <summary>
@@ -56,12 +60,12 @@ namespace Luny
 		private static LunyEngine s_Instance;
 		private static Boolean s_IsDisposed;
 
-		private LunyServiceRegistry<ILunyEngineService> _serviceRegistry;
+		private LunyServiceRegistry _serviceRegistry;
 		private LunyObserverRegistry _observerRegistry;
 		private LunyObjectRegistry _objectRegistry;
 		private LunyObjectLifecycleManager _lifecycleManager;
 		private LunyEngineProfiler _profiler;
-		private ITimeServiceInternal _timeInternal;
+		private ILunyTimeServiceInternal _timeInternal;
 
 		public ILunyObjectRegistry Objects => _objectRegistry;
 		internal ILunyObjectLifecycleManagerInternal Lifecycle => _lifecycleManager;
@@ -79,6 +83,7 @@ namespace Luny
 
 		internal static ILunyEngine CreateInstance(ILunyEngineNativeAdapter engineAdapter)
 		{
+			LunyTraceLogger.LogInfoCreateSingletonInstance(typeof(LunyEngine));
 			if (s_IsDisposed)
 				throw new LunyLifecycleException($"{nameof(LunyEngine)} instance already disposed. It must not be created again.");
 			if (s_Instance != null)
@@ -96,24 +101,7 @@ namespace Luny
 
 		internal static void ResetDisposedFlag_UnityEditorOnly() => s_IsDisposed = false;
 
-		private static Boolean IsSmokeTestScene(ISceneService sceneService)
-		{
-			// FIXME: remove hardcoded strings, find a better way to determine test mode
-			var sceneName = sceneService.ActiveSceneName;
-			if (sceneName == null)
-			{
-				LunyLogger.LogWarning("IsSmokeTestScene ran too early, ActiveSceneName is null ...");
-				return false;
-			}
-
-			return sceneName.StartsWith("Luny") && sceneName.EndsWith("SmokeTest");
-		}
-
-		private LunyEngine()
-		{
-			if (s_Instance != null)
-				ILunyEngineInternal.SingletonDuplicationException();
-		}
+		private LunyEngine() => ILunyEngineInternal.ThrowOnSingletonDuplication(s_Instance);
 
 		private void Initialize()
 		{
@@ -121,172 +109,50 @@ namespace Luny
 
 			LunyObjectID.Reset();
 
-			_serviceRegistry = new LunyServiceRegistry<ILunyEngineService>();
-			AcquireMandatoryServices();
-			StartupServices(); // FIXME: move this into service registry
+			_serviceRegistry = new LunyServiceRegistry();
+			AssignMandatoryServices();
+			_timeInternal = (ILunyTimeServiceInternal)Time;
+			_timeInternal.SetLunyFrameCount(0); // frame "0" is anything pre-startup
 
+			_profiler = new LunyEngineProfiler(Time);
+			_observerRegistry = new LunyObserverRegistry();
 			_objectRegistry = new LunyObjectRegistry();
 			_lifecycleManager = new LunyObjectLifecycleManager(_objectRegistry);
-
-			_timeInternal = (ITimeServiceInternal)Time;
-			_timeInternal.SetLunyFrameCount(1); // ensure we always start in frame "1"
-
-			var isSmokeTestScene = IsSmokeTestScene(Scene);
-			_observerRegistry = new LunyObserverRegistry(isSmokeTestScene);
-			_profiler = new LunyEngineProfiler(Time);
 
 			LunyTraceLogger.LogInfoInitialized(this);
 		}
 
-		/// <summary>
-		/// CAUTION: Must only be called by engine-native lifecycle adapter!
-		/// </summary>
-		public void OnEngineStartup()
+		public void EnableObserver<T>() where T : ILunyEngineObserver => _observerRegistry.EnableObserver<T>();
+		public void DisableObserver<T>() where T : ILunyEngineObserver => _observerRegistry.DisableObserver<T>();
+		public Boolean IsObserverEnabled<T>() where T : ILunyEngineObserver => _observerRegistry.IsObserverEnabled<T>();
+
+		public Boolean HasService<TService>() where TService : LunyEngineServiceBase => _serviceRegistry.Has<TService>();
+		public TService GetService<TService>() where TService : LunyEngineServiceBase => _serviceRegistry.Get<TService>();
+
+		public Boolean TryGetService<TService>(out TService service) where TService : LunyEngineServiceBase =>
+			_serviceRegistry.TryGet(out service);
+
+		private void Startup() => _serviceRegistry.Startup();
+
+		private void PreUpdate()
 		{
-			LunyTraceLogger.LogInfoStartingUp(this);
-
-			foreach (var observer in _observerRegistry.EnabledObservers)
-			{
-				_profiler.BeginObserver(observer);
-				try
-				{
-					observer.OnEngineStartup();
-				}
-				catch (Exception e)
-				{
-					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnEngineStartup, e);
-					/* keep dispatch resilient */
-					LunyLogger.LogException(e);
-				}
-				finally
-				{
-					_profiler.EndObserver(observer, LunyEngineLifecycleEvents.OnEngineStartup);
-				}
-			}
-
-			LunyTraceLogger.LogInfoStartupComplete(this);
+			_lifecycleManager.PreUpdate();
 		}
 
-		/// <summary>
-		/// CAUTION: Must only be called by engine-native lifecycle adapter!
-		/// </summary>
-		public void OnEngineFixedStep(Double fixedDeltaTime)
+		private void PostUpdate()
 		{
-			_lifecycleManager.ProcessPendingReady();
+			// run "structural changes" here ..
+			_serviceRegistry.PostUpdate();
+			_lifecycleManager.PostUpdate(); // should run last to guarantee object cleanup
 
-			foreach (var observer in _observerRegistry.EnabledObservers)
-			{
-				_profiler.BeginObserver(observer);
-				try
-				{
-					observer.OnEngineFixedStep(fixedDeltaTime);
-				}
-				catch (Exception e)
-				{
-					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnEngineFixedStep, e);
-					/* keep dispatch resilient */
-					LunyLogger.LogException(e);
-				}
-				finally
-				{
-					_profiler.EndObserver(observer, LunyEngineLifecycleEvents.OnEngineFixedStep);
-				}
-			}
+			_timeInternal.IncrementLunyFrameCount(); // bump FrameCount
 		}
 
-		/// <summary>
-		/// CAUTION: Must only be called by engine-native lifecycle adapter!
-		/// </summary>
-		public void OnEngineUpdate(Double deltaTime)
+		private void Shutdown()
 		{
-			// TODO: send "OnPreUpdate"
-			_lifecycleManager.ProcessPendingReady();
-
-			foreach (var observer in _observerRegistry.EnabledObservers)
-			{
-				_profiler.BeginObserver(observer);
-				try
-				{
-					// TODO: check if enabled state changed to true, if so send OnEnable
-
-					observer.OnEngineUpdate(deltaTime);
-				}
-				catch (Exception e)
-				{
-					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnEngineUpdate, e);
-					/* keep dispatch resilient */
-					LunyLogger.LogException(e);
-				}
-				finally
-				{
-					_profiler.EndObserver(observer, LunyEngineLifecycleEvents.OnEngineUpdate);
-				}
-			}
-		}
-
-		/// <summary>
-		/// CAUTION: Must only be called by engine-native lifecycle adapter!
-		/// </summary>
-		public void OnEngineLateUpdate(Double deltaTime)
-		{
-			foreach (var observer in _observerRegistry.EnabledObservers)
-			{
-				_profiler.BeginObserver(observer);
-				try
-				{
-					observer.OnEngineLateUpdate(deltaTime);
-
-					// TODO: check if enabled state changed to false, if so send OnDisable
-				}
-				catch (Exception e)
-				{
-					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnEngineLateUpdate, e);
-					/* keep dispatch resilient */
-					LunyLogger.LogException(e);
-				}
-				finally
-				{
-					_profiler.EndObserver(observer, LunyEngineLifecycleEvents.OnEngineLateUpdate);
-				}
-			}
-
-			// TODO: run structural changes here, ie "OnPostUpdate"
-			_lifecycleManager.ProcessPendingDestroy();
-
-			// next frame
-			_timeInternal.SetLunyFrameCount(Time.FrameCount + 1);
-		}
-
-		/// <summary>
-		/// CAUTION: Must only be called by engine-native lifecycle adapter!
-		/// </summary>
-		public void OnEngineShutdown()
-		{
-			LunyTraceLogger.LogInfoShuttingDown(this);
-
-			foreach (var observer in _observerRegistry.EnabledObservers)
-			{
-				_profiler.BeginObserver(observer);
-				try
-				{
-					observer.OnEngineShutdown();
-				}
-				catch (Exception e)
-				{
-					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnEngineShutdown, e);
-					/* keep dispatch resilient */
-					LunyLogger.LogException(e);
-				}
-				finally
-				{
-					_profiler.EndObserver(observer, LunyEngineLifecycleEvents.OnEngineShutdown);
-				}
-			}
-
 			_lifecycleManager.Shutdown(_objectRegistry);
 			_objectRegistry.Shutdown();
-
-			ShutdownServices();
+			_serviceRegistry.Shutdown();
 
 			_serviceRegistry = null;
 			_observerRegistry = null;
@@ -294,27 +160,11 @@ namespace Luny
 			_lifecycleManager = null;
 			_profiler = null;
 			_timeInternal = null;
-			s_Instance = null;
 
 			// ensure we won't get re-instantiated after this point
 			s_IsDisposed = true;
-
-			LunyTraceLogger.LogInfoShutdownComplete(this);
+			s_Instance = null;
 		}
-
-		public void EnableObserver<T>() where T : ILunyEngineObserver => _observerRegistry.EnableObserver<T>();
-		public void DisableObserver<T>() where T : ILunyEngineObserver => _observerRegistry.DisableObserver<T>();
-		public Boolean IsObserverEnabled<T>() where T : ILunyEngineObserver => _observerRegistry.IsObserverEnabled<T>();
-
-		public Boolean HasService<TService>() where TService : class, ILunyEngineService => _serviceRegistry.Has<TService>();
-		public TService GetService<TService>() where TService : class, ILunyEngineService => _serviceRegistry.Get<TService>();
-
-		public Boolean TryGetService<TService>(out TService service) where TService : class, ILunyEngineService =>
-			_serviceRegistry.TryGet(out service);
-
-		// FIXME: move this into service registry and use overarching base class
-		private void StartupServices() => ((LunyEngineServiceBase)Scene).OnEngineStartup();
-		private void ShutdownServices() => ((LunyEngineServiceBase)Scene).OnEngineShutdown();
 
 		~LunyEngine() => LunyTraceLogger.LogInfoFinalized(this);
 

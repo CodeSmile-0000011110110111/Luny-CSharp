@@ -140,7 +140,7 @@ namespace Luny
 				writer.WriteLine(entry.ToString());
 		}
 
-		private static void RecordInternalLog(LogLevel level, String message, Object context = null, ITimeService time = null)
+		private static void RecordInternalLog(LogLevel level, String message, Object context = null, ILunyTimeService time = null)
 		{
 			if (!EnableInternalLogging)
 				return;
@@ -170,7 +170,7 @@ namespace Luny
 			});
 		}
 
-		private static String FormatWithContext(String message, Object context = null, ITimeService time = null)
+		private static String FormatWithContext(String message, Object context = null, ILunyTimeService time = null)
 		{
 			var prefix = context switch
 			{
@@ -179,7 +179,7 @@ namespace Luny
 				var _ => context != null ? $"[{context.GetType().Name}] " : String.Empty,
 			};
 
-			var frameCount = time == null ? String.Empty : $"[{time.EngineFrameCount}] ";
+			var frameCount = time == null ? String.Empty : $"[{time.FrameCount}] ";
 
 			return $"{frameCount}{prefix}{message}";
 		}

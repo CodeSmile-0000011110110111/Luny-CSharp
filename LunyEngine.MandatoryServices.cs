@@ -4,19 +4,19 @@ namespace Luny
 {
 	public sealed partial class LunyEngine
 	{
-		public IApplicationService Application { get; private set; }
-		public IDebugService Debug { get; private set; }
-		public IEditorService Editor { get; private set; }
-		public ISceneService Scene { get; private set; }
-		public ITimeService Time { get; private set; }
+		public ILunyApplicationService Application { get; private set; }
+		public ILunyDebugService Debug { get; private set; }
+		public ILunyEditorService Editor { get; private set; }
+		public ILunySceneService Scene { get; private set; }
+		public ILunyTimeService Time { get; private set; }
 
-		private void AcquireMandatoryServices()
+		private void AssignMandatoryServices()
 		{
-			Application = GetService<IApplicationService>();
-			Debug = GetService<IDebugService>();
-			Editor = GetService<IEditorService>();
-			Scene = GetService<ISceneService>();
-			Time = GetService<ITimeService>();
+			Application = (ILunyApplicationService)GetService<LunyApplicationServiceBase>();
+			Debug = (ILunyDebugService)GetService<LunyDebugServiceBase>();
+			Editor = (ILunyEditorService)GetService<LunyEditorServiceBase>();
+			Scene = (ILunySceneService)GetService<LunySceneServiceBase>();
+			Time = (ILunyTimeService)GetService<LunyTimeServiceBase>();
 		}
 	}
 }
