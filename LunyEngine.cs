@@ -1,9 +1,11 @@
 using Luny.Engine;
+using Luny.Engine.Bridge;
 using Luny.Engine.Diagnostics;
 using Luny.Engine.Identity;
 using Luny.Engine.Services;
 using Luny.Exceptions;
 using System;
+using System.Threading.Tasks;
 
 namespace Luny
 {
@@ -132,7 +134,23 @@ namespace Luny
 		public Boolean TryGetService<TService>(out TService service) where TService : LunyEngineServiceBase =>
 			_serviceRegistry.TryGet(out service);
 
-		private void Startup() => _serviceRegistry.Startup();
+		private void Startup()
+		{
+			var sceneService = (ILunySceneServiceInternal)Scene;
+			sceneService.OnSceneLoaded += OnSceneLoaded;
+			sceneService.OnSceneUnloaded += OnSceneUnloaded;
+
+			_serviceRegistry.Startup();
+		}
+
+		private void OnSceneLoaded(ILunyScene loadedScene)
+		{
+			LunyLogger.LogWarning($"Scene loaded: {loadedScene}", this);
+		}
+		private void OnSceneUnloaded(ILunyScene unloadedScene)
+		{
+			LunyLogger.LogWarning($"Scene unloaded: {unloadedScene}", this);
+		}
 
 		private void PreUpdate()
 		{
@@ -151,6 +169,10 @@ namespace Luny
 
 		private void Shutdown()
 		{
+			var sceneService = (ILunySceneServiceInternal)Scene;
+			sceneService.OnSceneLoaded -= OnSceneLoaded;
+			sceneService.OnSceneUnloaded -= OnSceneUnloaded;
+
 			_lifecycleManager.Shutdown(_objectRegistry);
 			_objectRegistry.Shutdown();
 			_serviceRegistry.Shutdown();

@@ -27,12 +27,22 @@ namespace Luny.Engine.Services
 		ILunyObject FindObjectByName(String name);
 	}
 
-	internal interface ILunySceneServiceInternal {}
+	internal interface ILunySceneServiceInternal
+	{
+		event Action<ILunyScene> OnSceneLoaded;
+		event Action<ILunyScene> OnSceneUnloaded;
+	}
 
 	public abstract class LunySceneServiceBase : LunyEngineServiceBase, ILunySceneServiceInternal
 	{
 		private ILunyScene _currentScene;
 		[MaybeNull] public ILunyScene CurrentScene { get => _currentScene; protected set => _currentScene = value; }
+
+		public event Action<ILunyScene> OnSceneLoaded;
+		public event Action<ILunyScene> OnSceneUnloaded;
+
+		protected void InvokeOnSceneLoaded(ILunyScene scene) => OnSceneLoaded?.Invoke(scene);
+		protected void InvokeOnSceneUnloaded(ILunyScene scene) => OnSceneUnloaded?.Invoke(scene);
 
 		public override String ToString() => _currentScene != null ? _currentScene.ToString() : $"<null:{GetType().Name}>";
 	}
