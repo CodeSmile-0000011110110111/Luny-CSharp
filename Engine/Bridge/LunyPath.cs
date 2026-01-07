@@ -17,7 +17,7 @@ namespace Luny.Engine.Bridge
 	{
 		private String _agnosticPath;
 		public String NativePath { get; }
-		public String AgnosticPath => _agnosticPath ??= ToEngineAgnosticPath(_agnosticPath).ToForwardSlashes();
+		public String AgnosticPath => _agnosticPath ??= ToEngineAgnosticPath(NativePath).ToForwardSlashes();
 
 		public static implicit operator String(LunyPath lunyPath) => lunyPath.NativePath;
 
