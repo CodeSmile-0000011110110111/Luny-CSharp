@@ -1,5 +1,3 @@
-using System;
-
 namespace Luny.Engine
 {
 	/// <summary>
@@ -16,13 +14,13 @@ namespace Luny.Engine
 			OnServiceInitialize();
 			LunyTraceLogger.LogInfoInitialized(this);
 		}
+
 		internal void Startup()
 		{
 			LunyTraceLogger.LogInfoStartingUp(this);
 			OnServiceStartup();
 			LunyTraceLogger.LogInfoStartupComplete(this);
 		}
-
 
 		internal void Shutdown()
 		{
@@ -31,19 +29,13 @@ namespace Luny.Engine
 			LunyTraceLogger.LogInfoShutdownComplete(this);
 		}
 
-		internal void PreUpdate()
-		{
-			// OnServicePreUpdate();
-		}
-		internal void PostUpdate()
-		{
-			// OnServicePostUpdate();
-		}
+		internal void PreUpdate() => OnServicePreUpdate();
+		internal void PostUpdate() => OnServicePostUpdate();
 
-		protected abstract void OnServiceInitialize();
-		protected abstract void OnServiceStartup();
-		protected abstract void OnServiceShutdown();
-		// protected abstract void OnServicePreUpdate();
-		// protected abstract void OnServicePostUpdate();
+		protected virtual void OnServiceInitialize() {}
+		protected virtual void OnServiceStartup() {}
+		protected virtual void OnServiceShutdown() {}
+		protected virtual void OnServicePreUpdate() {}
+		protected virtual void OnServicePostUpdate() {}
 	}
 }

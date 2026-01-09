@@ -1,6 +1,7 @@
 using Luny.Engine.Identity;
 using Luny.Exceptions;
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -216,14 +217,13 @@ namespace Luny.Engine.Bridge
 			((ILunyObjectRegistryInternal)LunyEngine.Instance.Objects).Register(this);
 		}
 
+		public T As<T>() where T : class => _nativeObject as T;
+		public T Cast<T>() => (T)_nativeObject;
+
 		public void ActivateOnceBeforeUse()
 		{
-#if DEBUG
-			if (_state.IsActivated)
-				throw new LunyLifecycleException($"{this} has already been activated!");
-
+			ThrowIfActivatedAgain();
 			_state.IsActivated = true;
-#endif
 
 			LifecycleManager.OnObjectCreated(this);
 			OnCreate?.Invoke();
@@ -233,12 +233,8 @@ namespace Luny.Engine.Bridge
 				SetEnabledState(_state.IsEnabled); // will trigger OnEnable
 		}
 
-		public T As<T>() where T : class => _nativeObject as T;
-		public T Cast<T>() => (T)_nativeObject;
-
 		public void Destroy()
 		{
-			// LunyLogger.LogInfo($"{nameof(UnityObject)}.{nameof(Destroy)}() => {this}", this);
 			if (_state.IsDestroyed)
 				return;
 
@@ -251,6 +247,15 @@ namespace Luny.Engine.Bridge
 		}
 
 		~LunyObject() => LunyTraceLogger.LogInfoFinalized(this);
+
+		[Conditional("DEBUG")][Conditional("LUNY_DEBUG")]
+		private void ThrowIfActivatedAgain()
+		{
+#if DEBUG || LUNY_DEBUG
+			if (_state.IsActivated)
+				throw new LunyLifecycleException($"{this} has already been activated!");
+#endif
+		}
 
 		private void SetVisibleState(Boolean visible)
 		{
