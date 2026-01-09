@@ -84,30 +84,9 @@ namespace Luny
 		/// </summary>
 		public static Boolean EnableInternalLogging { get; set; }
 
-		public static void Log(String message, LogLevel logLevel, Object context = null)
-		{
-			var time = LunyEngine.Instance?.Time;
-			RecordInternalLog(logLevel, message, context, time);
-			var formattedMessage = FormatWithContext(message, context, time);
-			switch (logLevel)
-			{
-				case LogLevel.Info:
-					_logger.LogInfo(formattedMessage);
-					break;
-				case LogLevel.Warning:
-					_logger.LogWarning(formattedMessage);
-					break;
-				case LogLevel.Error:
-					_logger.LogError(formattedMessage);
-					break;
-				default:
-					throw new ArgumentOutOfRangeException(nameof(logLevel), logLevel, context?.ToString());
-			}
-		}
-
-		public static void LogInfo(String message, Object context = null) => Log(message, LogLevel.Info, context);
-		public static void LogWarning(String message, Object context = null) => Log(message, LogLevel.Warning, context);
-		public static void LogError(String message, Object context = null) => Log(message, LogLevel.Error, context);
+		public static void LogInfo(String message, Object context = null) => LogMessage(message, LogLevel.Info, context);
+		public static void LogWarning(String message, Object context = null) => LogMessage(message, LogLevel.Warning, context);
+		public static void LogError(String message, Object context = null) => LogMessage(message, LogLevel.Error, context);
 
 		public static void LogException(Exception exception, Object context = null)
 		{
@@ -140,6 +119,41 @@ namespace Luny
 				writer.WriteLine(entry.ToString());
 		}
 
+		private static void LogMessage(String message, LogLevel logLevel, Object context = null)
+		{
+			var time = LunyEngine.Instance?.Time;
+			RecordInternalLog(logLevel, message, context, time);
+			var formattedMessage = FormatWithContext(message, context, time);
+			switch (logLevel)
+			{
+				case LogLevel.Info:
+					_logger.LogInfo(formattedMessage);
+					break;
+				case LogLevel.Warning:
+					_logger.LogWarning(formattedMessage);
+					break;
+				case LogLevel.Error:
+					_logger.LogError(formattedMessage);
+					break;
+				default:
+					throw new ArgumentOutOfRangeException(nameof(logLevel), logLevel, context?.ToString());
+			}
+		}
+
+		private static String FormatWithContext(String message, Object context = null, ILunyTimeService time = null)
+		{
+			var prefix = context switch
+			{
+				Type t => $"[{t.Name}] ",
+				String s => $"[{s}] ",
+				var _ => context != null ? $"[{context.GetType().Name}] " : String.Empty,
+			};
+
+			var frameCount = time == null ? String.Empty : $"[{time.FrameCount}] ";
+
+			return $"{frameCount}{prefix}{message}";
+		}
+
 		private static void RecordInternalLog(LogLevel level, String message, Object context = null, ILunyTimeService time = null)
 		{
 			if (!EnableInternalLogging)
@@ -168,20 +182,6 @@ namespace Luny
 					var _ => context.GetType().Name,
 				},
 			});
-		}
-
-		private static String FormatWithContext(String message, Object context = null, ILunyTimeService time = null)
-		{
-			var prefix = context switch
-			{
-				Type t => $"[{t.Name}] ",
-				String s => $"[{s}] ",
-				var _ => context != null ? $"[{context.GetType().Name}] " : String.Empty,
-			};
-
-			var frameCount = time == null ? String.Empty : $"[{time.FrameCount}] ";
-
-			return $"{frameCount}{prefix}{message}";
 		}
 
 		private sealed class ConsoleLogger : ILunyLogger
