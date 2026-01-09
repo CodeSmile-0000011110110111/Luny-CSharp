@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace CodeSmile
+namespace Luny
 {
 	public static class SystemStringExtensions
 	{

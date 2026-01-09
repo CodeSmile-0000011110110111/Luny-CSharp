@@ -74,6 +74,7 @@ namespace Luny.Engine
 			foreach (var service in _registeredServices.Values)
 				service.PreUpdate();
 		}
+
 		internal void PostUpdate()
 		{
 			foreach (var service in _registeredServices.Values)

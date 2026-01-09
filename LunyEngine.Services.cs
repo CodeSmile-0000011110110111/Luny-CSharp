@@ -23,8 +23,8 @@ namespace Luny
 
 		private Boolean HasService<TService>() where TService : LunyEngineServiceBase => _serviceRegistry.Has<TService>();
 		private TService GetService<TService>() where TService : LunyEngineServiceBase => _serviceRegistry.Get<TService>();
+
 		private Boolean TryGetService<TService>(out TService service) where TService : LunyEngineServiceBase =>
 			_serviceRegistry.TryGet(out service);
-
 	}
 }

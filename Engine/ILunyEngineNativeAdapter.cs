@@ -8,7 +8,7 @@ namespace Luny.Engine
 	/// </summary>
 	public interface ILunyEngineNativeAdapter
 	{
-		static bool IsApplicationQuitting;
+		static Boolean IsApplicationQuitting;
 
 		static ILunyEngineNativeAdapter ValidateAdapterSingletonInstance(ILunyEngineNativeAdapter existingInstance, Object current)
 		{

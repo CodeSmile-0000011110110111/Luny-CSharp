@@ -35,11 +35,10 @@ namespace Luny.Engine.Services
 
 	public abstract class LunySceneServiceBase : LunyEngineServiceBase, ILunySceneServiceInternal
 	{
-		private ILunyScene _currentScene;
-		[MaybeNull] public ILunyScene CurrentScene { get => _currentScene; protected set => _currentScene = value; }
-
 		public event Action<ILunyScene> OnSceneLoaded;
 		public event Action<ILunyScene> OnSceneUnloaded;
+		private ILunyScene _currentScene;
+		[MaybeNull] public ILunyScene CurrentScene { get => _currentScene; protected set => _currentScene = value; }
 
 		protected void InvokeOnSceneLoaded(ILunyScene scene) => OnSceneLoaded?.Invoke(scene);
 		protected void InvokeOnSceneUnloaded(ILunyScene scene) => OnSceneUnloaded?.Invoke(scene);

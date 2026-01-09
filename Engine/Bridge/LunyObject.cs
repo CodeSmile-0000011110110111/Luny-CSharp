@@ -248,7 +248,7 @@ namespace Luny.Engine.Bridge
 
 		~LunyObject() => LunyTraceLogger.LogInfoFinalized(this);
 
-		[Conditional("DEBUG")][Conditional("LUNY_DEBUG")]
+		[Conditional("DEBUG")] [Conditional("LUNY_DEBUG")]
 		private void ThrowIfActivatedAgain()
 		{
 #if DEBUG || LUNY_DEBUG
