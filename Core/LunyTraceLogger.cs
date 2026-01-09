@@ -109,5 +109,13 @@ namespace Luny
 			LunyLogger.LogInfo($"{eventName}: {message}", source);
 #endif
 		}
+
+		[DebuggerHidden] [Conditional("DEBUG")] [Conditional("LUNY_DEBUG")]
+		public static void LogTrace(String message, Object source)
+		{
+#if DEBUG || LUNY_DEBUG
+			LunyLogger.LogInfo(message, source);
+#endif
+		}
 	}
 }

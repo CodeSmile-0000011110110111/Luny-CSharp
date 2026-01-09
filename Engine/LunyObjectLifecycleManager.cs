@@ -91,7 +91,7 @@ namespace Luny.Engine
 		private void ProcessPendingDestroy()
 		{
 			if (_pendingDestroy.Count > 0)
-				LunyLogger.LogWarning($"Destroying {_pendingDestroy.Count} pending objects ...", this);
+				LunyTraceLogger.LogTrace($"Destroying {_pendingDestroy.Count} pending objects ...", this);
 
 			while (_pendingDestroy.Count > 0)
 			{
