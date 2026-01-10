@@ -21,10 +21,10 @@ namespace Luny
 			Time = (ILunyTimeService)GetService<LunyTimeServiceBase>();
 		}
 
-		private Boolean HasService<TService>() where TService : LunyEngineServiceBase => _serviceRegistry.Has<TService>();
-		private TService GetService<TService>() where TService : LunyEngineServiceBase => _serviceRegistry.Get<TService>();
+		public Boolean HasService<TService>() where TService : LunyEngineServiceBase => _serviceRegistry.Has<TService>();
+		public TService GetService<TService>() where TService : LunyEngineServiceBase => _serviceRegistry.Get<TService>();
 
-		private Boolean TryGetService<TService>(out TService service) where TService : LunyEngineServiceBase =>
+		public Boolean TryGetService<TService>(out TService service) where TService : LunyEngineServiceBase =>
 			_serviceRegistry.TryGet(out service);
 	}
 }

@@ -12,7 +12,7 @@ namespace Luny
 		/// </summary>
 		public void OnEngineStartup()
 		{
-			_timeInternal.SetLunyFrameCount(1); // set before tracelog for consistency
+			_timeInternal.SetLunyFrameCount(1); // frame "0" is anything before startup
 			LunyTraceLogger.LogInfoStartingUp(this);
 
 			Startup();
@@ -215,6 +215,7 @@ namespace Luny
 			PostUpdateObservers();
 			PostUpdate(); // engine last
 
+			_timeInternal.IncrementLunyFrameCount(); // bump FrameCount
 			_didCallPreUpdate = false;
 		}
 	}

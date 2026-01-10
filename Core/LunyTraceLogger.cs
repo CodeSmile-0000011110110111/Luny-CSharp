@@ -1,5 +1,4 @@
-﻿using Luny.Engine;
-using System;
+﻿using System;
 using System.Diagnostics;
 
 namespace Luny
@@ -71,18 +70,18 @@ namespace Luny
 		}
 
 		[DebuggerHidden] [Conditional("DEBUG")] [Conditional("LUNY_DEBUG")]
-		public static void LogInfoDestroying(ILunyEngineNativeAdapter adapter)
+		public static void LogInfoDestroying(Object source)
 		{
 #if DEBUG || LUNY_DEBUG
-			LunyLogger.LogInfo("Destroying...", adapter);
+			LunyLogger.LogInfo("Destroying...", source);
 #endif
 		}
 
 		[DebuggerHidden] [Conditional("DEBUG")] [Conditional("LUNY_DEBUG")]
-		public static void LogInfoDestroyed(ILunyEngineNativeAdapter adapter)
+		public static void LogInfoDestroyed(Object source)
 		{
 #if DEBUG || LUNY_DEBUG
-			LunyLogger.LogInfo("Destroyed. This is the end.", adapter);
+			LunyLogger.LogInfo("Destroyed. This is the end.", source);
 #endif
 		}
 

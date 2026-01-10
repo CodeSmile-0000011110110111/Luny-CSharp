@@ -6,7 +6,7 @@ namespace Luny.Engine
 	/// <summary>
 	/// Marker interface for the native engine adapter.
 	/// </summary>
-	public interface ILunyEngineNativeAdapter
+	internal interface ILunyEngineNativeAdapter
 	{
 		static Boolean IsApplicationQuitting;
 
@@ -30,13 +30,13 @@ namespace Luny.Engine
 				throw new LunyLifecycleException($"{nameof(ILunyEngineNativeAdapter)} is null");
 		}
 
-		static void ThrowIfLunyEngineNull(ILunyEngine lunyEngine)
+		static void ThrowIfLunyEngineNull(ILunyEngineAdapter lunyEngine)
 		{
 			if (lunyEngine == null)
 				throw new LunyLifecycleException($"{nameof(ILunyEngine)} is null");
 		}
 
-		static void ThrowIfPrematurelyRemoved(ILunyEngineNativeAdapter adapter, ILunyEngine lunyEngine)
+		static void ThrowIfPrematurelyRemoved(ILunyEngineNativeAdapter adapter, ILunyEngineAdapter lunyEngine)
 		{
 			if (!IsApplicationQuitting || adapter != null)
 			{
@@ -47,7 +47,7 @@ namespace Luny.Engine
 			}
 		}
 
-		static void Shutdown(ILunyEngineNativeAdapter adapter, ILunyEngine lunyEngine)
+		static void Shutdown(ILunyEngineNativeAdapter adapter, ILunyEngineAdapter lunyEngine)
 		{
 			LunyTraceLogger.LogInfoShuttingDown(adapter);
 			lunyEngine?.OnEngineShutdown();

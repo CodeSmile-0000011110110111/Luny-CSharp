@@ -40,7 +40,7 @@ namespace Luny.Engine.Services
 
 	public abstract class LunyTimeServiceBase : LunyEngineServiceBase, ILunyTimeServiceInternal
 	{
-		protected Int64 _lunyFrameCount;
+		private Int64 _lunyFrameCount;
 		public Int64 FrameCount => _lunyFrameCount;
 
 		void ILunyTimeServiceInternal.SetLunyFrameCount(Int64 frameCount) => _lunyFrameCount = frameCount;

@@ -23,50 +23,56 @@ namespace Luny
 		ILunyObjectRegistry Objects { get; }
 		ILunyEngineProfiler Profiler { get; }
 
-		// Lifecycle dispatch methods - receives callbacks from engine adapters
-		void OnEngineStartup();
-		void OnEngineFixedStep(Double fixedDeltaTime);
-		void OnEngineUpdate(Double deltaTime);
-		void OnEngineLateUpdate(Double deltaTime);
-		void OnEngineShutdown();
-
 		// Observer management
 		void EnableObserver<T>() where T : ILunyEngineObserver;
 		void DisableObserver<T>() where T : ILunyEngineObserver;
 		Boolean IsObserverEnabled<T>() where T : ILunyEngineObserver;
 
 		// Service access
-		// TService GetService<TService>() where TService : LunyEngineServiceBase;
-		// Boolean TryGetService<TService>(out TService service) where TService : LunyEngineServiceBase;
-		// Boolean HasService<TService>() where TService : LunyEngineServiceBase;
+		TService GetService<TService>() where TService : LunyEngineServiceBase;
+		Boolean TryGetService<TService>(out TService service) where TService : LunyEngineServiceBase;
+		Boolean HasService<TService>() where TService : LunyEngineServiceBase;
 	}
 
-	internal interface ILunyEngineInternal
+	internal interface ILunyEngineAdapter
 	{
 		static void ThrowOnSingletonDuplication(LunyEngine instance)
 		{
 			if (instance != null)
 				throw new LunyLifecycleException($"Duplicate {nameof(LunyEngine)} singleton detected!");
 		}
+
+		// Lifecycle callbacks for engine adapters
+		void OnEngineStartup();
+		void OnEngineFixedStep(Double fixedDeltaTime);
+		void OnEngineUpdate(Double deltaTime);
+		void OnEngineLateUpdate(Double deltaTime);
+		void OnEngineShutdown();
+	}
+
+	internal interface ILunyEngineInternal
+	{
+		ILunyObjectLifecycleManagerInternal Lifecycle { get; }
 	}
 
 	/// <summary>
 	/// Singleton engine that discovers and manages services and lifecycle observers.
 	/// </summary>
-	public sealed partial class LunyEngine : ILunyEngine, ILunyEngineInternal
+	public sealed partial class LunyEngine : ILunyEngine, ILunyEngineInternal, ILunyEngineAdapter
 	{
 		private static LunyEngine s_Instance;
 		private static Boolean s_IsDisposed;
 
 		private LunyServiceRegistry _serviceRegistry;
-		private LunyObserverRegistry _observerRegistry;
+		private LunyEngineObserverRegistry _observerRegistry;
 		private LunyObjectRegistry _objectRegistry;
 		private LunyObjectLifecycleManager _lifecycleManager;
 		private LunyEngineProfiler _profiler;
 		private ILunyTimeServiceInternal _timeInternal;
 
 		public ILunyObjectRegistry Objects => _objectRegistry;
-		internal ILunyObjectLifecycleManagerInternal Lifecycle => _lifecycleManager;
+
+		ILunyObjectLifecycleManagerInternal ILunyEngineInternal.Lifecycle => _lifecycleManager;
 
 		/// <summary>
 		/// Gets the engine profiler for performance monitoring.
@@ -79,7 +85,7 @@ namespace Luny
 		/// </summary>
 		public static ILunyEngine Instance => s_Instance;
 
-		internal static ILunyEngine CreateInstance(ILunyEngineNativeAdapter engineAdapter)
+		internal static ILunyEngineAdapter CreateInstance(ILunyEngineNativeAdapter engineAdapter)
 		{
 			LunyTraceLogger.LogInfoCreateSingletonInstance(typeof(LunyEngine));
 			if (s_IsDisposed)
@@ -99,7 +105,7 @@ namespace Luny
 
 		internal static void ResetDisposedFlag_UnityEditorOnly() => s_IsDisposed = false;
 
-		private LunyEngine() => ILunyEngineInternal.ThrowOnSingletonDuplication(s_Instance);
+		private LunyEngine() => ILunyEngineAdapter.ThrowOnSingletonDuplication(s_Instance);
 
 		private void Initialize()
 		{
@@ -110,17 +116,18 @@ namespace Luny
 			_serviceRegistry = new LunyServiceRegistry();
 			AssignMandatoryServices();
 			_timeInternal = (ILunyTimeServiceInternal)Time;
-			_timeInternal.SetLunyFrameCount(0); // frame "0" is anything pre-startup
 
 			_profiler = new LunyEngineProfiler(Time);
-			_observerRegistry = new LunyObserverRegistry();
+			_observerRegistry = new LunyEngineObserverRegistry();
 			_objectRegistry = new LunyObjectRegistry();
 			_lifecycleManager = new LunyObjectLifecycleManager(_objectRegistry);
 
 			LunyTraceLogger.LogInfoInitialized(this);
 		}
 
-		private void Startup()
+		~LunyEngine() => LunyTraceLogger.LogInfoFinalized(this);
+
+		private void Startup() // called from Heartbeat
 		{
 			var sceneService = (ILunySceneServiceInternal)Scene;
 			sceneService.OnSceneLoaded += OnSceneLoaded;
@@ -129,35 +136,7 @@ namespace Luny
 			_serviceRegistry.Startup();
 		}
 
-		private void OnSceneLoaded(ILunyScene loadedScene)
-		{
-			LunyTraceLogger.LogInfoEventCallback(nameof(OnSceneLoaded), loadedScene?.ToString(), this);
-			InvokeObserversOnSceneLoaded(loadedScene);
-		}
-
-		private void OnSceneUnloaded(ILunyScene unloadedScene)
-		{
-			LunyTraceLogger.LogInfoEventCallback(nameof(OnSceneLoaded), unloadedScene?.ToString(), this);
-			_lifecycleManager.DestroyNativeNullObjects();
-			InvokeObserversOnSceneUnloaded(unloadedScene);
-		}
-
-		private void PreUpdate()
-		{
-			_serviceRegistry.PreUpdate();
-			_lifecycleManager.PreUpdate();
-		}
-
-		private void PostUpdate()
-		{
-			// run "structural changes" here ..
-			_serviceRegistry.PostUpdate();
-			_lifecycleManager.PostUpdate(); // should run last to guarantee object cleanup
-
-			_timeInternal.IncrementLunyFrameCount(); // bump FrameCount
-		}
-
-		private void Shutdown()
+		private void Shutdown() // called from Heartbeat
 		{
 			var sceneService = (ILunySceneServiceInternal)Scene;
 			sceneService.OnSceneLoaded -= OnSceneLoaded;
@@ -179,6 +158,30 @@ namespace Luny
 			s_Instance = null;
 		}
 
-		~LunyEngine() => LunyTraceLogger.LogInfoFinalized(this);
+		private void PreUpdate() // called from Heartbeat
+		{
+			_serviceRegistry.PreUpdate();
+			_lifecycleManager.PreUpdate();
+		}
+
+		private void PostUpdate() // called from Heartbeat
+		{
+			// run "structural changes" here ..
+			_serviceRegistry.PostUpdate();
+			_lifecycleManager.PostUpdate(); // should run last to guarantee object cleanup
+		}
+
+		private void OnSceneLoaded(ILunyScene loadedScene) // called by SceneService
+		{
+			LunyTraceLogger.LogInfoEventCallback(nameof(OnSceneLoaded), loadedScene?.ToString(), this);
+			InvokeObserversOnSceneLoaded(loadedScene);
+		}
+
+		private void OnSceneUnloaded(ILunyScene unloadedScene) // called by SceneService
+		{
+			LunyTraceLogger.LogInfoEventCallback(nameof(OnSceneLoaded), unloadedScene?.ToString(), this);
+			_lifecycleManager.DestroyNativeNullObjects();
+			InvokeObserversOnSceneUnloaded(unloadedScene);
+		}
 	}
 }

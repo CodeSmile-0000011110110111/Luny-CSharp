@@ -8,18 +8,18 @@ namespace Luny.Engine
 	public interface ILunyObserverRegistry {}
 
 	/// <summary>
-	/// Registry that discovers, manages, and enables/disables lifecycle observers.
+	/// Registry that discovers, manages, and enables/disables engine observers.
 	/// </summary>
-	internal sealed class LunyObserverRegistry : ILunyObserverRegistry
+	internal sealed class LunyEngineObserverRegistry : ILunyObserverRegistry
 	{
 		private readonly Dictionary<Type, ILunyEngineObserver> _registeredObservers = new();
 		private readonly List<ILunyEngineObserver> _enabledObservers = new();
 
 		public IEnumerable<ILunyEngineObserver> EnabledObservers => _enabledObservers;
 
-		public LunyObserverRegistry() => DiscoverAndInstantiateObservers();
+		public LunyEngineObserverRegistry() => DiscoverAndInstantiateObservers();
 
-		~LunyObserverRegistry() => LunyTraceLogger.LogInfoFinalized(this);
+		~LunyEngineObserverRegistry() => LunyTraceLogger.LogInfoFinalized(this);
 
 		private void DiscoverAndInstantiateObservers()
 		{

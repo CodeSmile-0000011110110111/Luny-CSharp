@@ -159,19 +159,30 @@ namespace Luny.Engine.Bridge
 		private SystemObject _nativeObject;
 		private ObjectState _state;
 
-		[NotNull] private static ILunyObjectLifecycleManagerInternal LifecycleManager => ((LunyEngine)LunyEngine.Instance).Lifecycle;
+		[NotNull] private static ILunyObjectLifecycleManagerInternal Lifecycle => ((ILunyEngineInternal)LunyEngine.Instance).Lifecycle;
 
 		public LunyObjectID LunyObjectID => _lunyObjectID;
 		public LunyNativeObjectID NativeObjectID => _nativeObjectID;
 		public SystemObject NativeObject => _nativeObject;
 
+#if DEBUG || LUNY_DEBUG
+		private String DebugNativeObjectName { get; set; }
+#else
+		private String DebugNativeObjectName { get => String.Empty; set {} }
+#endif
+
 		public String Name
 		{
-			get => IsValid ? GetNativeObjectName() : $"<null:{_nativeObjectID}>";
+			get => IsValid ? GetNativeObjectName() : $"<null:{DebugNativeObjectName}({_nativeObjectID})>";
 			set
 			{
-				if (IsValid && !String.IsNullOrEmpty(value))
+				if (IsValid)
+				{
 					SetNativeObjectName(value);
+#if DEBUG || LUNY_DEBUG
+					DebugNativeObjectName = GetNativeObjectName();
+#endif
+				}
 			}
 		}
 
@@ -225,7 +236,9 @@ namespace Luny.Engine.Bridge
 			ThrowIfActivatedAgain();
 			_state.IsActivated = true;
 
-			LifecycleManager.OnObjectCreated(this);
+			DebugNativeObjectName = GetNativeObjectName();
+
+			Lifecycle.OnObjectCreated(this);
 			OnCreate?.Invoke();
 
 			SetVisibleState(_state.IsVisible);
@@ -240,22 +253,13 @@ namespace Luny.Engine.Bridge
 
 			IsEnabled = false; // may trigger OnDisable
 			OnDestroy?.Invoke();
-			LifecycleManager.OnObjectDestroyed(this);
+			Lifecycle.OnObjectDestroyed(this);
 
 			// Mark as destroyed (native destruction happens at the end of the frame)
 			_state.IsDestroyed = true;
 		}
 
 		~LunyObject() => LunyTraceLogger.LogInfoFinalized(this);
-
-		[Conditional("DEBUG")] [Conditional("LUNY_DEBUG")]
-		private void ThrowIfActivatedAgain()
-		{
-#if DEBUG || LUNY_DEBUG
-			if (_state.IsActivated)
-				throw new LunyLifecycleException($"{this} has already been activated!");
-#endif
-		}
 
 		private void SetVisibleState(Boolean visible)
 		{
@@ -274,13 +278,13 @@ namespace Luny.Engine.Bridge
 			if (enabled)
 			{
 				SetNativeObjectEnabled();
-				LifecycleManager.OnObjectEnabled(this);
+				Lifecycle.OnObjectEnabled(this);
 				OnEnable?.Invoke();
 			}
 			else
 			{
 				SetNativeObjectDisabled();
-				LifecycleManager.OnObjectDisabled(this);
+				Lifecycle.OnObjectDisabled(this);
 				OnDisable?.Invoke();
 			}
 		}
@@ -292,7 +296,7 @@ namespace Luny.Engine.Bridge
 		internal void DestroyNativeObjectInternal()
 		{
 			if (!_state.IsDestroyed)
-				throw new LunyLifecycleException($"{this}: {nameof(DestroyNativeObjectInternal)}() called without {nameof(Destroy)}()!");
+				throw new LunyLifecycleException($"{this}: {nameof(DestroyNativeObjectInternal)}() called without prior {nameof(Destroy)}()");
 
 			DestroyNativeObject();
 			_nativeObject = null;
@@ -310,6 +314,15 @@ namespace Luny.Engine.Bridge
 		protected abstract void SetNativeObjectInvisible();
 
 		public override String ToString() => $"{(IsEnabled ? "☑" : "☐")} {Name} ({LunyObjectID}, {NativeObjectID})";
+
+		[Conditional("DEBUG")] [Conditional("LUNY_DEBUG")]
+		private void ThrowIfActivatedAgain()
+		{
+#if DEBUG || LUNY_DEBUG
+			if (_state.IsActivated)
+				throw new LunyLifecycleException($"{this} has already been activated!");
+#endif
+		}
 
 		private struct ObjectState
 		{
