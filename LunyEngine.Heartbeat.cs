@@ -4,7 +4,7 @@ using System;
 
 namespace Luny
 {
-	public sealed partial class LunyEngineInternal
+	public sealed partial class LunyEngine
 	{
 		private Boolean _didCallPreUpdate;
 

@@ -11,23 +11,21 @@ namespace Luny.Engine
 	{
 		static Boolean IsApplicationQuitting;
 
-		static ILunyEngineLifecycle CreateEngine(ref ILunyEngineNativeAdapter instance, ILunyEngineNativeAdapter nativeAdapter)
+		static ILunyEngineLifecycle CreateEngine(ref ILunyEngineNativeAdapter nativeAdapterSingleton, ILunyEngineNativeAdapter nativeAdapter)
 		{
-			instance = ValidateAdapterSingletonInstance(instance, nativeAdapter);
-			return LunyEngineInternal.CreateInstance(instance);
+			nativeAdapterSingleton = ValidateAdapterSingletonInstance(nativeAdapterSingleton, nativeAdapter);
+			return LunyEngine.CreateInstance(nativeAdapterSingleton);
 		}
 
 		[SuppressMessage("ReSharper", "HeuristicUnreachableCode")]
-		static ILunyEngineNativeAdapter ValidateAdapterSingletonInstance(ILunyEngineNativeAdapter existingInstance, Object current)
+		static ILunyEngineNativeAdapter ValidateAdapterSingletonInstance(ILunyEngineNativeAdapter existingInstance,
+			ILunyEngineNativeAdapter nativeAdapter)
 		{
 			if (existingInstance != null)
 			{
 				throw new LunyLifecycleException($"Duplicate {nameof(ILunyEngineNativeAdapter)} singleton detected! " +
-				                                 $"Existing: {existingInstance}, Duplicate: {current}");
+				                                 $"Existing: {existingInstance}, Duplicate: {nativeAdapter}");
 			}
-
-			if (current is not ILunyEngineNativeAdapter nativeAdapter)
-				throw new LunyLifecycleException($"New {nameof(ILunyEngineNativeAdapter)} instance is null or incorrect type: {current}");
 
 			return nativeAdapter;
 		}

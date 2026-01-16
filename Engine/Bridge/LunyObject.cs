@@ -159,7 +159,7 @@ namespace Luny.Engine.Bridge
 		private SystemObject _nativeObject;
 		private ObjectState _state;
 
-		[NotNull] private static ILunyObjectLifecycleManagerInternal Lifecycle => ((ILunyEngineInternal)LunyEngineInternal.Instance).Lifecycle;
+		[NotNull] private static ILunyObjectLifecycleManagerInternal Lifecycle => ((ILunyEngineInternal)LunyEngine.Instance).Lifecycle;
 
 		public LunyObjectID LunyObjectID => _lunyObjectID;
 		public LunyNativeObjectID NativeObjectID => _nativeObjectID;
@@ -225,7 +225,7 @@ namespace Luny.Engine.Bridge
 			_nativeObjectID = nativeObjectID;
 			_lunyObjectID = LunyObjectID.Generate();
 
-			((ILunyObjectRegistryInternal)LunyEngineInternal.Instance.Objects).Register(this);
+			((ILunyObjectRegistryInternal)LunyEngine.Instance.Objects).Register(this);
 		}
 
 		public T As<T>() where T : class => _nativeObject as T;

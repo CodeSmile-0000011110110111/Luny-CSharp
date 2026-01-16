@@ -4,7 +4,7 @@ using System;
 
 namespace Luny
 {
-	public sealed partial class LunyEngineInternal
+	public sealed partial class LunyEngine
 	{
 		public ILunyApplicationService Application { get; private set; }
 		public ILunyDebugService Debug { get; private set; }
