@@ -5,7 +5,7 @@ using System;
 
 namespace Luny
 {
-	public sealed partial class LunyEngine
+	public sealed partial class LunyEngineInternal
 	{
 		public void EnableObserver<T>() where T : ILunyEngineObserver => _observerRegistry.EnableObserver<T>();
 		public void DisableObserver<T>() where T : ILunyEngineObserver => _observerRegistry.DisableObserver<T>();

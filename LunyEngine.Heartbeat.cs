@@ -4,7 +4,7 @@ using System;
 
 namespace Luny
 {
-	public sealed partial class LunyEngine
+	public sealed partial class LunyEngineInternal
 	{
 		private Boolean _didCallPreUpdate;
 
@@ -15,7 +15,7 @@ namespace Luny
 		{
 			_timeInternal.IncrementLunyFrameCount(); // bump FrameCount
 			LunyTraceLogger.LogInfoStartingUp(this);
-			ILunyEngineAdapter.ThrowIfNotCurrentAdapter(nativeAdapter, s_NativeAdapter);
+			ILunyEngineLifecycle.ThrowIfNotCurrentAdapter(nativeAdapter, s_NativeAdapter);
 
 			Startup();
 
@@ -47,7 +47,7 @@ namespace Luny
 		public void OnEngineShutdown(ILunyEngineNativeAdapter nativeAdapter)
 		{
 			LunyTraceLogger.LogInfoShuttingDown(this);
-			ILunyEngineAdapter.ThrowIfNotCurrentAdapter(nativeAdapter, s_NativeAdapter);
+			ILunyEngineLifecycle.ThrowIfNotCurrentAdapter(nativeAdapter, s_NativeAdapter);
 
 			foreach (var observer in _observerRegistry.EnabledObservers)
 			{
@@ -78,7 +78,7 @@ namespace Luny
 		/// </summary>
 		public void OnEngineFixedStep(Double fixedDeltaTime, ILunyEngineNativeAdapter nativeAdapter)
 		{
-			ILunyEngineAdapter.ThrowIfNotCurrentAdapter(nativeAdapter, s_NativeAdapter);
+			ILunyEngineLifecycle.ThrowIfNotCurrentAdapter(nativeAdapter, s_NativeAdapter);
 			CheckAndCallPreUpdate();
 
 			foreach (var observer in _observerRegistry.EnabledObservers)
@@ -106,7 +106,7 @@ namespace Luny
 		/// </summary>
 		public void OnEngineUpdate(Double deltaTime, ILunyEngineNativeAdapter nativeAdapter)
 		{
-			ILunyEngineAdapter.ThrowIfNotCurrentAdapter(nativeAdapter, s_NativeAdapter);
+			ILunyEngineLifecycle.ThrowIfNotCurrentAdapter(nativeAdapter, s_NativeAdapter);
 			CheckAndCallPreUpdate();
 
 			foreach (var observer in _observerRegistry.EnabledObservers)
@@ -136,7 +136,7 @@ namespace Luny
 		/// </summary>
 		public void OnEngineLateUpdate(Double deltaTime, ILunyEngineNativeAdapter nativeAdapter)
 		{
-			ILunyEngineAdapter.ThrowIfNotCurrentAdapter(nativeAdapter, s_NativeAdapter);
+			ILunyEngineLifecycle.ThrowIfNotCurrentAdapter(nativeAdapter, s_NativeAdapter);
 
 			foreach (var observer in _observerRegistry.EnabledObservers)
 			{
