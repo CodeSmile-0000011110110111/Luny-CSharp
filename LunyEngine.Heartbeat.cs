@@ -1,4 +1,5 @@
-﻿using Luny.Engine.Diagnostics;
+﻿using Luny.Engine;
+using Luny.Engine.Diagnostics;
 using System;
 
 namespace Luny
@@ -10,10 +11,11 @@ namespace Luny
 		/// <summary>
 		/// CAUTION: Must only be called by engine-native lifecycle adapter!
 		/// </summary>
-		public void OnEngineStartup()
+		public void OnEngineStartup(ILunyEngineNativeAdapter nativeAdapter)
 		{
-			_timeInternal.SetLunyFrameCount(1); // frame "0" is anything before startup
+			_timeInternal.IncrementLunyFrameCount(); // bump FrameCount
 			LunyTraceLogger.LogInfoStartingUp(this);
+			ILunyEngineAdapter.ThrowIfNotCurrentAdapter(nativeAdapter, s_NativeAdapter);
 
 			Startup();
 
@@ -42,9 +44,10 @@ namespace Luny
 		/// <summary>
 		/// CAUTION: Must only be called by engine-native lifecycle adapter!
 		/// </summary>
-		public void OnEngineShutdown()
+		public void OnEngineShutdown(ILunyEngineNativeAdapter nativeAdapter)
 		{
 			LunyTraceLogger.LogInfoShuttingDown(this);
+			ILunyEngineAdapter.ThrowIfNotCurrentAdapter(nativeAdapter, s_NativeAdapter);
 
 			foreach (var observer in _observerRegistry.EnabledObservers)
 			{
@@ -73,8 +76,9 @@ namespace Luny
 		/// <summary>
 		/// CAUTION: Must only be called by engine-native lifecycle adapter!
 		/// </summary>
-		public void OnEngineFixedStep(Double fixedDeltaTime)
+		public void OnEngineFixedStep(Double fixedDeltaTime, ILunyEngineNativeAdapter nativeAdapter)
 		{
+			ILunyEngineAdapter.ThrowIfNotCurrentAdapter(nativeAdapter, s_NativeAdapter);
 			CheckAndCallPreUpdate();
 
 			foreach (var observer in _observerRegistry.EnabledObservers)
@@ -100,8 +104,9 @@ namespace Luny
 		/// <summary>
 		/// CAUTION: Must only be called by engine-native lifecycle adapter!
 		/// </summary>
-		public void OnEngineUpdate(Double deltaTime)
+		public void OnEngineUpdate(Double deltaTime, ILunyEngineNativeAdapter nativeAdapter)
 		{
+			ILunyEngineAdapter.ThrowIfNotCurrentAdapter(nativeAdapter, s_NativeAdapter);
 			CheckAndCallPreUpdate();
 
 			foreach (var observer in _observerRegistry.EnabledObservers)
@@ -129,8 +134,10 @@ namespace Luny
 		/// <summary>
 		/// CAUTION: Must only be called by engine-native lifecycle adapter!
 		/// </summary>
-		public void OnEngineLateUpdate(Double deltaTime)
+		public void OnEngineLateUpdate(Double deltaTime, ILunyEngineNativeAdapter nativeAdapter)
 		{
+			ILunyEngineAdapter.ThrowIfNotCurrentAdapter(nativeAdapter, s_NativeAdapter);
+
 			foreach (var observer in _observerRegistry.EnabledObservers)
 			{
 				_profiler.BeginObserver(observer);
@@ -184,7 +191,7 @@ namespace Luny
 				_profiler.BeginObserver(observer);
 				try
 				{
-					observer.OnEnginePreUpdate();
+					observer.OnEnginePostUpdate();
 				}
 				catch (Exception e)
 				{
@@ -214,8 +221,6 @@ namespace Luny
 		{
 			PostUpdateObservers();
 			PostUpdate(); // engine last
-
-			_timeInternal.IncrementLunyFrameCount(); // bump FrameCount
 			_didCallPreUpdate = false;
 		}
 	}

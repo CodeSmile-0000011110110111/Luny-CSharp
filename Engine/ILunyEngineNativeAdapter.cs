@@ -6,7 +6,7 @@ namespace Luny.Engine
 	/// <summary>
 	/// Marker interface for the native engine adapter.
 	/// </summary>
-	internal interface ILunyEngineNativeAdapter
+	public interface ILunyEngineNativeAdapter
 	{
 		static Boolean IsApplicationQuitting;
 
@@ -50,7 +50,7 @@ namespace Luny.Engine
 		static void Shutdown(ILunyEngineNativeAdapter adapter, ILunyEngineAdapter lunyEngine)
 		{
 			LunyTraceLogger.LogInfoShuttingDown(adapter);
-			lunyEngine?.OnEngineShutdown();
+			lunyEngine?.OnEngineShutdown(adapter);
 		}
 
 		static void ShutdownComplete(ILunyEngineNativeAdapter adapter) => LunyTraceLogger.LogInfoShutdownComplete(adapter);

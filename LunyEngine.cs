@@ -5,6 +5,7 @@ using Luny.Engine.Identity;
 using Luny.Engine.Services;
 using Luny.Exceptions;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Luny
 {
@@ -27,6 +28,7 @@ namespace Luny
 		void EnableObserver<T>() where T : ILunyEngineObserver;
 		void DisableObserver<T>() where T : ILunyEngineObserver;
 		Boolean IsObserverEnabled<T>() where T : ILunyEngineObserver;
+		T GetObserver<T>() where T : ILunyEngineObserver;
 
 		// Service access
 		TService GetService<TService>() where TService : LunyEngineServiceBase;
@@ -34,7 +36,7 @@ namespace Luny
 		Boolean HasService<TService>() where TService : LunyEngineServiceBase;
 	}
 
-	internal interface ILunyEngineAdapter
+	public interface ILunyEngineAdapter
 	{
 		static void ThrowOnSingletonDuplication(LunyEngine instance)
 		{
@@ -42,12 +44,22 @@ namespace Luny
 				throw new LunyLifecycleException($"Duplicate {nameof(LunyEngine)} singleton detected!");
 		}
 
-		// Lifecycle callbacks for engine adapters
-		void OnEngineStartup();
-		void OnEngineFixedStep(Double fixedDeltaTime);
-		void OnEngineUpdate(Double deltaTime);
-		void OnEngineLateUpdate(Double deltaTime);
-		void OnEngineShutdown();
+		static void ThrowIfNotCurrentAdapter(ILunyEngineNativeAdapter actualAdapter, ILunyEngineNativeAdapter expectedAdapter)
+		{
+#if DEBUG || LUNY_DEBUG
+			if (actualAdapter == null)
+				throw new LunyLifecycleException($"Null adapter passed into {nameof(ILunyEngineAdapter)} interface method!");
+			if (actualAdapter != expectedAdapter)
+				throw new LunyLifecycleException($"Wrong adapter {actualAdapter} passed into {nameof(ILunyEngineAdapter)} interface method!");
+#endif
+		}
+
+		// Lifecycle callbacks for engine adapter
+		void OnEngineStartup(ILunyEngineNativeAdapter nativeAdapter);
+		void OnEngineFixedStep(Double fixedDeltaTime, ILunyEngineNativeAdapter nativeAdapter);
+		void OnEngineUpdate(Double deltaTime, ILunyEngineNativeAdapter nativeAdapter);
+		void OnEngineLateUpdate(Double deltaTime, ILunyEngineNativeAdapter nativeAdapter);
+		void OnEngineShutdown(ILunyEngineNativeAdapter nativeAdapter);
 	}
 
 	internal interface ILunyEngineInternal
@@ -61,6 +73,7 @@ namespace Luny
 	public sealed partial class LunyEngine : ILunyEngine, ILunyEngineInternal, ILunyEngineAdapter
 	{
 		private static LunyEngine s_Instance;
+		private static ILunyEngineNativeAdapter s_NativeAdapter;
 		private static Boolean s_IsDisposed;
 
 		private LunyServiceRegistry _serviceRegistry;
@@ -85,6 +98,7 @@ namespace Luny
 		/// </summary>
 		public static ILunyEngine Instance => s_Instance;
 
+		[SuppressMessage("ReSharper", "HeuristicUnreachableCode")]
 		internal static ILunyEngineAdapter CreateInstance(ILunyEngineNativeAdapter engineAdapter)
 		{
 			LunyTraceLogger.LogInfoCreateSingletonInstance(typeof(LunyEngine));
@@ -92,10 +106,10 @@ namespace Luny
 				throw new LunyLifecycleException($"{nameof(LunyEngine)} instance already disposed. It must not be created again.");
 			if (s_Instance != null)
 				throw new LunyLifecycleException($"{nameof(LunyEngine)} instance already exists.");
+			if (engineAdapter == null) // adapter instance is used to ensure only the creating adapter can run LunyEngine
+				throw new ArgumentNullException(nameof(engineAdapter), $"{nameof(ILunyEngineNativeAdapter)} cannot be null");
 
-			// We only pass the engine adapter instance to signal that this must only be called by the engine adapter
-			if (engineAdapter == null)
-				throw new ArgumentNullException(nameof(engineAdapter), "Engine adapter cannot be null.");
+			s_NativeAdapter = engineAdapter;
 
 			// splitting ctor and Initialize prevents stackoverflows for cases where Instance is accessed from within ctor
 			s_Instance = new LunyEngine();
@@ -103,7 +117,12 @@ namespace Luny
 			return s_Instance;
 		}
 
-		internal static void ResetDisposedFlag_UnityEditorAndUnitTestsOnly() => s_IsDisposed = false;
+		internal static void ForceReset_UnityEditorAndUnitTestsOnly()
+		{
+			s_IsDisposed = false;
+			s_NativeAdapter = null;
+			s_Instance = null;
+		}
 
 		private LunyEngine() => ILunyEngineAdapter.ThrowOnSingletonDuplication(s_Instance);
 
@@ -118,6 +137,7 @@ namespace Luny
 				_serviceRegistry = new LunyServiceRegistry();
 				AssignMandatoryServices();
 				_timeInternal = (ILunyTimeServiceInternal)Time;
+				_timeInternal.SetLunyFrameCount(0); // frame "0" marks anything before OnEngineStartup()
 
 				_profiler = new LunyEngineProfiler(Time);
 				_observerRegistry = new LunyEngineObserverRegistry();
@@ -180,6 +200,7 @@ namespace Luny
 
 				// ensure we won't get re-instantiated after this point
 				s_IsDisposed = true;
+				s_NativeAdapter = null;
 				s_Instance = null;
 			}
 		}
