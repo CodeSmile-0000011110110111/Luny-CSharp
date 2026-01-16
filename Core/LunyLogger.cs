@@ -90,7 +90,7 @@ namespace Luny
 
 		public static void LogException(Exception exception, Object context = null)
 		{
-			var time = LunyEngineInternal.Instance?.Time;
+			var time = LunyEngine.Instance?.Time;
 			var message = FormatWithContext(exception?.ToString() ?? "<Exception: null>", context, time);
 			RecordInternalLog(LogLevel.Error, message, exception?.GetType(), time);
 			_logger.LogException(exception);
@@ -121,7 +121,7 @@ namespace Luny
 
 		private static void LogMessage(String message, LogLevel logLevel, Object context = null)
 		{
-			var time = LunyEngineInternal.Instance?.Time;
+			var time = LunyEngine.Instance?.Time;
 			RecordInternalLog(logLevel, message, context, time);
 			var formattedMessage = FormatWithContext(message, context, time);
 			switch (logLevel)

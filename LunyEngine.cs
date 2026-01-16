@@ -38,10 +38,10 @@ namespace Luny
 
 	public interface ILunyEngineLifecycle
 	{
-		static void ThrowOnSingletonDuplication(LunyEngineInternal instance)
+		static void ThrowOnSingletonDuplication(LunyEngine instance)
 		{
 			if (instance != null)
-				throw new LunyLifecycleException($"Duplicate {nameof(LunyEngineInternal)} singleton detected!");
+				throw new LunyLifecycleException($"Duplicate {nameof(LunyEngine)} singleton detected!");
 		}
 
 		static void ThrowIfNotCurrentAdapter(ILunyEngineNativeAdapter actualAdapter, ILunyEngineNativeAdapter expectedAdapter)
@@ -70,9 +70,9 @@ namespace Luny
 	/// <summary>
 	/// Singleton engine that discovers and manages services and lifecycle observers.
 	/// </summary>
-	public sealed partial class LunyEngineInternal : ILunyEngine, ILunyEngineInternal, ILunyEngineLifecycle
+	public sealed partial class LunyEngine : ILunyEngine, ILunyEngineInternal, ILunyEngineLifecycle
 	{
-		private static LunyEngineInternal s_Instance;
+		private static LunyEngine s_Instance;
 		private static ILunyEngineNativeAdapter s_NativeAdapter;
 		private static Boolean s_IsDisposed;
 
@@ -101,18 +101,18 @@ namespace Luny
 		[SuppressMessage("ReSharper", "HeuristicUnreachableCode")]
 		internal static ILunyEngineLifecycle CreateInstance(ILunyEngineNativeAdapter engineAdapter)
 		{
-			LunyTraceLogger.LogInfoCreateSingletonInstance(typeof(LunyEngineInternal));
+			LunyTraceLogger.LogInfoCreateSingletonInstance(typeof(LunyEngine));
 			if (s_IsDisposed)
-				throw new LunyLifecycleException($"{nameof(LunyEngineInternal)} instance already disposed. It must not be created again.");
+				throw new LunyLifecycleException($"{nameof(LunyEngine)} instance already disposed. It must not be created again.");
 			if (s_Instance != null)
-				throw new LunyLifecycleException($"{nameof(LunyEngineInternal)} instance already exists.");
+				throw new LunyLifecycleException($"{nameof(LunyEngine)} instance already exists.");
 			if (engineAdapter == null) // adapter instance is used to ensure only the creating adapter can run LunyEngine
 				throw new ArgumentNullException(nameof(engineAdapter), $"{nameof(ILunyEngineNativeAdapter)} cannot be null");
 
 			s_NativeAdapter = engineAdapter;
 
 			// splitting ctor and Initialize prevents stackoverflows for cases where Instance is accessed from within ctor
-			s_Instance = new LunyEngineInternal();
+			s_Instance = new LunyEngine();
 			s_Instance.Initialize();
 			return s_Instance;
 		}
@@ -124,7 +124,7 @@ namespace Luny
 			s_Instance = null;
 		}
 
-		private LunyEngineInternal() => ILunyEngineLifecycle.ThrowOnSingletonDuplication(s_Instance);
+		private LunyEngine() => ILunyEngineLifecycle.ThrowOnSingletonDuplication(s_Instance);
 
 		private void Initialize()
 		{
@@ -148,12 +148,12 @@ namespace Luny
 			}
 			catch (Exception)
 			{
-				LunyLogger.LogError($"Error during {nameof(LunyEngineInternal)} {nameof(Initialize)}!", this);
+				LunyLogger.LogError($"Error during {nameof(LunyEngine)} {nameof(Initialize)}!", this);
 				throw;
 			}
 		}
 
-		~LunyEngineInternal() => LunyTraceLogger.LogInfoFinalized(this);
+		~LunyEngine() => LunyTraceLogger.LogInfoFinalized(this);
 
 		private void Startup() // called from Heartbeat
 		{
@@ -167,7 +167,7 @@ namespace Luny
 			}
 			catch (Exception)
 			{
-				LunyLogger.LogError($"Error during {nameof(LunyEngineInternal)} {nameof(Startup)}!", this);
+				LunyLogger.LogError($"Error during {nameof(LunyEngine)} {nameof(Startup)}!", this);
 				throw;
 			}
 		}
@@ -186,7 +186,7 @@ namespace Luny
 			}
 			catch (Exception e)
 			{
-				LunyLogger.LogError($"Error during {nameof(LunyEngineInternal)} {nameof(Shutdown)}!", this);
+				LunyLogger.LogError($"Error during {nameof(LunyEngine)} {nameof(Shutdown)}!", this);
 				LunyLogger.LogException(e, this);
 			}
 			finally
