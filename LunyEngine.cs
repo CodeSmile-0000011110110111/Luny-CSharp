@@ -103,59 +103,85 @@ namespace Luny
 			return s_Instance;
 		}
 
-		internal static void ResetDisposedFlag_UnityEditorOnly() => s_IsDisposed = false;
+		internal static void ResetDisposedFlag_UnityEditorAndUnitTestsOnly() => s_IsDisposed = false;
 
 		private LunyEngine() => ILunyEngineAdapter.ThrowOnSingletonDuplication(s_Instance);
 
 		private void Initialize()
 		{
-			LunyTraceLogger.LogInfoInitializing(this);
+			try
+			{
+				LunyTraceLogger.LogInfoInitializing(this);
 
-			LunyObjectID.Reset();
+				LunyObjectID.Reset();
 
-			_serviceRegistry = new LunyServiceRegistry();
-			AssignMandatoryServices();
-			_timeInternal = (ILunyTimeServiceInternal)Time;
+				_serviceRegistry = new LunyServiceRegistry();
+				AssignMandatoryServices();
+				_timeInternal = (ILunyTimeServiceInternal)Time;
 
-			_profiler = new LunyEngineProfiler(Time);
-			_observerRegistry = new LunyEngineObserverRegistry();
-			_objectRegistry = new LunyObjectRegistry();
-			_lifecycleManager = new LunyObjectLifecycleManager(_objectRegistry);
+				_profiler = new LunyEngineProfiler(Time);
+				_observerRegistry = new LunyEngineObserverRegistry();
+				_objectRegistry = new LunyObjectRegistry();
+				_lifecycleManager = new LunyObjectLifecycleManager(_objectRegistry);
 
-			LunyTraceLogger.LogInfoInitialized(this);
+				LunyTraceLogger.LogInfoInitialized(this);
+			}
+			catch (Exception)
+			{
+				LunyLogger.LogError($"Error during {nameof(LunyEngine)} {nameof(Initialize)}!", this);
+				throw;
+			}
 		}
 
 		~LunyEngine() => LunyTraceLogger.LogInfoFinalized(this);
 
 		private void Startup() // called from Heartbeat
 		{
-			var sceneService = (ILunySceneServiceInternal)Scene;
-			sceneService.OnSceneLoaded += OnSceneLoaded;
-			sceneService.OnSceneUnloaded += OnSceneUnloaded;
+			try
+			{
+				var sceneService = (ILunySceneServiceInternal)Scene;
+				sceneService.OnSceneLoaded += OnSceneLoaded;
+				sceneService.OnSceneUnloaded += OnSceneUnloaded;
 
-			_serviceRegistry.Startup();
+				_serviceRegistry.Startup();
+			}
+			catch (Exception)
+			{
+				LunyLogger.LogError($"Error during {nameof(LunyEngine)} {nameof(Startup)}!", this);
+				throw;
+			}
 		}
 
 		private void Shutdown() // called from Heartbeat
 		{
-			var sceneService = (ILunySceneServiceInternal)Scene;
-			sceneService.OnSceneLoaded -= OnSceneLoaded;
-			sceneService.OnSceneUnloaded -= OnSceneUnloaded;
+			try
+			{
+				var sceneService = (ILunySceneServiceInternal)Scene;
+				sceneService.OnSceneLoaded -= OnSceneLoaded;
+				sceneService.OnSceneUnloaded -= OnSceneUnloaded;
 
-			_lifecycleManager.Shutdown(_objectRegistry);
-			_objectRegistry.Shutdown();
-			_serviceRegistry.Shutdown();
+				_lifecycleManager.Shutdown(_objectRegistry);
+				_objectRegistry.Shutdown();
+				_serviceRegistry.Shutdown();
+			}
+			catch (Exception e)
+			{
+				LunyLogger.LogError($"Error during {nameof(LunyEngine)} {nameof(Shutdown)}!", this);
+				LunyLogger.LogException(e, this);
+			}
+			finally
+			{
+				_serviceRegistry = null;
+				_observerRegistry = null;
+				_objectRegistry = null;
+				_lifecycleManager = null;
+				_profiler = null;
+				_timeInternal = null;
 
-			_serviceRegistry = null;
-			_observerRegistry = null;
-			_objectRegistry = null;
-			_lifecycleManager = null;
-			_profiler = null;
-			_timeInternal = null;
-
-			// ensure we won't get re-instantiated after this point
-			s_IsDisposed = true;
-			s_Instance = null;
+				// ensure we won't get re-instantiated after this point
+				s_IsDisposed = true;
+				s_Instance = null;
+			}
 		}
 
 		private void PreUpdate() // called from Heartbeat
