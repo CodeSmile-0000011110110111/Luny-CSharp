@@ -44,6 +44,7 @@ namespace Luny.Engine
 				throw new LunyLifecycleException($"{nameof(ILunyEngine)} is null");
 		}
 
+		// ReSharper disable once UnusedMember.Global
 		static void ThrowIfPrematurelyRemoved(ILunyEngineNativeAdapter adapter, ILunyEngineLifecycle lunyEngineInternal)
 		{
 			if (!IsApplicationQuitting || adapter != null)
@@ -75,6 +76,7 @@ namespace Luny.Engine
 		static void LateUpdate(Double deltaTime, ILunyEngineNativeAdapter nativeAdapter, ILunyEngineLifecycle lunyEngine) =>
 			lunyEngine.OnEngineLateUpdate(deltaTime, nativeAdapter);
 
+		// ReSharper disable once UnusedMember.Global
 		static void EndLogging()
 		{
 			LunyLogger.Logger = null;
