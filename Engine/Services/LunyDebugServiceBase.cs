@@ -1,13 +1,18 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace Luny.Engine.Services
 {
 	/// <summary>
 	/// Engine-agnostic debug and logging service.
-	/// CAUTION: Implementations must inherit from both IDebugService interface and DebugServiceBase class!
 	/// </summary>
+	/// <remarks>
+	/// IMPORTANT: Implementations must inherit from both the ILuny***Service interface and its corresponding Luny***ServiceBase class!
+	/// </remarks>
 	public interface ILunyDebugService : ILunyEngineService
 	{
+		static String GetMethodName([CallerMemberName] String name = "") => name;
+
 		void LogInfo(String message);
 		void LogWarning(String message);
 		void LogError(String message);

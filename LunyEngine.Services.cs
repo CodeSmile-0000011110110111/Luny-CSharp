@@ -12,6 +12,12 @@ namespace Luny
 		public ILunySceneService Scene { get; private set; }
 		public ILunyTimeService Time { get; private set; }
 
+		public Boolean HasService<TService>() where TService : LunyEngineServiceBase => _serviceRegistry.Has<TService>();
+		public TService GetService<TService>() where TService : LunyEngineServiceBase => _serviceRegistry.Get<TService>();
+
+		public Boolean TryGetService<TService>(out TService service) where TService : LunyEngineServiceBase =>
+			_serviceRegistry.TryGet(out service);
+
 		private void AssignMandatoryServices()
 		{
 			Application = (ILunyApplicationService)GetService<LunyApplicationServiceBase>();
@@ -20,11 +26,5 @@ namespace Luny
 			Scene = (ILunySceneService)GetService<LunySceneServiceBase>();
 			Time = (ILunyTimeService)GetService<LunyTimeServiceBase>();
 		}
-
-		public Boolean HasService<TService>() where TService : LunyEngineServiceBase => _serviceRegistry.Has<TService>();
-		public TService GetService<TService>() where TService : LunyEngineServiceBase => _serviceRegistry.Get<TService>();
-
-		public Boolean TryGetService<TService>(out TService service) where TService : LunyEngineServiceBase =>
-			_serviceRegistry.TryGet(out service);
 	}
 }

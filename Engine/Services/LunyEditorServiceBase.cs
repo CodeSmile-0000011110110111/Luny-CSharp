@@ -2,8 +2,10 @@ namespace Luny.Engine.Services
 {
 	/// <summary>
 	/// Engine-agnostic editor service.
-	/// CAUTION: Implementations must inherit from both IEditorService interface and EditorServiceBase class!
 	/// </summary>
+	/// <remarks>
+	/// IMPORTANT: Implementations must inherit from both the ILuny***Service interface and its corresponding Luny***ServiceBase class!
+	/// </remarks>
 	public interface ILunyEditorService : ILunyEngineService
 	{
 		/// <summary>

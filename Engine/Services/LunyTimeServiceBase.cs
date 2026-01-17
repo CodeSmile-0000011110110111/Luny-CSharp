@@ -4,25 +4,29 @@ namespace Luny.Engine.Services
 {
 	/// <summary>
 	/// Provides engine-agnostic access to time and frame information.
-	/// Implementations should use engine-native time sources (Time.frameCount, Time.realtimeSinceStartup, etc.)
-	/// CAUTION: Implementations must inherit from both ITimeService interface and TimeServiceBase class!
 	/// </summary>
+	/// <remarks>
+	/// IMPORTANT: Implementations must inherit from both the ILuny***Service interface and its corresponding Luny***ServiceBase class!
+	/// </remarks>
 	public interface ILunyTimeService : ILunyEngineService
 	{
 		/// <summary>
-		/// Gets the total number of frames that have been rendered since the application started.
-		/// CAUTION: This value may differ between engines ie one engine may start in frame 0 while another may start in frame 1.
-		/// Unity for instance launches in frame 0 where it runs Awake and OnEnable, but in Start it has incremented FrameCount to 1.
-		/// While in Godot the entire first frame's FrameCount is 0.
-		/// Only rely on relative differences ie compare current FrameCount with a previous FrameCount timestamp.
-		/// Otherwise use the LunyFrameCount which is the same for all engines.
+		/// Gets the engine's frame count since the application started.
 		/// </summary>
+		/// <remarks>
+		/// CAUTION: This value may differ between engines! Some engines start with frame 0, others in frame 1.
+		/// Unity for instance launches in frame 0 where it runs Awake and OnEnable, but by Start it has incremented FrameCount to 1.
+		/// While in Godot the entire first frame's FrameCount is 0.
+		/// Prefer FrameCount since it is the same for all engines.
+		/// </remarks>
 		Int64 EngineFrameCount { get; }
 
 		/// <summary>
-		/// Gets the total number of frames LunyEngine has updated since it started. This value is the same for all engines.
-		/// LunyEngine will always initialize with a FrameCount of 1 - the first frame it normally participates in.
+		/// Gets the total number of frames LunyEngine has run since launch. This value is consistent across engines.
 		/// </summary>
+		/// <remarks>
+		/// Initialization (startup, OnCreate, OnEnable) occurs in FrameCount 0. By OnReady and the first OnFixedStep/OnUpdate FrameCount is 1.
+		/// </remarks>
 		Int64 FrameCount { get; }
 
 		/// <summary>

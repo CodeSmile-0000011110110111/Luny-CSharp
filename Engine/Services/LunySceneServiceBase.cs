@@ -7,8 +7,10 @@ namespace Luny.Engine.Services
 {
 	/// <summary>
 	/// Engine-agnostic scene information service.
-	/// CAUTION: Implementations must inherit from both ISceneService interface and SceneServiceBase class!
 	/// </summary>
+	/// <remarks>
+	/// IMPORTANT: Implementations must inherit from both the ILuny***Service interface and its corresponding Luny***ServiceBase class!
+	/// </remarks>
 	public interface ILunySceneService : ILunyEngineService
 	{
 		[MaybeNull] ILunyScene CurrentScene { get; }

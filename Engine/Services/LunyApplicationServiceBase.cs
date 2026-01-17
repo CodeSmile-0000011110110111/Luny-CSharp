@@ -4,8 +4,10 @@ namespace Luny.Engine.Services
 {
 	/// <summary>
 	/// Engine-agnostic application control.
-	/// CAUTION: Implementations must inherit from both IApplicationService interface and ApplicationServiceBase class!
 	/// </summary>
+	/// <remarks>
+	/// IMPORTANT: Implementations must inherit from both the ILuny***Service interface and its corresponding Luny***ServiceBase class!
+	/// </remarks>
 	public interface ILunyApplicationService : ILunyEngineService
 	{
 		/// <summary>
