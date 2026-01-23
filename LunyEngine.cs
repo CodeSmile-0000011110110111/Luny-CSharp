@@ -187,7 +187,7 @@ namespace Luny
 				_objectRegistry.Shutdown();
 				_serviceRegistry.Shutdown();
 			}
-			catch (Exception e)
+			catch (Exception)
 			{
 				LunyLogger.LogError($"Error during {nameof(LunyEngine)} {nameof(Shutdown)}!", this);
 				throw;
