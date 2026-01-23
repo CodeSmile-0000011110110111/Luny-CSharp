@@ -1,6 +1,6 @@
 using System;
 
-namespace Luny.Tests
+namespace Luny.SmokeTests
 {
 	/// <summary>
 	/// Engine-agnostic assertion helper for smoke tests.

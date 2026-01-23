@@ -1,6 +1,6 @@
 using System;
 
-namespace Luny.Tests
+namespace Luny.SmokeTests
 {
 	/// <summary>
 	/// Exception thrown when a test contract is violated during smoke testing.
