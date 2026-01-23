@@ -5,9 +5,9 @@ namespace Luny.Tests
 	/// <summary>
 	/// Exception thrown when a test contract is violated during smoke testing.
 	/// </summary>
-	public sealed class LunyTestContractViolationException : Exception
+	internal sealed class SmokeTestFailureException : Exception
 	{
-		public LunyTestContractViolationException(String message)
+		public SmokeTestFailureException(String message)
 			: base(message) {}
 	}
 }

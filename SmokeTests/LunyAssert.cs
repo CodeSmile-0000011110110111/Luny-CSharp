@@ -6,7 +6,7 @@ namespace Luny.Tests
 	/// Engine-agnostic assertion helper for smoke tests.
 	/// Throws LunyTestContractViolationException on assertion failure.
 	/// </summary>
-	public static class LunyAssert
+	internal static class LunyAssert
 	{
 		/// <summary>
 		/// Asserts that a condition is true.
@@ -14,7 +14,7 @@ namespace Luny.Tests
 		public static void That(Boolean condition, String message)
 		{
 			if (!condition)
-				throw new LunyTestContractViolationException(message);
+				throw new SmokeTestFailureException(message);
 		}
 
 		/// <summary>
