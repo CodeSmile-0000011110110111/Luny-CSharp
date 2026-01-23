@@ -29,8 +29,8 @@ namespace Luny
 				catch (Exception e)
 				{
 					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnEngineStartup, e);
-					/* keep dispatch resilient */
 					LunyLogger.LogException(e);
+					throw;
 				}
 				finally
 				{
@@ -59,8 +59,8 @@ namespace Luny
 				catch (Exception e)
 				{
 					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnEngineShutdown, e);
-					/* keep dispatch resilient */
 					LunyLogger.LogException(e);
+					throw;
 				}
 				finally
 				{

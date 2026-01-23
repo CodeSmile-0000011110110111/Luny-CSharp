@@ -9,8 +9,9 @@ namespace Luny.Engine
 {
 	public interface ILunyServiceRegistry {}
 
-	internal interface ILunyServiceRegistryInternal
+	public interface ILunyServiceRegistryInternal
 	{
+		void RegisterService(LunyEngineServiceBase service);
 		static void ThrowDoesNotImplementServiceInterface(Type serviceType) => throw new LunyServiceException(
 			$"{serviceType?.Name} must implement an interface derived from {nameof(ILunyEngineService)}.");
 
@@ -86,6 +87,7 @@ namespace Luny.Engine
 			var sw = Stopwatch.StartNew();
 
 			var serviceTypes = LunyTypeDiscovery.FindAll<ILunyEngineService>();
+			LunyLogger.LogInfo($"Found {serviceTypes.Count()} ILunyEngineService implementations", this);
 
 			foreach (var type in serviceTypes)
 			{
@@ -132,5 +134,14 @@ namespace Luny.Engine
 		}
 
 		internal Boolean Has<TService>() where TService : LunyEngineServiceBase => _registeredServices.ContainsKey(typeof(TService));
+
+		void ILunyServiceRegistryInternal.RegisterService(LunyEngineServiceBase service)
+		{
+			var baseType = service.GetType().BaseType;
+			if (baseType == null || baseType == typeof(LunyEngineServiceBase))
+				throw new LunyServiceException($"Service {service.GetType().Name} does not inherit from service-specific subclass of {nameof(LunyEngineServiceBase)}");
+			
+			_registeredServices[baseType] = service;
+		}
 	}
 }

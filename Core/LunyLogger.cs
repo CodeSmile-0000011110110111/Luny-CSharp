@@ -187,9 +187,9 @@ namespace Luny
 		private sealed class ConsoleLogger : ILunyLogger
 		{
 			public void LogInfo(String message) => Console.WriteLine(message);
-			public void LogWarning(String message) => Console.WriteLine($"[Warning] {message}");
+			public void LogWarning(String message) => Console.WriteLine($"[Warn] {message}");
 			public void LogError(String message) => Console.WriteLine($"[ERROR] {message}");
-			public void LogException(Exception exception) => LogError(exception.ToString());
+			public void LogException(Exception exception) => Console.WriteLine($"[EXCEPTION] {exception}");
 		}
 	}
 }

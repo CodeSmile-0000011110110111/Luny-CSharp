@@ -18,6 +18,7 @@ namespace Luny
 		ILunyApplicationService Application { get; }
 		ILunyDebugService Debug { get; }
 		ILunyEditorService Editor { get; }
+		ILunyObjectService Object { get; }
 		ILunySceneService Scene { get; }
 		ILunyTimeService Time { get; }
 
@@ -65,6 +66,7 @@ namespace Luny
 	internal interface ILunyEngineInternal
 	{
 		ILunyObjectLifecycleManagerInternal Lifecycle { get; }
+		ILunyServiceRegistryInternal ServiceRegistry { get; }
 	}
 
 	/// <summary>
@@ -86,6 +88,7 @@ namespace Luny
 		public ILunyObjectRegistry Objects => _objectRegistry;
 
 		ILunyObjectLifecycleManagerInternal ILunyEngineInternal.Lifecycle => _lifecycleManager;
+		ILunyServiceRegistryInternal ILunyEngineInternal.ServiceRegistry => _serviceRegistry;
 
 		/// <summary>
 		/// Gets the engine profiler for performance monitoring.
@@ -187,7 +190,7 @@ namespace Luny
 			catch (Exception e)
 			{
 				LunyLogger.LogError($"Error during {nameof(LunyEngine)} {nameof(Shutdown)}!", this);
-				LunyLogger.LogException(e, this);
+				throw;
 			}
 			finally
 			{

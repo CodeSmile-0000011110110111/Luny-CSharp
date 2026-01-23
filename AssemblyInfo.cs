@@ -1,15 +1,12 @@
 ﻿using System.Runtime.CompilerServices;
 
-// Namespaces sorted alphabetically
-[assembly: InternalsVisibleTo(nameof(Luny) + ".Godot")]
-[assembly: InternalsVisibleTo(nameof(Luny) + ".GodotEditor")]
-[assembly: InternalsVisibleTo(nameof(Luny) + ".Unity")]
-[assembly: InternalsVisibleTo(nameof(Luny) + ".UnityEditor")]
-
-// because of a Rider issue
+// can't use nameof() because of a Rider issue
+[assembly: InternalsVisibleTo("Luny.Godot")]
+[assembly: InternalsVisibleTo("Luny.GodotEditor")]
 [assembly: InternalsVisibleTo("Luny.Unity")]
 [assembly: InternalsVisibleTo("Luny.UnityEditor")]
 [assembly: InternalsVisibleTo("Luny-Test")]
+[assembly: InternalsVisibleTo("LunyScript-Test")]
 
 // reserved namespaces for future C# engine implementations
 [assembly: InternalsVisibleTo(nameof(Luny) + ".Cocos")] // no C# support (yet)

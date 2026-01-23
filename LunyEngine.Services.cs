@@ -9,6 +9,7 @@ namespace Luny
 		public ILunyApplicationService Application { get; private set; }
 		public ILunyDebugService Debug { get; private set; }
 		public ILunyEditorService Editor { get; private set; }
+		public ILunyObjectService Object { get; private set; }
 		public ILunySceneService Scene { get; private set; }
 		public ILunyTimeService Time { get; private set; }
 
@@ -23,6 +24,7 @@ namespace Luny
 			Application = (ILunyApplicationService)GetService<LunyApplicationServiceBase>();
 			Debug = (ILunyDebugService)GetService<LunyDebugServiceBase>();
 			Editor = (ILunyEditorService)GetService<LunyEditorServiceBase>();
+			Object = (ILunyObjectService)GetService<LunyObjectServiceBase>();
 			Scene = (ILunySceneService)GetService<LunySceneServiceBase>();
 			Time = (ILunyTimeService)GetService<LunyTimeServiceBase>();
 		}
