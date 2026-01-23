@@ -2,6 +2,7 @@ using Luny.Engine.Bridge;
 using Luny.Engine.Identity;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Luny.Engine
 {
@@ -11,6 +12,7 @@ namespace Luny.Engine
 		IEnumerable<ILunyObject> AllObjects { get; }
 		ILunyObject GetByLunyID(LunyObjectID lunyObjectID);
 		ILunyObject GetByNativeID(LunyNativeObjectID lunyNativeObjectID);
+		ILunyObject GetByName(String objectName);
 	}
 
 	internal interface ILunyObjectRegistryInternal : ILunyObjectRegistry
@@ -100,6 +102,8 @@ namespace Luny.Engine
 			_objectsByNativeID.TryGetValue(lunyNativeObjectID, out var lunyObject);
 			return lunyObject;
 		}
+
+		public ILunyObject GetByName(String objectName) => _objectsByLunyID.Values.FirstOrDefault(obj => obj.Name == objectName);
 
 		~LunyObjectRegistry() => LunyTraceLogger.LogInfoFinalized(this);
 

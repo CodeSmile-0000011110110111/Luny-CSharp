@@ -58,6 +58,7 @@ namespace Luny
 		Info,
 		Warning,
 		Error,
+		Exception,
 	}
 
 	/// <summary>
@@ -87,14 +88,7 @@ namespace Luny
 		public static void LogInfo(String message, Object context = null) => LogMessage(message, LogLevel.Info, context);
 		public static void LogWarning(String message, Object context = null) => LogMessage(message, LogLevel.Warning, context);
 		public static void LogError(String message, Object context = null) => LogMessage(message, LogLevel.Error, context);
-
-		public static void LogException(Exception exception, Object context = null)
-		{
-			var time = LunyEngine.Instance?.Time;
-			var message = FormatWithContext(exception?.ToString() ?? "<Exception: null>", context, time);
-			RecordInternalLog(LogLevel.Error, message, exception?.GetType(), time);
-			_logger.LogException(exception);
-		}
+		public static void LogException(Exception exception, Object context = null) => LogMessage(null, LogLevel.Exception, context, exception);
 
 		/// <summary>
 		/// Gets the internal log entries. Returns empty array if EnableInternalLogging is false or no logs recorded.
@@ -119,9 +113,10 @@ namespace Luny
 				writer.WriteLine(entry.ToString());
 		}
 
-		private static void LogMessage(String message, LogLevel logLevel, Object context = null)
+		private static void LogMessage(String message, LogLevel logLevel, Object context = null, Exception exception = null)
 		{
 			var time = LunyEngine.Instance?.Time;
+			message ??= exception?.ToString();
 			RecordInternalLog(logLevel, message, context, time);
 			var formattedMessage = FormatWithContext(message, context, time);
 			switch (logLevel)
@@ -134,6 +129,9 @@ namespace Luny
 					break;
 				case LogLevel.Error:
 					_logger.LogError(formattedMessage);
+					break;
+				case LogLevel.Exception:
+					_logger.LogException(exception);
 					break;
 				default:
 					throw new ArgumentOutOfRangeException(nameof(logLevel), logLevel, context?.ToString());

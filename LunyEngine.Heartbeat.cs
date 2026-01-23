@@ -29,7 +29,7 @@ namespace Luny
 				catch (Exception e)
 				{
 					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnEngineStartup, e);
-					LunyLogger.LogException(e);
+					LunyLogger.LogException(e, this);
 					throw;
 				}
 				finally
@@ -59,7 +59,7 @@ namespace Luny
 				catch (Exception e)
 				{
 					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnEngineShutdown, e);
-					LunyLogger.LogException(e);
+					LunyLogger.LogException(e, this);
 					throw;
 				}
 				finally
@@ -92,7 +92,7 @@ namespace Luny
 				{
 					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnEngineFixedStep, e);
 					/* keep dispatch resilient */
-					LunyLogger.LogException(e);
+					LunyLogger.LogException(e, this);
 				}
 				finally
 				{
@@ -122,7 +122,7 @@ namespace Luny
 				{
 					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnEngineUpdate, e);
 					/* keep dispatch resilient */
-					LunyLogger.LogException(e);
+					LunyLogger.LogException(e, this);
 				}
 				finally
 				{
@@ -151,7 +151,7 @@ namespace Luny
 				{
 					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnEngineLateUpdate, e);
 					/* keep dispatch resilient */
-					LunyLogger.LogException(e);
+					LunyLogger.LogException(e, this);
 				}
 				finally
 				{
@@ -175,7 +175,7 @@ namespace Luny
 				{
 					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnEnginePreUpdate, e);
 					/* keep dispatch resilient */
-					LunyLogger.LogException(e);
+					LunyLogger.LogException(e, this);
 				}
 				finally
 				{
@@ -197,7 +197,7 @@ namespace Luny
 				{
 					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnEnginePostUpdate, e);
 					/* keep dispatch resilient */
-					LunyLogger.LogException(e);
+					LunyLogger.LogException(e, this);
 				}
 				finally
 				{
