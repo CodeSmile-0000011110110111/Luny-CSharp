@@ -1,6 +1,6 @@
 namespace Luny.Engine.Bridge.Enums
 {
-	public enum PrimitiveType
+	public enum LunyPrimitiveType
 	{
 		Empty = 0,
 		Cube = 1,

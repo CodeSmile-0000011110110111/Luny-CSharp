@@ -10,7 +10,7 @@ namespace Luny.Engine.Services
 	public interface ILunyObjectService : ILunyEngineService
 	{
 		ILunyObject CreateEmpty(String name);
-		ILunyObject CreatePrimitive(String name, PrimitiveType type);
+		ILunyObject CreatePrimitive(String name, LunyPrimitiveType type);
 	}
 
 	public abstract class LunyObjectServiceBase : LunyEngineServiceBase {}
