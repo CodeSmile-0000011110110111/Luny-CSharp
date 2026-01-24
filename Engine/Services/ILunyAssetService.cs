@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Luny.Engine.Services
+﻿namespace Luny.Engine.Services
 {
 	/// <summary>
 	/// Engine-agnostic Asset management service.
@@ -8,8 +6,5 @@ namespace Luny.Engine.Services
 	/// <remarks>
 	/// IMPORTANT: Implementations must inherit from both the ILuny***Service interface and its corresponding Luny***ServiceBase class!
 	/// </remarks>
-	public interface ILunyAssetService : ILunyEngineService
-	{
-
-	}
+	public interface ILunyAssetService : ILunyEngineService {}
 }

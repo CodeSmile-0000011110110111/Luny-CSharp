@@ -11,13 +11,14 @@ namespace Luny.Engine
 
 	public interface ILunyServiceRegistryInternal
 	{
-		void RegisterService(LunyEngineServiceBase service);
 		static void ThrowDoesNotImplementServiceInterface(Type serviceType) => throw new LunyServiceException(
 			$"{serviceType?.Name} must implement an interface derived from {nameof(ILunyEngineService)}.");
 
 		static void ThrowImplementsMultipleServiceInterfaces(Type serviceType, Type[] interfaces) => throw new LunyServiceException(
 			$"{serviceType?.Name} implements more than one {nameof(ILunyEngineService)}-derived interfaces: " +
 			String.Join(", ", interfaces?.Select(i => i.Name)));
+
+		void RegisterService(LunyEngineServiceBase service);
 	}
 
 	/// <summary>
@@ -48,6 +49,16 @@ namespace Luny.Engine
 		{
 			DiscoverAndInstantiateServices();
 			InitializeServices();
+		}
+
+		void ILunyServiceRegistryInternal.RegisterService(LunyEngineServiceBase service)
+		{
+			var baseType = service.GetType().BaseType;
+			if (baseType == null || baseType == typeof(LunyEngineServiceBase))
+				throw new LunyServiceException(
+					$"Service {service.GetType().Name} does not inherit from service-specific subclass of {nameof(LunyEngineServiceBase)}");
+
+			_registeredServices[baseType] = service;
 		}
 
 		~LunyServiceRegistry() => LunyTraceLogger.LogInfoFinalized(this);
@@ -134,14 +145,5 @@ namespace Luny.Engine
 		}
 
 		internal Boolean Has<TService>() where TService : LunyEngineServiceBase => _registeredServices.ContainsKey(typeof(TService));
-
-		void ILunyServiceRegistryInternal.RegisterService(LunyEngineServiceBase service)
-		{
-			var baseType = service.GetType().BaseType;
-			if (baseType == null || baseType == typeof(LunyEngineServiceBase))
-				throw new LunyServiceException($"Service {service.GetType().Name} does not inherit from service-specific subclass of {nameof(LunyEngineServiceBase)}");
-			
-			_registeredServices[baseType] = service;
-		}
 	}
 }

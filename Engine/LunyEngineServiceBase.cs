@@ -14,18 +14,21 @@ namespace Luny.Engine
 			OnServiceInitialize();
 			LunyTraceLogger.LogInfoInitialized(this);
 		}
+
 		internal void Startup()
 		{
 			LunyTraceLogger.LogInfoStartingUp(this);
 			OnServiceStartup();
 			LunyTraceLogger.LogInfoStartupComplete(this);
 		}
+
 		internal void Shutdown()
 		{
 			LunyTraceLogger.LogInfoShuttingDown(this);
 			OnServiceShutdown();
 			LunyTraceLogger.LogInfoShutdownComplete(this);
 		}
+
 		internal void PreUpdate() => OnServicePreUpdate();
 		internal void PostUpdate() => OnServicePostUpdate();
 		protected virtual void OnServiceInitialize() {}
