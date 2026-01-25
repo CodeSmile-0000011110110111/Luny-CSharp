@@ -18,15 +18,15 @@ namespace Luny.Engine.Services
 		void ReloadScene();
 
 		/// <summary>
-		/// Gets all objects in the current scene.
+		/// Gets objects with matching names in the current scene. Creates LunyObject instances.
 		/// </summary>
-		IReadOnlyList<ILunyObject> GetAllObjects();
-		// TODO: provide IEnumerable for scene tree traversal from a given starting point (null = root)
+		IReadOnlyList<ILunyObject> GetObjects(IReadOnlyList<string> objectNames);
 
 		/// <summary>
-		/// Finds an object by name in the current scene.
+		/// Finds a LunyObject by name in the current scene.
 		/// </summary>
-		ILunyObject FindObjectByName(String name);
+		//bool TryGetLunyObject(String name, out ILunyObject lunyObject);
+		//bool TryGetNativeObject(String name, out object nativeObject);
 	}
 
 	internal interface ILunySceneServiceInternal

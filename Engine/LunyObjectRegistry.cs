@@ -10,8 +10,8 @@ namespace Luny.Engine
 	{
 		Int32 Count { get; }
 		IEnumerable<ILunyObject> AllObjects { get; }
-		ILunyObject GetByLunyID(LunyObjectID lunyObjectID);
-		ILunyObject GetByNativeID(LunyNativeObjectID lunyNativeObjectID);
+		Boolean TryGetByLunyID(LunyObjectID lunyObjectID, out ILunyObject lunyObject);
+		Boolean TryGetByNativeID(LunyNativeObjectID lunyNativeObjectID, out ILunyObject lunyObject);
 		ILunyObject GetByName(String objectName);
 	}
 
@@ -85,25 +85,19 @@ namespace Luny.Engine
 			return false;
 		}
 
-		/// <summary>
-		/// Finds an object by its LunyID.
-		/// </summary>
-		public ILunyObject GetByLunyID(LunyObjectID lunyObjectID)
-		{
-			_objectsByLunyID.TryGetValue(lunyObjectID, out var lunyObject);
-			return lunyObject;
-		}
+		public ILunyObject GetByName(String objectName) => _objectsByLunyID.Values.FirstOrDefault(obj => obj.Name == objectName);
 
 		/// <summary>
 		/// Finds an object by its NativeID.
 		/// </summary>
-		public ILunyObject GetByNativeID(LunyNativeObjectID lunyNativeObjectID)
-		{
-			_objectsByNativeID.TryGetValue(lunyNativeObjectID, out var lunyObject);
-			return lunyObject;
-		}
+		public Boolean TryGetByNativeID(LunyNativeObjectID lunyNativeObjectID, out ILunyObject lunyObject) =>
+			_objectsByNativeID.TryGetValue(lunyNativeObjectID, out lunyObject);
 
-		public ILunyObject GetByName(String objectName) => _objectsByLunyID.Values.FirstOrDefault(obj => obj.Name == objectName);
+		/// <summary>
+		/// Finds an object by its LunyID.
+		/// </summary>
+		public Boolean TryGetByLunyID(LunyObjectID lunyObjectID, out ILunyObject lunyObject) =>
+			_objectsByLunyID.TryGetValue(lunyObjectID, out lunyObject);
 
 		~LunyObjectRegistry() => LunyTraceLogger.LogInfoFinalized(this);
 

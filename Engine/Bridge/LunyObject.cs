@@ -228,6 +228,9 @@ namespace Luny.Engine.Bridge
 			((ILunyObjectRegistryInternal)LunyEngine.Instance.Objects).Register(this);
 		}
 
+		protected static Boolean TryGetCached(Int64 nativeId, out ILunyObject lunyObject) =>
+			LunyEngine.Instance.Objects.TryGetByNativeID(nativeId, out lunyObject);
+
 		public T As<T>() where T : class => _nativeObject as T;
 		public T Cast<T>() => (T)_nativeObject;
 

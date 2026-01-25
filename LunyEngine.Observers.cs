@@ -26,6 +26,7 @@ namespace Luny
 					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnEngineSceneUnloaded, e);
 					/* keep dispatch resilient */
 					LunyLogger.LogException(e);
+					throw;
 				}
 				finally
 				{
@@ -48,6 +49,7 @@ namespace Luny
 					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnEngineSceneLoaded, e);
 					/* keep dispatch resilient */
 					LunyLogger.LogException(e);
+					throw;
 				}
 				finally
 				{
