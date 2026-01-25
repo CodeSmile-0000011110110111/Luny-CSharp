@@ -20,7 +20,7 @@ namespace Luny.Engine.Services
 		/// <summary>
 		/// Gets objects with matching names in the current scene. Creates LunyObject instances.
 		/// </summary>
-		IReadOnlyList<ILunyObject> GetObjects(IReadOnlyList<string> objectNames);
+		IReadOnlyList<ILunyObject> GetObjects(IReadOnlySet<string> objectNames);
 
 		/// <summary>
 		/// Finds a LunyObject by name in the current scene.
