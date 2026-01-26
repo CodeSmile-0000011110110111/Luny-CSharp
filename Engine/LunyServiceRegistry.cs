@@ -99,9 +99,6 @@ namespace Luny.Engine
 		{
 			var sw = Stopwatch.StartNew();
 
-			var isUnity = engineName == "Unity";
-			var isGodot = engineName == "Godot";
-
 			var serviceTypes = LunyTypeDiscovery.FindAll<ILunyEngineService>();
 
 			foreach (var type in serviceTypes)
