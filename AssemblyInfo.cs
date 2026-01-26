@@ -7,6 +7,7 @@
 [assembly:InternalsVisibleTo("Luny.UnityEditor")]
 [assembly:InternalsVisibleTo("Luny-Test")]
 [assembly:InternalsVisibleTo("LunyScript-Test")]
+[assembly:InternalsVisibleTo("Luny-ContractTest")]
 
 // reserved namespaces for future C# engine implementations
 [assembly:InternalsVisibleTo(nameof(Luny) + ".Cocos")] // no C# support (yet)

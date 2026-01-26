@@ -13,6 +13,7 @@ namespace Luny.Engine
 		Boolean TryGetByLunyID(LunyObjectID lunyObjectID, out ILunyObject lunyObject);
 		Boolean TryGetByNativeID(LunyNativeObjectID lunyNativeObjectID, out ILunyObject lunyObject);
 		ILunyObject GetByName(String objectName);
+		ILunyObject FindByName(String objectName);
 	}
 
 	internal interface ILunyObjectRegistryInternal : ILunyObjectRegistry
@@ -86,6 +87,29 @@ namespace Luny.Engine
 		}
 
 		public ILunyObject GetByName(String objectName) => _objectsByLunyID.Values.FirstOrDefault(obj => obj.Name == objectName);
+
+		public ILunyObject FindByName(String objectName)
+		{
+			var existing = GetByName(objectName);
+			if (existing != null)
+				return existing;
+
+			var sceneObject = LunyEngine.Instance.Scene.FindObjectByName(objectName);
+			if (sceneObject != null)
+			{
+				// sceneObject might have been already cached by the bridge (e.g. UnityGameObject.ToLunyObject)
+				// check if it's already in our registries by its LunyID or NativeID
+				if (TryGetByNativeID(sceneObject.NativeObjectID, out var registeredObject))
+					return registeredObject;
+
+				Register(sceneObject);
+				return sceneObject;
+			}
+
+			// TODO: proxy fallback or auto-create if needed?
+			// The task said "with proxy fallback" for Object.Create
+			return null;
+		}
 
 		/// <summary>
 		/// Finds an object by its NativeID.

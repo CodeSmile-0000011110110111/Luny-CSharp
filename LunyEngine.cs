@@ -125,6 +125,7 @@ namespace Luny
 			s_IsDisposed = false;
 			s_NativeAdapter = null;
 			s_Instance = null;
+			ILunyEngineNativeAdapter.IsApplicationQuitting = false;
 		}
 
 		private LunyEngine() => ILunyEngineLifecycle.ThrowOnSingletonDuplication(s_Instance);

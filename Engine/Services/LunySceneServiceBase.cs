@@ -25,8 +25,7 @@ namespace Luny.Engine.Services
 		/// <summary>
 		/// Finds a LunyObject by name in the current scene.
 		/// </summary>
-		//bool TryGetLunyObject(String name, out ILunyObject lunyObject);
-		//bool TryGetNativeObject(String name, out object nativeObject);
+		ILunyObject FindObjectByName(String name);
 	}
 
 	internal interface ILunySceneServiceInternal
