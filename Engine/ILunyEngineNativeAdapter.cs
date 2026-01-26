@@ -80,5 +80,7 @@ namespace Luny.Engine
 			LunyLogger.Logger = null;
 			GC.Collect(0, GCCollectionMode.Forced, true);
 		}
+
+		String EngineName { get; }
 	}
 }

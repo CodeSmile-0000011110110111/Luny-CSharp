@@ -45,9 +45,9 @@ namespace Luny.Engine
 			return serviceInterfaces[0];
 		}
 
-		internal LunyServiceRegistry()
+		internal LunyServiceRegistry(String engineName)
 		{
-			DiscoverAndInstantiateServices();
+			DiscoverAndInstantiateServices(engineName);
 			InitializeServices();
 		}
 
@@ -55,8 +55,10 @@ namespace Luny.Engine
 		{
 			var baseType = service.GetType().BaseType;
 			if (baseType == null || baseType == typeof(LunyEngineServiceBase))
+			{
 				throw new LunyServiceException(
 					$"Service {service.GetType().Name} does not inherit from service-specific subclass of {nameof(LunyEngineServiceBase)}");
+			}
 
 			_registeredServices[baseType] = service;
 		}
@@ -93,15 +95,24 @@ namespace Luny.Engine
 				service.PostUpdate();
 		}
 
-		private void DiscoverAndInstantiateServices()
+		private void DiscoverAndInstantiateServices(String engineName)
 		{
 			var sw = Stopwatch.StartNew();
 
+			var isUnity = engineName == "Unity";
+			var isGodot = engineName == "Godot";
+
 			var serviceTypes = LunyTypeDiscovery.FindAll<ILunyEngineService>();
-			LunyLogger.LogInfo($"Found {serviceTypes.Count()} ILunyEngineService implementations", this);
 
 			foreach (var type in serviceTypes)
 			{
+				// Filter services by engine (they must follow naming convention)
+				if (!type.Name.StartsWith(engineName))
+				{
+					LunyLogger.LogInfo($"Service '{type.Name}' does not start with '{engineName}' => not registered", this);
+					continue;
+				}
+
 				// Find the specific service interface (not IEngineServiceProvider directly)
 				var serviceInterface = GetServiceInterface(type);
 

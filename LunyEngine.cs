@@ -116,7 +116,7 @@ namespace Luny
 
 			// splitting ctor and Initialize prevents stackoverflows for cases where Instance is accessed from within ctor
 			s_Instance = new LunyEngine();
-			s_Instance.Initialize();
+			s_Instance.Initialize(engineAdapter.EngineName);
 			return s_Instance;
 		}
 
@@ -130,7 +130,7 @@ namespace Luny
 
 		private LunyEngine() => ILunyEngineLifecycle.ThrowOnSingletonDuplication(s_Instance);
 
-		private void Initialize()
+		private void Initialize(String engineName)
 		{
 			try
 			{
@@ -138,7 +138,7 @@ namespace Luny
 
 				LunyObjectID.Reset();
 
-				_serviceRegistry = new LunyServiceRegistry();
+				_serviceRegistry = new LunyServiceRegistry(engineName);
 				AssignMandatoryServices();
 				_timeInternal = (ILunyTimeServiceInternal)Time;
 				_timeInternal.SetLunyFrameCount(0); // frame "0" marks anything before OnEngineStartup()
