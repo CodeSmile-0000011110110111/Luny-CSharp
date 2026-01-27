@@ -60,7 +60,7 @@ namespace Luny.Engine
 
 			_objectsByLunyID[lunyID] = lunyObject;
 			_objectsByNativeID[nativeID] = lunyObject;
-			
+
 			((LunyEngine)LunyEngine.Instance).OnObjectCreated(lunyObject);
 		}
 

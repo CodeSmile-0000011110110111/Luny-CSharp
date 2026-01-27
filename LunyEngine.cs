@@ -270,7 +270,6 @@ namespace Luny
 
 		~LunyEngine() => LunyTraceLogger.LogInfoFinalized(this);
 
-
 		private void OnSceneLoaded(ILunyScene loadedScene) // called by SceneService
 		{
 			LunyTraceLogger.LogInfoEventCallback(nameof(OnSceneLoaded), loadedScene?.ToString(), this);

@@ -11,6 +11,8 @@ namespace Luny.Engine
 	{
 		static Boolean IsApplicationQuitting;
 
+		NativeEngine Engine { get; }
+
 		static ILunyEngineLifecycle CreateEngine(ref ILunyEngineNativeAdapter nativeAdapterSingleton, ILunyEngineNativeAdapter nativeAdapter)
 		{
 			nativeAdapterSingleton = ValidateAdapterSingletonInstance(nativeAdapterSingleton, nativeAdapter);
@@ -80,8 +82,6 @@ namespace Luny.Engine
 			LunyLogger.Logger = null;
 			GC.Collect(0, GCCollectionMode.Forced, true);
 		}
-
-		NativeEngine Engine { get; }
 	}
 
 	internal interface ILunyEngineNativeAdapterInternal
