@@ -62,8 +62,8 @@ namespace Luny.Engine
 
 		~LunyObjectLifecycleManager() => LunyTraceLogger.LogInfoFinalized(this);
 
-		public void PreUpdate() => ProcessPendingReady();
-		public void PostUpdate() => ProcessPendingDestroy();
+		public void OnEnginePreUpdate() => ProcessPendingReady();
+		public void OnEnginePostUpdate() => ProcessPendingDestroy();
 
 		internal void DestroyNativeNullObjects()
 		{
@@ -108,7 +108,7 @@ namespace Luny.Engine
 			foreach (var lunyObject in allObjects)
 				lunyObject.Destroy();
 
-			PostUpdate();
+			OnEnginePostUpdate();
 
 			_pendingReady.Clear();
 			_pendingDestroy.Clear();

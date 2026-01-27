@@ -6,80 +6,15 @@ namespace Luny
 {
 	public sealed partial class LunyEngine
 	{
-		private Boolean _didCallPreUpdate;
-
-		/// <summary>
-		/// CAUTION: Must only be called by engine-native lifecycle adapter!
-		/// </summary>
-		public void OnEngineStartup(ILunyEngineNativeAdapter nativeAdapter)
-		{
-			_timeInternal.IncrementLunyFrameCount(); // bump FrameCount
-			LunyTraceLogger.LogInfoStartingUp(this);
-			ILunyEngineLifecycle.ThrowIfNotCurrentAdapter(nativeAdapter, s_NativeAdapter);
-
-			Startup();
-
-			foreach (var observer in _observerRegistry.EnabledObservers)
-			{
-				_profiler.BeginObserver(observer);
-				try
-				{
-					observer.OnEngineStartup();
-				}
-				catch (Exception e)
-				{
-					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnEngineStartup, e);
-					LunyLogger.LogException(e, this);
-					throw;
-				}
-				finally
-				{
-					_profiler.EndObserver(observer, LunyEngineLifecycleEvents.OnEngineStartup);
-				}
-			}
-
-			LunyTraceLogger.LogInfoStartupComplete(this);
-		}
-
-		/// <summary>
-		/// CAUTION: Must only be called by engine-native lifecycle adapter!
-		/// </summary>
-		public void OnEngineShutdown(ILunyEngineNativeAdapter nativeAdapter)
-		{
-			LunyTraceLogger.LogInfoShuttingDown(this);
-			ILunyEngineLifecycle.ThrowIfNotCurrentAdapter(nativeAdapter, s_NativeAdapter);
-
-			foreach (var observer in _observerRegistry.EnabledObservers)
-			{
-				_profiler.BeginObserver(observer);
-				try
-				{
-					observer.OnEngineShutdown();
-				}
-				catch (Exception e)
-				{
-					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnEngineShutdown, e);
-					LunyLogger.LogException(e, this);
-					throw;
-				}
-				finally
-				{
-					_profiler.EndObserver(observer, LunyEngineLifecycleEvents.OnEngineShutdown);
-				}
-			}
-
-			Shutdown();
-
-			LunyTraceLogger.LogInfoShutdownComplete(this);
-		}
+		private Boolean _didCallPreUpdateThisFrame;
 
 		/// <summary>
 		/// CAUTION: Must only be called by engine-native lifecycle adapter!
 		/// </summary>
 		public void OnEngineFixedStep(Double fixedDeltaTime, ILunyEngineNativeAdapter nativeAdapter)
 		{
-			ILunyEngineLifecycle.ThrowIfNotCurrentAdapter(nativeAdapter, s_NativeAdapter);
-			CheckAndCallPreUpdate();
+			ILunyEngineLifecycle.ThrowIfNotCurrentAdapter(nativeAdapter, s_EngineAdapter);
+			RunEnginePreUpdateOnce();
 
 			foreach (var observer in _observerRegistry.EnabledObservers)
 			{
@@ -106,8 +41,8 @@ namespace Luny
 		/// </summary>
 		public void OnEngineUpdate(Double deltaTime, ILunyEngineNativeAdapter nativeAdapter)
 		{
-			ILunyEngineLifecycle.ThrowIfNotCurrentAdapter(nativeAdapter, s_NativeAdapter);
-			CheckAndCallPreUpdate();
+			ILunyEngineLifecycle.ThrowIfNotCurrentAdapter(nativeAdapter, s_EngineAdapter);
+			RunEnginePreUpdateOnce();
 
 			foreach (var observer in _observerRegistry.EnabledObservers)
 			{
@@ -136,7 +71,7 @@ namespace Luny
 		/// </summary>
 		public void OnEngineLateUpdate(Double deltaTime, ILunyEngineNativeAdapter nativeAdapter)
 		{
-			ILunyEngineLifecycle.ThrowIfNotCurrentAdapter(nativeAdapter, s_NativeAdapter);
+			ILunyEngineLifecycle.ThrowIfNotCurrentAdapter(nativeAdapter, s_EngineAdapter);
 
 			foreach (var observer in _observerRegistry.EnabledObservers)
 			{
@@ -159,32 +94,41 @@ namespace Luny
 				}
 			}
 
-			CallPostUpdate();
+			RunEnginePostUpdate();
 		}
 
-		private void PreUpdateObservers()
+		private void RunEnginePreUpdateOnce()
 		{
-			foreach (var observer in _observerRegistry.EnabledObservers)
+			if (!_didCallPreUpdateThisFrame)
 			{
-				_profiler.BeginObserver(observer);
-				try
+				_didCallPreUpdateThisFrame = true;
+
+				// engine first
+				_serviceRegistry.OnEnginePreUpdate();
+				_lifecycleManager.OnEnginePreUpdate();
+
+				foreach (var observer in _observerRegistry.EnabledObservers)
 				{
-					observer.OnEnginePreUpdate();
-				}
-				catch (Exception e)
-				{
-					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnEnginePreUpdate, e);
-					/* keep dispatch resilient */
-					LunyLogger.LogException(e, this);
-				}
-				finally
-				{
-					_profiler.EndObserver(observer, LunyEngineLifecycleEvents.OnEnginePreUpdate);
+					_profiler.BeginObserver(observer);
+					try
+					{
+						observer.OnEnginePreUpdate();
+					}
+					catch (Exception e)
+					{
+						_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnEnginePreUpdate, e);
+						/* keep dispatch resilient */
+						LunyLogger.LogException(e, this);
+					}
+					finally
+					{
+						_profiler.EndObserver(observer, LunyEngineLifecycleEvents.OnEnginePreUpdate);
+					}
 				}
 			}
 		}
 
-		private void PostUpdateObservers()
+		private void RunEnginePostUpdate()
 		{
 			foreach (var observer in _observerRegistry.EnabledObservers)
 			{
@@ -204,24 +148,12 @@ namespace Luny
 					_profiler.EndObserver(observer, LunyEngineLifecycleEvents.OnEnginePostUpdate);
 				}
 			}
-		}
 
-		private void CheckAndCallPreUpdate()
-		{
-			if (!_didCallPreUpdate)
-			{
-				_didCallPreUpdate = true;
+			// run "structural changes" here ..
+			_serviceRegistry.OnEnginePostUpdate();
+			_lifecycleManager.OnEnginePostUpdate(); // should run last to guarantee object cleanup
 
-				PreUpdate(); // engine first
-				PreUpdateObservers();
-			}
-		}
-
-		private void CallPostUpdate()
-		{
-			PostUpdateObservers();
-			PostUpdate(); // engine last
-			_didCallPreUpdate = false;
+			_didCallPreUpdateThisFrame = false;
 		}
 	}
 }

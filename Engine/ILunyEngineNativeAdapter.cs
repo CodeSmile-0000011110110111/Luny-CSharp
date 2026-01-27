@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Luny.Engine
 {
 	/// <summary>
-	/// Marker interface for the native engine adapter.
+	/// Interface for the native engine adapter.
 	/// </summary>
 	public interface ILunyEngineNativeAdapter
 	{
@@ -81,6 +81,13 @@ namespace Luny.Engine
 			GC.Collect(0, GCCollectionMode.Forced, true);
 		}
 
-		String EngineName { get; }
+		NativeEngine Engine { get; }
+	}
+
+	internal interface ILunyEngineNativeAdapterInternal
+	{
+		static ILunyEngineNativeAdapter Instance { get; }
+
+		void SimulateQuit_UnitTestOnly();
 	}
 }

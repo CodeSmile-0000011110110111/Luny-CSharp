@@ -57,5 +57,47 @@ namespace Luny
 				}
 			}
 		}
+
+		private void InvokeObserversOnObjectCreated(ILunyObject lunyObject)
+		{
+			foreach (var observer in _observerRegistry.EnabledObservers)
+			{
+				_profiler.BeginObserver(observer);
+				try
+				{
+					observer.OnObjectCreated(lunyObject);
+				}
+				catch (Exception e)
+				{
+					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnObjectCreated, e);
+					LunyLogger.LogException(e);
+				}
+				finally
+				{
+					_profiler.EndObserver(observer, LunyEngineLifecycleEvents.OnObjectCreated);
+				}
+			}
+		}
+
+		private void InvokeObserversOnObjectDestroyed(ILunyObject lunyObject)
+		{
+			foreach (var observer in _observerRegistry.EnabledObservers)
+			{
+				_profiler.BeginObserver(observer);
+				try
+				{
+					observer.OnObjectDestroyed(lunyObject);
+				}
+				catch (Exception e)
+				{
+					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnObjectDestroyed, e);
+					LunyLogger.LogException(e);
+				}
+				finally
+				{
+					_profiler.EndObserver(observer, LunyEngineLifecycleEvents.OnObjectDestroyed);
+				}
+			}
+		}
 	}
 }

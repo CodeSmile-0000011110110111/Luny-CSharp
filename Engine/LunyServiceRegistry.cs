@@ -45,9 +45,9 @@ namespace Luny.Engine
 			return serviceInterfaces[0];
 		}
 
-		internal LunyServiceRegistry(String engineName)
+		internal LunyServiceRegistry(NativeEngine engine)
 		{
-			DiscoverAndInstantiateServices(engineName);
+			DiscoverAndInstantiateServices(engine);
 			InitializeServices();
 		}
 
@@ -83,22 +83,23 @@ namespace Luny.Engine
 				service.Shutdown();
 		}
 
-		internal void PreUpdate()
+		internal void OnEnginePreUpdate()
 		{
 			foreach (var service in _registeredServices.Values)
 				service.PreUpdate();
 		}
 
-		internal void PostUpdate()
+		internal void OnEnginePostUpdate()
 		{
 			foreach (var service in _registeredServices.Values)
 				service.PostUpdate();
 		}
 
-		private void DiscoverAndInstantiateServices(String engineName)
+		private void DiscoverAndInstantiateServices(NativeEngine engine)
 		{
 			var sw = Stopwatch.StartNew();
 
+			var engineName = engine.ToString();
 			var serviceTypes = LunyTypeDiscovery.FindAll<ILunyEngineService>();
 
 			foreach (var type in serviceTypes)
@@ -106,7 +107,7 @@ namespace Luny.Engine
 				// Filter services by engine (they must follow naming convention)
 				if (!type.Name.StartsWith(engineName))
 				{
-					LunyLogger.LogInfo($"Service '{type.Name}' does not start with '{engineName}' => not registered", this);
+					LunyLogger.LogWarning($"Service '{type.Name}' does not start with '{engineName}' => ignored", this);
 					continue;
 				}
 

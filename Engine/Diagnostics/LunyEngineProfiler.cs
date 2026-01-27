@@ -44,6 +44,9 @@ namespace Luny.Engine.Diagnostics
 
 		OnEngineSceneUnloaded = 1 << 8,
 		OnEngineSceneLoaded = 1 << 9,
+
+		OnObjectCreated = 1 << 10,
+		OnObjectDestroyed = 1 << 11,
 	}
 
 	/// <summary>

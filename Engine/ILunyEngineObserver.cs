@@ -20,5 +20,8 @@ namespace Luny.Engine
 
 		void OnSceneLoaded(ILunyScene loadedScene) {}
 		void OnSceneUnloaded(ILunyScene unloadedScene) {}
+
+		void OnObjectCreated(ILunyObject lunyObject) {}
+		void OnObjectDestroyed(ILunyObject lunyObject) {}
 	}
 }
