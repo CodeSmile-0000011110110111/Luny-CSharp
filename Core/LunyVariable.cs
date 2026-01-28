@@ -8,8 +8,8 @@ namespace Luny
 		String Name { get; }
 		Object Value { get; }
 
-		static ILunyVariable Create(Object value) => LunyVariable.Create(value);
-		static ILunyVariable Create(String name, Object value) => LunyVariable.Create(name, value);
+		static LunyVariable Create(Object value) => LunyVariable.Create(value);
+		static LunyVariable Create(String name, Object value) => LunyVariable.Create(name, value);
 
 		Boolean AsBoolean();
 		Number AsNumber();

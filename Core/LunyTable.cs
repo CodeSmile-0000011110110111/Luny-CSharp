@@ -19,7 +19,7 @@ namespace Luny
 	/// <summary>
 	/// Dictionary-based variable storage for LunyScript contexts.
 	/// </summary>
-	public interface ILunyTable : IEnumerable<KeyValuePair<String, ILunyVariable>>
+	public interface ILunyTable : IEnumerable<KeyValuePair<String, LunyVariable>>
 	{
 		/// <summary>
 		/// Sent when a variable changes.
@@ -27,7 +27,7 @@ namespace Luny
 		/// Copy the values if you want to keep them.
 		/// </summary>
 		event EventHandler<VariableChangedArgs> OnVariableChanged;
-		ILunyVariable this[String key] { get; set; }
+		LunyVariable this[String key] { get; set; }
 		T Get<T>(String key);
 		Boolean Has(String key);
 		Boolean Remove(String key);
@@ -51,19 +51,19 @@ namespace Luny
 		private static readonly VariableChangedArgs CachedChangedEventArgs = new();
 
 		// TODO: replace with LuaTable
-		private readonly Dictionary<String, ILunyVariable> _vars = new();
+		private readonly Dictionary<String, LunyVariable> _table = new();
 
 		/// <summary>
 		/// Gets or sets a variable by name.
 		/// </summary>
-		public ILunyVariable this[String key]
+		public LunyVariable this[String key]
 		{
-			get => _vars.TryGetValue(key, out var value) ? value : LunyVariable.Create(key, 0);
+			get => _table.TryGetValue(key, out var value) ? value : LunyVariable.Create(key, 0);
 			set
 			{
-				var oldValue = _vars.TryGetValue(key, out var existing) ? existing : LunyVariable.Create(key, 0);
+				var oldValue = _table.TryGetValue(key, out var existing) ? existing : LunyVariable.Create(key, 0);
 				var newValue = LunyVariable.Create(key, value.Value);
-				_vars[key] = newValue;
+				_table[key] = newValue;
 				NotifyVariableChanged(key, oldValue, newValue);
 			}
 		}
@@ -71,9 +71,9 @@ namespace Luny
 		/// <summary>
 		/// Gets the number of variables.
 		/// </summary>
-		public Int32 Count => _vars.Count;
+		public Int32 Count => _table.Count;
 
-		public IEnumerator<KeyValuePair<String, ILunyVariable>> GetEnumerator() => _vars.GetEnumerator();
+		public IEnumerator<KeyValuePair<String, LunyVariable>> GetEnumerator() => _table.GetEnumerator();
 
 		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
@@ -82,7 +82,7 @@ namespace Luny
 		/// </summary>
 		public T Get<T>(String key)
 		{
-			if (!_vars.TryGetValue(key, out var variable))
+			if (!_table.TryGetValue(key, out var variable))
 				return default;
 
 			var value = variable.Value;
@@ -111,26 +111,26 @@ namespace Luny
 		/// <summary>
 		/// Checks if a variable exists.
 		/// </summary>
-		public Boolean Has(String key) => _vars.ContainsKey(key);
+		public Boolean Has(String key) => _table.ContainsKey(key);
 
 		/// <summary>
 		/// Removes a variable.
 		/// </summary>
-		public Boolean Remove(String key) => _vars.Remove(key);
+		public Boolean Remove(String key) => _table.Remove(key);
 
 		/// <summary>
 		/// Clears all variables.
 		/// </summary>
-		public void Clear() => _vars.Clear();
+		public void Clear() => _table.Clear();
 
 		public override String ToString()
 		{
-			if (_vars.Count == 0)
+			if (_table.Count == 0)
 				return "Variables: (empty)";
 
 			var sb = new StringBuilder();
-			sb.AppendLine($"Variables: ({_vars.Count})");
-			foreach (var kvp in _vars)
+			sb.AppendLine($"Variables: ({_table.Count})");
+			foreach (var kvp in _table)
 				sb.AppendLine($"  {kvp.Key} = {kvp.Value}");
 
 			return sb.ToString();
