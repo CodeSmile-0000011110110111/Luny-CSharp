@@ -7,7 +7,7 @@ namespace Luny
 	/// A primitive type that wraps a double and provides implicit conversions from and to various types.
 	/// </summary>
 	[Serializable]
-	public readonly struct Number : IComparable, IConvertible, IFormattable,
+	public readonly struct Number : IConvertible, IFormattable, IComparable,
 		IComparable<Number>, IEquatable<Number>,
 		IComparable<Double>, IEquatable<Double>,
 		IComparable<Int64>, IEquatable<Int64>,
@@ -66,9 +66,9 @@ namespace Luny
 		public TypeCode GetTypeCode() => TypeCode.Double;
 		public Boolean ToBoolean(IFormatProvider provider) => Convert.ToBoolean(_value);
 		public Byte ToByte(IFormatProvider provider) => Convert.ToByte(_value);
-		public Char ToChar(IFormatProvider provider) => (Char)(Int32)Math.Clamp(_value, Char.MinValue, Char.MaxValue);
-		public TimeSpan ToTimeSpan(IFormatProvider provider) => TimeSpan.FromTicks((Int64)Math.Clamp(_value, Int64.MinValue, Int64.MaxValue));
-		public DateTime ToDateTime(IFormatProvider provider) => DateTime.FromBinary((Int64)Math.Clamp(_value, Int64.MinValue, Int64.MaxValue));
+		public Char ToChar(IFormatProvider provider) => (Char)(Int32)(_value >= (Double)Char.MaxValue ? Char.MaxValue : _value <= (Double)Char.MinValue ? Char.MinValue : _value);
+		public TimeSpan ToTimeSpan(IFormatProvider provider) => TimeSpan.FromTicks(_value >= (Double)Int64.MaxValue ? Int64.MaxValue : _value <= (Double)Int64.MinValue ? Int64.MinValue : (Int64)_value);
+		public DateTime ToDateTime(IFormatProvider provider) => DateTime.FromBinary(_value >= (Double)Int64.MaxValue ? Int64.MaxValue : _value <= (Double)Int64.MinValue ? Int64.MinValue : (Int64)_value);
 		public Decimal ToDecimal(IFormatProvider provider) => Convert.ToDecimal(_value);
 		public Double ToDouble(IFormatProvider provider) => _value;
 		public Int16 ToInt16(IFormatProvider provider) => Convert.ToInt16(_value);
@@ -191,8 +191,14 @@ namespace Luny
 				return Equals(other);
 			if (obj is Double d)
 				return _value.Equals(d);
+			if (obj is Single f)
+				return _value.Equals((Double)f);
+			if (obj is Int32 i)
+				return Equals((Int64)i);
 			if (obj is Int64 l)
 				return Equals(l);
+			if (obj is UInt32 ui)
+				return Equals((UInt64)ui);
 			if (obj is UInt64 ul)
 				return Equals(ul);
 
