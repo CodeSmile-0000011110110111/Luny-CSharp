@@ -1,4 +1,4 @@
-namespace Luny
+namespace Luny.Engine
 {
 	public enum NativeEngine
 	{
