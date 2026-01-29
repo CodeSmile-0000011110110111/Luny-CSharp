@@ -39,11 +39,6 @@ namespace Luny
 	/// </summary>
 	public sealed class Table : ITable
 	{
-		internal sealed class VarHandle
-		{
-			public Variable Value;
-		}
-
 		/// <summary>
 		/// Fired when a variable is changed. Only invoked in debug builds.
 		/// </summary>
@@ -161,6 +156,11 @@ namespace Luny
 			s_CachedChangedEventArgs.Current = currentValue;
 			OnVariableChanged?.Invoke(this, s_CachedChangedEventArgs);
 #endif
+		}
+
+		internal sealed class VarHandle
+		{
+			public Variable Value;
 		}
 	}
 }

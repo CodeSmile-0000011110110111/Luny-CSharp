@@ -174,7 +174,10 @@ namespace Luny
 		public static implicit operator Variable(Single v) => new(v, ValueType.Number);
 		public static implicit operator Variable(Double v) => new(v, ValueType.Number);
 		public static implicit operator Variable(Boolean v) => new(v ? 1.0 : 0.0, ValueType.Boolean);
-		public static implicit operator Variable(String v) => v == null ? new Variable(null, ValueType.Null) : new Variable(v, ValueType.String);
+
+		public static implicit operator Variable(String v) =>
+			v == null ? new Variable(null, ValueType.Null) : new Variable(v, ValueType.String);
+
 		public static implicit operator Variable(Number v) => new(v, ValueType.Number);
 
 		public static implicit operator Int32(Variable v) => v.AsInt32();
