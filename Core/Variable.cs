@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace Luny
@@ -68,7 +69,9 @@ namespace Luny
 			Number n => Named(n, name),
 			String s => Named(s, name),
 			Variable v => new Variable(v._numValue, v._type, name),
-			var _ => new Variable(null, ValueType.Null, name),
+			var _ => value == null
+				? new Variable(null, ValueType.Null, name)
+				: throw new NotSupportedException($"Unsupported Type: {value.GetType().Name}"),
 		};
 
 		public Boolean AsBoolean() => _type == ValueType.Boolean && IsTrue;
@@ -182,6 +185,7 @@ namespace Luny
 		public static implicit operator String(Variable v) => v.AsString();
 		public static implicit operator Number(Variable v) => v.AsNumber();
 
+		[ExcludeFromCodeCoverage]
 		public override String ToString() => _type switch
 		{
 			ValueType.Number => $"{_numValue} ({_type})",

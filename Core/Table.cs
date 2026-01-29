@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Luny
@@ -98,6 +99,7 @@ namespace Luny
 		/// </summary>
 		public void Clear() => _table.Clear();
 
+		[ExcludeFromCodeCoverage]
 		public override String ToString()
 		{
 			if (_table.Count == 0)

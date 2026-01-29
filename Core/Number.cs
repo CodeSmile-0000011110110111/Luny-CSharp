@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace Luny
@@ -66,24 +67,31 @@ namespace Luny
 		public TypeCode GetTypeCode() => TypeCode.Double;
 		public Boolean ToBoolean(IFormatProvider provider) => Convert.ToBoolean(_value);
 		public Byte ToByte(IFormatProvider provider) => Convert.ToByte(_value);
-		public Char ToChar(IFormatProvider provider) => (Char)(Int32)(_value >= (Double)Char.MaxValue ? Char.MaxValue : _value <= (Double)Char.MinValue ? Char.MinValue : _value);
-		public TimeSpan ToTimeSpan(IFormatProvider provider) => TimeSpan.FromTicks(_value >= (Double)Int64.MaxValue ? Int64.MaxValue : _value <= (Double)Int64.MinValue ? Int64.MinValue : (Int64)_value);
-		public DateTime ToDateTime(IFormatProvider provider) => DateTime.FromBinary(_value >= (Double)Int64.MaxValue ? Int64.MaxValue : _value <= (Double)Int64.MinValue ? Int64.MinValue : (Int64)_value);
+
+		public Char ToChar(IFormatProvider provider) =>
+			(Char)(Int32)(_value >= Char.MaxValue ? Char.MaxValue : _value <= Char.MinValue ? Char.MinValue : _value);
+
+		public TimeSpan ToTimeSpan(IFormatProvider provider) =>
+			TimeSpan.FromTicks(_value >= Int64.MaxValue ? Int64.MaxValue : _value <= Int64.MinValue ? Int64.MinValue : (Int64)_value);
+
+		public DateTime ToDateTime(IFormatProvider provider) =>
+			DateTime.FromBinary(_value >= Int64.MaxValue ? Int64.MaxValue : _value <= Int64.MinValue ? Int64.MinValue : (Int64)_value);
+
 		public Decimal ToDecimal(IFormatProvider provider) => Convert.ToDecimal(_value);
 		public Double ToDouble(IFormatProvider provider) => _value;
 		public Int16 ToInt16(IFormatProvider provider) => Convert.ToInt16(_value);
 		public Int32 ToInt32(IFormatProvider provider) => Convert.ToInt32(_value);
 		public Int64 ToInt64(IFormatProvider provider) => Convert.ToInt64(_value);
-		public SByte ToSByte(IFormatProvider provider) => Convert.ToSByte(_value);
-		public Single ToSingle(IFormatProvider provider) => Convert.ToSingle(_value);
-		public String ToString(IFormatProvider provider) => _value.ToString(provider);
-		public Object ToType(Type conversionType, IFormatProvider provider) => Convert.ChangeType(_value, conversionType, provider);
 		public UInt16 ToUInt16(IFormatProvider provider) => Convert.ToUInt16(_value);
 		public UInt32 ToUInt32(IFormatProvider provider) => Convert.ToUInt32(_value);
 		public UInt64 ToUInt64(IFormatProvider provider) => Convert.ToUInt64(_value);
-
+		public SByte ToSByte(IFormatProvider provider) => Convert.ToSByte(_value);
+		public Single ToSingle(IFormatProvider provider) => Convert.ToSingle(_value);
+		public Object ToType(Type conversionType, IFormatProvider provider) => Convert.ChangeType(_value, conversionType, provider);
+		public String ToString(IFormatProvider provider) => _value.ToString(provider);
 		public String ToString(String format, IFormatProvider formatProvider) => _value.ToString(format, formatProvider);
-		public override String ToString() => _value.ToString(CultureInfo.InvariantCulture);
+
+		[ExcludeFromCodeCoverage] public override String ToString() => _value.ToString(CultureInfo.InvariantCulture);
 
 		public static Number operator +(Number a, Number b) => a._value + b._value;
 		public static Number operator -(Number a, Number b) => a._value - b._value;
@@ -192,7 +200,7 @@ namespace Luny
 			if (obj is Double d)
 				return _value.Equals(d);
 			if (obj is Single f)
-				return _value.Equals((Double)f);
+				return _value.Equals(f);
 			if (obj is Int32 i)
 				return Equals((Int64)i);
 			if (obj is Int64 l)
