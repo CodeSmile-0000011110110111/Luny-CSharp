@@ -39,6 +39,11 @@ namespace Luny
 	/// </summary>
 	public sealed class Table : ITable
 	{
+		internal sealed class VarHandle
+		{
+			public Variable Value;
+		}
+
 		/// <summary>
 		/// Fired when a variable is changed. Only invoked in debug builds.
 		/// </summary>
@@ -48,18 +53,24 @@ namespace Luny
 		private static readonly VariableChangedArgs s_CachedChangedEventArgs = new();
 #endif
 
-		private readonly Dictionary<String, Variable> _table = new();
+		private readonly Dictionary<String, VarHandle> _table = new();
 
 		/// <summary>
 		/// Gets or sets a variable by name.
 		/// </summary>
 		public Variable this[String key]
 		{
-			get => _table.TryGetValue(key, out var value) ? value : null;
+			get => _table.TryGetValue(key, out var handle) ? handle.Value : null;
 			set
 			{
-				var previousValue = _table.TryGetValue(key, out var existing) ? existing : null;
-				_table[key] = value;
+				if (!_table.TryGetValue(key, out var handle))
+				{
+					handle = new VarHandle();
+					_table[key] = handle;
+				}
+
+				var previousValue = handle.Value;
+				handle.Value = value;
 				NotifyVariableChanged(key, value, previousValue);
 			}
 		}
@@ -69,7 +80,11 @@ namespace Luny
 		/// </summary>
 		public Int32 Count => _table.Count;
 
-		public IEnumerator<KeyValuePair<String, Variable>> GetEnumerator() => _table.GetEnumerator();
+		public IEnumerator<KeyValuePair<String, Variable>> GetEnumerator()
+		{
+			foreach (var kvp in _table)
+				yield return new KeyValuePair<String, Variable>(kvp.Key, kvp.Value.Value);
+		}
 
 		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
@@ -78,10 +93,10 @@ namespace Luny
 		/// </summary>
 		public T Get<T>(String key)
 		{
-			if (!_table.TryGetValue(key, out var variable))
+			if (!_table.TryGetValue(key, out var handle))
 				return default;
 
-			return variable.As<T>();
+			return handle.Value.As<T>();
 		}
 
 		/// <summary>
@@ -92,12 +107,36 @@ namespace Luny
 		/// <summary>
 		/// Removes a variable.
 		/// </summary>
-		public Boolean Remove(String key) => _table.Remove(key);
+		public Boolean Remove(String key)
+		{
+			if (_table.TryGetValue(key, out var handle))
+			{
+				handle.Value = null;
+				// We don't remove from _table to keep the handle persistent
+				return true;
+			}
+			return false;
+		}
 
 		/// <summary>
 		/// Clears all variables.
 		/// </summary>
-		public void Clear() => _table.Clear();
+		public void Clear()
+		{
+			foreach (var handle in _table.Values)
+				handle.Value = null;
+		}
+
+		internal VarHandle GetHandle(String key)
+		{
+			if (!_table.TryGetValue(key, out var handle))
+			{
+				handle = new VarHandle { Value = null };
+				_table[key] = handle;
+			}
+
+			return handle;
+		}
 
 		[ExcludeFromCodeCoverage]
 		public override String ToString()
@@ -108,13 +147,13 @@ namespace Luny
 			var sb = new StringBuilder();
 			sb.AppendLine($"{nameof(Table)} ({_table.Count}):");
 			foreach (var kvp in _table)
-				sb.AppendLine($"    [\"{kvp.Key}\"] = {kvp.Value}");
+				sb.AppendLine($"    [\"{kvp.Key}\"] = {kvp.Value.Value}");
 
 			return sb.ToString();
 		}
 
 		[Conditional("DEBUG")] [Conditional("LUNYSCRIPT_DEBUG")]
-		private void NotifyVariableChanged(String key, Variable currentValue, Variable previousValue)
+		internal void NotifyVariableChanged(String key, Variable currentValue, Variable previousValue)
 		{
 #if DEBUG || LUNYSCRIPT_DEBUG
 			s_CachedChangedEventArgs.Name = key;
