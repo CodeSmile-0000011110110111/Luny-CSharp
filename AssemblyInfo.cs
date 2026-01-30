@@ -6,6 +6,7 @@
 [assembly:InternalsVisibleTo("Luny.Unity")]
 [assembly:InternalsVisibleTo("Luny.UnityEditor")]
 [assembly:InternalsVisibleTo("Luny-Test")]
+[assembly:InternalsVisibleTo("LunyScript")]
 [assembly:InternalsVisibleTo("LunyScript-Test")]
 [assembly:InternalsVisibleTo("Luny-ContractTest")]
 

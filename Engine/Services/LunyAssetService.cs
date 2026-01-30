@@ -2,6 +2,7 @@
 using Luny.Engine.Bridge.Identity;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Luny.Engine.Services
 {
@@ -54,13 +55,6 @@ namespace Luny.Engine.Services
 			return loadedAsset;
 		}
 
-		private void AddToCache<T>(T loadedAsset, String agnosticPath) where T : class, ILunyAsset
-		{
-			var assetId = new LunyAssetID();
-			_cache[assetId] = loadedAsset;
-			_pathToId[agnosticPath] = assetId;
-		}
-
 		public void Unload(LunyAssetID id)
 		{
 			if (_cache.Remove(id, out var asset))
@@ -68,6 +62,13 @@ namespace Luny.Engine.Services
 				_pathToId.Remove(asset.AssetPath.AgnosticPath);
 				UnloadNative(asset);
 			}
+		}
+
+		private void AddToCache<T>(T loadedAsset, String agnosticPath) where T : class, ILunyAsset
+		{
+			var assetId = new LunyAssetID();
+			_cache[assetId] = loadedAsset;
+			_pathToId[agnosticPath] = assetId;
 		}
 
 		private Boolean TryGetCached<T>(String agnosticPath, out T load) where T : class, ILunyAsset
@@ -99,17 +100,22 @@ namespace Luny.Engine.Services
 
 			foreach (var ext in extensions)
 			{
-				var extension = ext.StartsWith(".") ? ext : "." + ext;
+				var isExtValid = !String.IsNullOrWhiteSpace(ext);
 
 				// Tier 1: Luny/{Type}/{Path}.{ext}
-				var lunyPath = $"Luny/{typeFolderName}/{agnosticPath}{extension}";
-				var asset = LoadNative<T>(LunyAssetPath.FromAgnostic(lunyPath));
+				var lunyPath = $"Luny/{typeFolderName}/{agnosticPath}";
+				if (isExtValid)
+					lunyPath = Path.ChangeExtension(lunyPath, ext);
+
+				var assetPath = LunyAssetPath.FromAgnostic(lunyPath);
+				var asset = LoadNative<T>(assetPath);
 				if (asset != null)
 					return asset;
 
 				// Tier 2: {Path}.{ext}
-				var directPath = $"{agnosticPath}{extension}";
-				asset = LoadNative<T>(LunyAssetPath.FromAgnostic(directPath));
+				var directPath = isExtValid ? Path.ChangeExtension(agnosticPath, ext) : agnosticPath;
+				assetPath = LunyAssetPath.FromAgnostic(directPath);
+				asset = LoadNative<T>(assetPath);
 				if (asset != null)
 					return asset;
 			}
