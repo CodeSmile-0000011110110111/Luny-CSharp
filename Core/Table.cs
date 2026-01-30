@@ -31,7 +31,7 @@ namespace Luny
 		T Get<T>(String key);
 		Boolean Has(String key);
 		Boolean Remove(String key);
-		void Clear();
+		void RemoveAll();
 	}
 
 	/// <summary>
@@ -102,24 +102,30 @@ namespace Luny
 		/// <summary>
 		/// Removes a variable.
 		/// </summary>
-		public Boolean Remove(String key)
+		public Boolean Remove(String key) => _table.Remove(key);
+
+		/// <summary>
+		/// Removes all variables.
+		/// </summary>
+		public void RemoveAll() => _table.Clear();
+
+		/// <summary>
+		/// Resets a variable's value to default.
+		/// </summary>
+		/// <param name="key"></param>
+		public void ResetValue(String key)
 		{
 			if (_table.TryGetValue(key, out var handle))
-			{
-				handle.Value = null;
-				// We don't remove from _table to keep the handle persistent
-				return true;
-			}
-			return false;
+				handle.Value = default;
 		}
 
 		/// <summary>
-		/// Clears all variables.
+		/// Resets values of all variables to their default value.
 		/// </summary>
-		public void Clear()
+		public void ResetValues()
 		{
 			foreach (var handle in _table.Values)
-				handle.Value = null;
+				handle.Value = default;
 		}
 
 		internal VarHandle GetHandle(String key)

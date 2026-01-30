@@ -80,7 +80,7 @@ namespace Luny
 		public Single AsSingle() => _type == ValueType.Number ? TryRead<Single>(out var value) ? value : 0f : 0f;
 		public Int64 AsInt64() => _type == ValueType.Number ? TryRead<Int64>(out var value) ? value : 0L : 0L;
 		public Int32 AsInt32() => _type == ValueType.Number ? TryRead<Int32>(out var value) ? value : 0 : 0;
-		public String AsString() => _type == ValueType.String ? (String)_refValue : null;
+		public String AsString() => _type == ValueType.String && _refValue != null ? (String)_refValue : String.Empty;
 
 		public T As<T>()
 		{
@@ -174,10 +174,7 @@ namespace Luny
 		public static implicit operator Variable(Single v) => new(v, ValueType.Number);
 		public static implicit operator Variable(Double v) => new(v, ValueType.Number);
 		public static implicit operator Variable(Boolean v) => new(v ? 1.0 : 0.0, ValueType.Boolean);
-
-		public static implicit operator Variable(String v) =>
-			v == null ? new Variable(null, ValueType.Null) : new Variable(v, ValueType.String);
-
+		public static implicit operator Variable(String v) => new Variable(v, ValueType.String);
 		public static implicit operator Variable(Number v) => new(v, ValueType.Number);
 
 		public static implicit operator Int32(Variable v) => v.AsInt32();
