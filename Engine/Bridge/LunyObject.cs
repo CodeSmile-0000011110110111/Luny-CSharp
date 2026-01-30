@@ -160,7 +160,7 @@ namespace Luny.Engine.Bridge
 		private SystemObject _nativeObject;
 		private ObjectState _state;
 
-		[NotNull] private static ILunyObjectLifecycleManagerInternal Lifecycle => ((ILunyEngineInternal)LunyEngine.Instance).Lifecycle;
+		[NotNull] private static ILunyObjectLifecycleInternal Lifecycle => ((ILunyEngineInternal)LunyEngine.Instance).Lifecycle;
 
 		public LunyObjectID LunyObjectID => _lunyObjectID;
 		public LunyNativeObjectID NativeObjectID => _nativeObjectID;

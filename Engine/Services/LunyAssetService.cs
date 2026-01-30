@@ -49,7 +49,7 @@ namespace Luny.Engine.Services
 			var loadedAsset = TryLoadWithTieredLookup<T>(path);
 			if (loadedAsset == null)
 			{
-				LunyLogger.LogWarning($"Asset not found at path '{agnosticPath}' for type {typeof(T).Name}. Returning placeholder.");
+				LunyLogger.LogWarning($"Asset not found: '{agnosticPath}' (type: {typeof(T).Name}) => using placeholder");
 				loadedAsset = GetPlaceholder<T>(path);
 			}
 

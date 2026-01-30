@@ -68,8 +68,8 @@ namespace Luny
 
 	internal interface ILunyEngineInternal
 	{
-		ILunyObjectLifecycleManagerInternal Lifecycle { get; }
-		ILunyServiceRegistryInternal ServiceRegistry { get; }
+		ILunyObjectLifecycleInternal Lifecycle { get; }
+		ILunyServiceRegistryInternal Services { get; }
 	}
 
 	/// <summary>
@@ -84,7 +84,7 @@ namespace Luny
 		private LunyServiceRegistry _serviceRegistry;
 		private LunyEngineObserverRegistry _observerRegistry;
 		private LunyObjectRegistry _objectRegistry;
-		private LunyObjectLifecycleManager _lifecycleManager;
+		private LunyObjectLifecycle _lifecycle;
 		private LunyEngineProfiler _profiler;
 		private ILunyTimeServiceInternal _timeInternal;
 
@@ -95,8 +95,8 @@ namespace Luny
 		/// </summary>
 		public ILunyPathConverter PathConverter => LunyPath.Converter;
 
-		ILunyObjectLifecycleManagerInternal ILunyEngineInternal.Lifecycle => _lifecycleManager;
-		ILunyServiceRegistryInternal ILunyEngineInternal.ServiceRegistry => _serviceRegistry;
+		ILunyObjectLifecycleInternal ILunyEngineInternal.Lifecycle => _lifecycle;
+		ILunyServiceRegistryInternal ILunyEngineInternal.Services => _serviceRegistry;
 
 		/// <summary>
 		/// Gets the engine profiler for performance monitoring.
@@ -152,7 +152,7 @@ namespace Luny
 				_profiler = new LunyEngineProfiler(Time);
 				_observerRegistry = new LunyEngineObserverRegistry();
 				_objectRegistry = new LunyObjectRegistry();
-				_lifecycleManager = new LunyObjectLifecycleManager(_objectRegistry);
+				_lifecycle = new LunyObjectLifecycle(_objectRegistry);
 
 				LunyTraceLogger.LogInfoInitialized(this);
 			}
@@ -246,7 +246,7 @@ namespace Luny
 				sceneService.OnSceneLoaded -= OnSceneLoaded;
 				sceneService.OnSceneUnloaded -= OnSceneUnloaded;
 
-				_lifecycleManager.Shutdown(_objectRegistry);
+				_lifecycle.Shutdown(_objectRegistry);
 				_objectRegistry.Shutdown();
 				_serviceRegistry.Shutdown();
 			}
@@ -260,7 +260,7 @@ namespace Luny
 				_serviceRegistry = null;
 				_observerRegistry = null;
 				_objectRegistry = null;
-				_lifecycleManager = null;
+				_lifecycle = null;
 				_profiler = null;
 				_timeInternal = null;
 
@@ -289,7 +289,7 @@ namespace Luny
 		private void OnSceneUnloaded(ILunyScene unloadedScene) // called by SceneService
 		{
 			LunyTraceLogger.LogInfoEventCallback(nameof(OnSceneLoaded), unloadedScene?.ToString(), this);
-			_lifecycleManager.DestroyNativeNullObjects();
+			_lifecycle.DestroyNativeNullObjects();
 			InvokeObserversOnSceneUnloaded(unloadedScene);
 		}
 	}

@@ -105,7 +105,7 @@ namespace Luny
 
 				// engine first
 				_serviceRegistry.OnEnginePreUpdate();
-				_lifecycleManager.OnEnginePreUpdate();
+				_lifecycle.OnEnginePreUpdate();
 
 				foreach (var observer in _observerRegistry.EnabledObservers)
 				{
@@ -151,7 +151,7 @@ namespace Luny
 
 			// run "structural changes" here ..
 			_serviceRegistry.OnEnginePostUpdate();
-			_lifecycleManager.OnEnginePostUpdate(); // should run last to guarantee object cleanup
+			_lifecycle.OnEnginePostUpdate(); // should run last to guarantee object cleanup
 
 			_didCallPreUpdateThisFrame = false;
 		}

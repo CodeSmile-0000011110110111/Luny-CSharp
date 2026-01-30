@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Luny.Engine.Bridge
 {
-	internal interface ILunyObjectLifecycleManagerInternal
+	internal interface ILunyObjectLifecycleInternal
 	{
 		void OnObjectCreated(ILunyObject lunyObject);
 		void OnObjectDestroyed(ILunyObject lunyObject);
@@ -18,14 +18,14 @@ namespace Luny.Engine.Bridge
 	/// Manages the lifecycle state transitions of LunyObjects, including deferred
 	/// OnReady execution and structural changes (destruction).
 	/// </summary>
-	internal sealed class LunyObjectLifecycleManager : ILunyObjectLifecycleManagerInternal
+	internal sealed class LunyObjectLifecycle : ILunyObjectLifecycleInternal
 	{
 		private ILunyObjectRegistryInternal _lunyObjects;
 		private Queue<ILunyObject> _pendingReady = new();
 		private Queue<ILunyObject> _pendingDestroy = new();
 		private Dictionary<LunyObjectID, ILunyObject> _pendingReadyWaitingForEnable = new();
 
-		public LunyObjectLifecycleManager(ILunyObjectRegistryInternal objectRegistry) =>
+		public LunyObjectLifecycle(ILunyObjectRegistryInternal objectRegistry) =>
 			_lunyObjects = objectRegistry ?? throw new ArgumentNullException(nameof(objectRegistry));
 
 		/// <summary>
@@ -60,7 +60,7 @@ namespace Luny.Engine.Bridge
 
 		public void OnObjectDisabled(ILunyObject lunyObject) {}
 
-		~LunyObjectLifecycleManager() => LunyTraceLogger.LogInfoFinalized(this);
+		~LunyObjectLifecycle() => LunyTraceLogger.LogInfoFinalized(this);
 
 		public void OnEnginePreUpdate() => ProcessPendingReady();
 		public void OnEnginePostUpdate() => ProcessPendingDestroy();
