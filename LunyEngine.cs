@@ -143,6 +143,7 @@ namespace Luny
 				LunyTraceLogger.LogInfoInitializing(this);
 
 				LunyObjectID.Reset();
+				LunyAssetID.Reset();
 
 				_serviceRegistry = new LunyServiceRegistry(engine);
 				AssignMandatoryServices();

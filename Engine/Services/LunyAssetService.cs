@@ -34,16 +34,12 @@ namespace Luny.Engine.Services
 	{
 		private readonly Dictionary<LunyAssetID, ILunyAsset> _cache = new();
 		private readonly Dictionary<String, LunyAssetID> _pathToId = new();
-		private UInt64 _nextId = 1;
 
 		public T Load<T>(LunyAssetPath path) where T : class, ILunyAsset
 		{
 			var agnosticPath = path.AgnosticPath;
-			if (_pathToId.TryGetValue(agnosticPath, out var id))
-			{
-				if (_cache.TryGetValue(id, out var cachedAsset) && cachedAsset is T asset)
-					return asset;
-			}
+			if (TryGetCached(agnosticPath, out T load))
+				return load;
 
 			// Try to load via tiered lookup
 			var loadedAsset = TryLoadWithTieredLookup<T>(path);
@@ -53,12 +49,40 @@ namespace Luny.Engine.Services
 				loadedAsset = GetPlaceholder<T>(path);
 			}
 
-			// Register in cache
-			var assetId = new LunyAssetID(_nextId++);
-			_cache[assetId] = loadedAsset;
-			_pathToId[agnosticPath] = assetId;
+			AddToCache(loadedAsset, agnosticPath);
 
 			return loadedAsset;
+		}
+
+		private void AddToCache<T>(T loadedAsset, String agnosticPath) where T : class, ILunyAsset
+		{
+			var assetId = new LunyAssetID();
+			_cache[assetId] = loadedAsset;
+			_pathToId[agnosticPath] = assetId;
+		}
+
+		public void Unload(LunyAssetID id)
+		{
+			if (_cache.Remove(id, out var asset))
+			{
+				_pathToId.Remove(asset.AssetPath.AgnosticPath);
+				UnloadNative(asset);
+			}
+		}
+
+		private Boolean TryGetCached<T>(String agnosticPath, out T load) where T : class, ILunyAsset
+		{
+			if (_pathToId.TryGetValue(agnosticPath, out var id))
+			{
+				if (_cache.TryGetValue(id, out var cachedAsset) && cachedAsset is T asset)
+				{
+					load = asset;
+					return true;
+				}
+			}
+
+			load = null;
+			return false;
 		}
 
 		private T TryLoadWithTieredLookup<T>(LunyAssetPath path) where T : class, ILunyAsset
@@ -76,7 +100,7 @@ namespace Luny.Engine.Services
 			foreach (var ext in extensions)
 			{
 				var extension = ext.StartsWith(".") ? ext : "." + ext;
-				
+
 				// Tier 1: Luny/{Type}/{Path}.{ext}
 				var lunyPath = $"Luny/{typeFolderName}/{agnosticPath}{extension}";
 				var asset = LoadNative<T>(LunyAssetPath.FromAgnostic(lunyPath));
@@ -100,17 +124,8 @@ namespace Luny.Engine.Services
 				name = name.Substring(5);
 			else if (name.StartsWith("Luny"))
 				name = name.Substring(4);
-			
-			return name;
-		}
 
-		public void Unload(LunyAssetID id)
-		{
-			if (_cache.Remove(id, out var asset))
-			{
-				_pathToId.Remove(asset.AssetPath.AgnosticPath);
-				UnloadNative(asset);
-			}
+			return name;
 		}
 
 		/// <summary>

@@ -8,9 +8,18 @@ namespace Luny.Engine.Bridge.Identity
 	/// </summary>
 	public readonly struct LunyAssetID : IEquatable<LunyAssetID>, IComparable<LunyAssetID>
 	{
-		private readonly UInt64 _value;
+		private const Int32 StartID = 1;
+		private static Int32 s_NextID = StartID;
+		private readonly Int32 _value;
 
-		public LunyAssetID(UInt64 value) => _value = value;
+		internal static void Reset() => s_NextID = StartID;
+
+		private LunyAssetID(Int32 value) => _value = value;
+
+		/// <summary>
+		/// Generates a new unique ObjectID.
+		/// </summary>
+		public static LunyAssetID Generate() => new(s_NextID++);
 
 		public Boolean Equals(LunyAssetID other) => _value == other._value;
 		public override Boolean Equals(Object obj) => obj is LunyAssetID other && Equals(other);
@@ -22,7 +31,7 @@ namespace Luny.Engine.Bridge.Identity
 
 		public override String ToString() => _value.ToString();
 		
-		public static implicit operator UInt64(LunyAssetID id) => id._value;
-		public static implicit operator LunyAssetID(UInt64 value) => new(value);
+		public static implicit operator Int32(LunyAssetID id) => id._value;
+		public static implicit operator LunyAssetID(Int32 value) => new(value);
 	}
 }
