@@ -1,6 +1,6 @@
 using System;
 
-namespace Luny.Engine.Identity
+namespace Luny.Engine.Bridge.Identity
 {
 	/// <summary>
 	/// Engine-native unique identifier value for engine objects.

@@ -1,11 +1,11 @@
-using Luny.Engine.Identity;
+using Luny.Engine.Bridge.Enums;
 using Luny.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Luny.Engine
+namespace Luny.Engine.Registries
 {
 	public interface ILunyServiceRegistry {}
 
@@ -100,7 +100,7 @@ namespace Luny.Engine
 			var sw = Stopwatch.StartNew();
 
 			var engineName = engine.ToString();
-			var serviceTypes = LunyTypeDiscovery.FindAll<ILunyEngineService>();
+			var serviceTypes = TypeDiscovery.FindAll<ILunyEngineService>();
 
 			foreach (var type in serviceTypes)
 			{
@@ -139,7 +139,7 @@ namespace Luny.Engine
 		internal TService Get<TService>() where TService : LunyEngineServiceBase =>
 			_registeredServices.TryGetValue(typeof(TService), out var service)
 				? (TService)service
-				: throw new LunyServiceException($"Requested service {typeof(TService).FullName} not registered.");
+				: throw new LunyServiceException($"{typeof(TService).Name} not registered");
 
 		internal Boolean TryGet<TService>(out TService service) where TService : LunyEngineServiceBase
 		{

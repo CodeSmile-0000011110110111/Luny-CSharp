@@ -1,9 +1,8 @@
-using Luny.Engine.Identity;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace Luny.Engine
+namespace Luny.Engine.Registries
 {
 	public interface ILunyObserverRegistry {}
 
@@ -25,7 +24,7 @@ namespace Luny.Engine
 		{
 			var sw = Stopwatch.StartNew();
 
-			var observerTypes = LunyTypeDiscovery.FindAll<ILunyEngineObserver>();
+			var observerTypes = TypeDiscovery.FindAll<ILunyEngineObserver>();
 
 			// TODO: sort observers deterministically
 			// TODO: configure observer enabled states

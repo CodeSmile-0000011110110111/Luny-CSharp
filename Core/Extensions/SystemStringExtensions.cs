@@ -20,7 +20,17 @@ namespace Luny
 			"class", "struct", "interface", "enum", "delegate", "checked", "unchecked", "unsafe", "operator", "implicit",
 			"explicit",
 		};
-		public static String ToForwardSlashes(this String str) => str.Replace('\\', '/');
+
+		/// <summary>
+		/// Converts any backslashes '\' to forward slashes '/' to "normalize" strings representing a path.
+		/// </summary>
+		/// <remarks>
+		///	Method first checks if there is a '\' in the string to avoid unnecessary string allocations.
+		/// Uses IndexOf() and Replace() which are both SIMD-optimized.
+		/// </remarks>
+		/// <param name="str"></param>
+		/// <returns></returns>
+		public static String ToForwardSlashes(this String str) => str?.IndexOf('\\') >= 0 ? str.Replace('\\', '/') : str;
 
 		/// <summary>
 		///     Correctness check of a C# identifier (ie variable, method name) that works across platforms and doesn't use Regex.

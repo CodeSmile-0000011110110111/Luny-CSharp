@@ -1,4 +1,5 @@
-using Luny.Engine.Identity;
+using Luny.Engine.Bridge.Identity;
+using Luny.Engine.Registries;
 using Luny.Exceptions;
 using System;
 using System.Diagnostics;

@@ -11,6 +11,11 @@ namespace Luny.Engine.Services
 	{
 		ILunyObject CreateEmpty(String name);
 		ILunyObject CreatePrimitive(String name, LunyPrimitiveType type);
+
+		/// <summary>
+		/// Creates a new object from a prefab bridge.
+		/// </summary>
+		ILunyObject CreateFromPrefab(ILunyPrefab prefab);
 	}
 
 	public abstract class LunyObjectServiceBase : LunyEngineServiceBase {}

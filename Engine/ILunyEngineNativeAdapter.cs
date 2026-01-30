@@ -1,4 +1,5 @@
-﻿using Luny.Exceptions;
+﻿using Luny.Engine.Bridge.Enums;
+using Luny.Exceptions;
 using System;
 using System.Diagnostics.CodeAnalysis;
 

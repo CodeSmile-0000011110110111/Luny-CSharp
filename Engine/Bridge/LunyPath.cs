@@ -12,32 +12,63 @@ namespace Luny.Engine.Bridge
 		String NativePath { get; }
 	}
 
-	public abstract class LunyPath : ILunyPath
+	public enum LunyPathType
+	{
+		Generic,
+		Asset,
+		Save,
+	}
+
+	/// <summary>
+	/// Represents a path that can be converted between engine-native and engine-agnostic (Luny) formats.
+	/// </summary>
+	public class LunyPath : ILunyPath
 	{
 		private String _agnosticPath;
-		public String NativePath { get; }
-		public String AgnosticPath => _agnosticPath ??= ToEngineAgnosticPath(NativePath).ToForwardSlashes();
+		private String _nativePath;
+		/// <summary>
+		/// The active path converter. Must be set by the engine adapter.
+		/// </summary>
+		public static ILunyPathConverter Converter { get; set; }
 
-		public static implicit operator String(LunyPath lunyPath) => lunyPath.NativePath;
+		public String NativePath => _nativePath ??= Converter?.ToNative(AgnosticPath, PathType) ?? AgnosticPath;
+		public String AgnosticPath =>
+			_agnosticPath ??= Converter?.ToLuny(NativePath, PathType).ToForwardSlashes() ?? NativePath.ToForwardSlashes();
 
-		private LunyPath() {}
+		protected virtual LunyPathType PathType => LunyPathType.Generic;
 
-		protected LunyPath(String nativePath)
+		public static implicit operator String(LunyPath lunyPath) => lunyPath?.NativePath;
+
+		public static LunyPath FromNative(String nativePath) => new(nativePath, true);
+		public static LunyPath FromAgnostic(String agnosticPath) => new(agnosticPath, false);
+
+		protected LunyPath(String path, Boolean isNative)
 		{
-			if (String.IsNullOrEmpty(nativePath))
-				throw new LunyBridgeException($"{this}: {nameof(LunyPath)} initialized with <null> or <empty> string");
+			if (String.IsNullOrEmpty(path))
+				throw new LunyBridgeException($"{GetType().Name} initialized with <null> or <empty> string");
 
-			NativePath = nativePath;
-			_agnosticPath = null;
+			if (isNative)
+				_nativePath = path;
+			else
+				_agnosticPath = path.ToForwardSlashes();
 		}
 
-		/// <summary>
-		/// Converts the native path to a path relative to the project without any engine artifacts.
-		/// </summary>
-		/// <param name="nativePath"></param>
-		/// <returns></returns>
-		protected abstract String ToEngineAgnosticPath(String nativePath);
+		public override String ToString() => AgnosticPath;
+	}
 
-		public override String ToString() => NativePath;
+	/// <summary>
+	/// Specialized path for engine save data.
+	/// </summary>
+	public sealed class LunySavePath : LunyPath
+	{
+		protected override LunyPathType PathType => LunyPathType.Save;
+
+		public static implicit operator LunySavePath(String agnosticPath) => FromAgnostic(agnosticPath);
+
+		public new static LunySavePath FromNative(String nativePath) => new(nativePath, true);
+		public new static LunySavePath FromAgnostic(String agnosticPath) => new(agnosticPath, false);
+
+		private LunySavePath(String path, Boolean isNative)
+			: base(path, isNative) {}
 	}
 }

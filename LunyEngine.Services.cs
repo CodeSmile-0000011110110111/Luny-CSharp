@@ -7,6 +7,7 @@ namespace Luny
 	public sealed partial class LunyEngine
 	{
 		public ILunyApplicationService Application { get; private set; }
+		public ILunyAssetService Asset { get; private set; }
 		public ILunyDebugService Debug { get; private set; }
 		public ILunyEditorService Editor { get; private set; }
 		public ILunyObjectService Object { get; private set; }
@@ -22,6 +23,7 @@ namespace Luny
 		private void AssignMandatoryServices()
 		{
 			Application = (ILunyApplicationService)GetService<LunyApplicationServiceBase>();
+			Asset = (ILunyAssetService)GetService<LunyAssetServiceBase>();
 			Debug = (ILunyDebugService)GetService<LunyDebugServiceBase>();
 			Editor = (ILunyEditorService)GetService<LunyEditorServiceBase>();
 			Object = (ILunyObjectService)GetService<LunyObjectServiceBase>();

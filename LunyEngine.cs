@@ -1,7 +1,9 @@
 using Luny.Engine;
 using Luny.Engine.Bridge;
+using Luny.Engine.Bridge.Enums;
+using Luny.Engine.Bridge.Identity;
 using Luny.Engine.Diagnostics;
-using Luny.Engine.Identity;
+using Luny.Engine.Registries;
 using Luny.Engine.Services;
 using Luny.Exceptions;
 using System;
@@ -16,6 +18,7 @@ namespace Luny
 	{
 		// Mandatory services
 		ILunyApplicationService Application { get; }
+		ILunyAssetService Asset { get; }
 		ILunyDebugService Debug { get; }
 		ILunyEditorService Editor { get; }
 		ILunyObjectService Object { get; }
@@ -86,6 +89,11 @@ namespace Luny
 		private ILunyTimeServiceInternal _timeInternal;
 
 		public ILunyObjectRegistry Objects => _objectRegistry;
+
+		/// <summary>
+		/// Gets the active path converter.
+		/// </summary>
+		public ILunyPathConverter PathConverter => LunyPath.Converter;
 
 		ILunyObjectLifecycleManagerInternal ILunyEngineInternal.Lifecycle => _lifecycleManager;
 		ILunyServiceRegistryInternal ILunyEngineInternal.ServiceRegistry => _serviceRegistry;
@@ -255,6 +263,8 @@ namespace Luny
 				_lifecycleManager = null;
 				_profiler = null;
 				_timeInternal = null;
+
+				LunyPath.Converter = null;
 
 				// ensure we won't get re-instantiated after this point
 				s_IsDisposed = true;

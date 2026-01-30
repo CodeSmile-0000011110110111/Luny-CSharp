@@ -1,4 +1,4 @@
-namespace Luny.Engine
+namespace Luny.Engine.Bridge.Enums
 {
 	public enum NativeEngine
 	{
@@ -9,11 +9,11 @@ namespace Luny.Engine
 		CryEngine = 7,
 		Evergine = 9,
 		Flax = 5,
-		GameEngineTM = 3, // coming soon ... (placeholder name)
 		Godot = 1,
 		Unigine = 8,
 		Unity = 2,
 		Unreal = 6,
 		Stride = 4,
+		TheEngine = 3, // coming soon ... (placeholder name)
 	}
 }

@@ -1,10 +1,10 @@
 using Luny.Engine.Bridge;
-using Luny.Engine.Identity;
+using Luny.Engine.Bridge.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Luny.Engine
+namespace Luny.Engine.Registries
 {
 	public interface ILunyObjectRegistry
 	{
