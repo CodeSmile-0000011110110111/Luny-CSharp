@@ -101,9 +101,9 @@ namespace Luny.Engine.Diagnostics
 				FrameCount = _timeService.EngineFrameCount,
 			};
 #else
-			return new LunyProfilerSnapshot
+			return new LunyEngineProfilerSnapshot
 			{
-				CategorizedMetrics = new Dictionary<ProfilerCategory, IReadOnlyList<LunyObserverMetrics>>(),
+				CategorizedMetrics = new Dictionary<LunyEngineLifecycleEvents, IReadOnlyList<LunyObserverMetrics>>(),
 				Timestamp = DateTime.UtcNow
 			};
 #endif

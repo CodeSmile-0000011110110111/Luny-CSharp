@@ -40,7 +40,9 @@ namespace Luny
 			_numValue = value;
 			_refValue = null;
 			_type = type;
+#if DEBUG || LUNYSCRIPT_DEBUG
 			_name = name;
+#endif
 		}
 
 		private Variable(Object value, ValueType type, String name = null)
@@ -48,7 +50,9 @@ namespace Luny
 			_numValue = 0;
 			_refValue = value;
 			_type = type;
+#if DEBUG || LUNYSCRIPT_DEBUG
 			_name = name;
+#endif
 		}
 
 		public static Variable Named(Boolean value, String name) => new(value ? 1.0 : 0.0, ValueType.Boolean, name);

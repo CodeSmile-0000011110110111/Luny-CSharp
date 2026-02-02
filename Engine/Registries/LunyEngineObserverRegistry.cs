@@ -31,12 +31,6 @@ namespace Luny.Engine.Registries
 
 			foreach (var type in observerTypes)
 			{
-#if !DEBUG && !LUNY_DEBUG
-				// Skip [LunyTestable] types unless in DEBUG mode
-				if (type.HasAttribute<LunyTestableAttribute>())
-					continue;
-#endif
-
 				LunyLogger.LogInfo($"{type.FullName} registered", this);
 				var observer = (ILunyEngineObserver)Activator.CreateInstance(type);
 				_registeredObservers[type] = observer;
