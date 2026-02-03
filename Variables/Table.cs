@@ -128,6 +128,11 @@ namespace Luny
 				handle.Value = default;
 		}
 
+		/// <summary>
+		/// Gets a handle to a variable.
+		/// </summary>
+		/// <param name="key"></param>
+		/// <returns></returns>
 		internal VarHandle GetHandle(String key)
 		{
 			if (!_table.TryGetValue(key, out var handle))
