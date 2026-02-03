@@ -56,18 +56,7 @@ namespace Luny
 		public Variable this[String key]
 		{
 			get => _table.TryGetValue(key, out var handle) ? handle.Value : null;
-			set
-			{
-				if (!_table.TryGetValue(key, out var handle))
-				{
-					handle = new VarHandle();
-					_table[key] = handle;
-				}
-
-				var previousValue = handle.Value;
-				handle.Value = value;
-				NotifyVariableChanged(key, value, previousValue);
-			}
+			set => GetHandle(key).Value = value;
 		}
 
 		/// <summary>
@@ -137,7 +126,7 @@ namespace Luny
 		{
 			if (!_table.TryGetValue(key, out var handle))
 			{
-				handle = new VarHandle { Value = null };
+				handle = new VarHandle(this, key);
 				_table[key] = handle;
 			}
 
@@ -171,7 +160,26 @@ namespace Luny
 
 		internal sealed class VarHandle
 		{
-			public Variable Value;
+			private readonly Table _owner;
+			private readonly String _name;
+			private Variable _value;
+
+			public Variable Value
+			{
+				get => _value;
+				set
+				{
+					var previous = _value;
+					_value = value;
+					_owner.NotifyVariableChanged(_name, value, previous);
+				}
+			}
+
+			internal VarHandle(Table owner, String name)
+			{
+				_owner = owner;
+				_name = name;
+			}
 		}
 	}
 }
