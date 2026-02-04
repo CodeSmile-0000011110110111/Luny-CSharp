@@ -30,7 +30,7 @@ namespace Luny.Engine.Bridge.Identity
 		public static Boolean operator !=(LunyAssetID left, LunyAssetID right) => !left.Equals(right);
 
 		public override String ToString() => _value.ToString();
-		
+
 		public static implicit operator Int32(LunyAssetID id) => id._value;
 		public static implicit operator LunyAssetID(Int32 value) => new(value);
 	}

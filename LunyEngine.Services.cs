@@ -23,7 +23,7 @@ namespace Luny
 		private void AssignMandatoryServices()
 		{
 			Application = (ILunyApplicationService)GetService<LunyApplicationServiceBase>();
-			Asset = (ILunyAssetService)GetService<LunyAssetServiceBase>();
+			Asset = GetService<LunyAssetServiceBase>();
 			Debug = (ILunyDebugService)GetService<LunyDebugServiceBase>();
 			Editor = (ILunyEditorService)GetService<LunyEditorServiceBase>();
 			Object = (ILunyObjectService)GetService<LunyObjectServiceBase>();

@@ -100,6 +100,22 @@ namespace Luny
 		public void RemoveAll() => _table.Clear();
 
 		/// <summary>
+		/// Gets a handle to a variable.
+		/// </summary>
+		/// <param name="key"></param>
+		/// <returns></returns>
+		public VarHandle GetHandle(String key)
+		{
+			if (!_table.TryGetValue(key, out var handle))
+			{
+				handle = new VarHandle(this, key);
+				_table[key] = handle;
+			}
+
+			return handle;
+		}
+
+		/// <summary>
 		/// Resets a variable's value to default.
 		/// </summary>
 		/// <param name="key"></param>
@@ -116,22 +132,6 @@ namespace Luny
 		{
 			foreach (var handle in _table.Values)
 				handle.Value = default;
-		}
-
-		/// <summary>
-		/// Gets a handle to a variable.
-		/// </summary>
-		/// <param name="key"></param>
-		/// <returns></returns>
-		public VarHandle GetHandle(String key)
-		{
-			if (!_table.TryGetValue(key, out var handle))
-			{
-				handle = new VarHandle(this, key);
-				_table[key] = handle;
-			}
-
-			return handle;
 		}
 
 		[ExcludeFromCodeCoverage]

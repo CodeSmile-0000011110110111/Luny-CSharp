@@ -1,5 +1,4 @@
 using Luny.Engine.Bridge.Identity;
-using System;
 
 namespace Luny.Engine.Bridge
 {
@@ -12,7 +11,7 @@ namespace Luny.Engine.Bridge
 		/// The unique identifier for this asset.
 		/// </summary>
 		LunyAssetID AssetID { get; }
-		
+
 		/// <summary>
 		/// The path used to load this asset.
 		/// </summary>
