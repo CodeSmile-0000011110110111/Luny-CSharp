@@ -96,10 +96,10 @@ namespace Luny
 
 		public String AsString() => _type switch
 		{
-			ValueType.Null => "<Null>",
+			ValueType.Null => null,
 			ValueType.Number => Convert.ToString(_numValue, CultureInfo.InvariantCulture),
 			ValueType.Boolean => Convert.ToString(AsBoolean()),
-			ValueType.String => _refValue is String str ? str : _refValue?.ToString() ?? String.Empty,
+			ValueType.String => _refValue as String ?? _refValue?.ToString() ?? String.Empty,
 			var _ => throw new ArgumentOutOfRangeException(_type.ToString()),
 		};
 
