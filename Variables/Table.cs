@@ -29,6 +29,7 @@ namespace Luny
 		event EventHandler<VariableChangedArgs> OnVariableChanged;
 		Variable this[String key] { get; set; }
 		T Get<T>(String key);
+		Table.VarHandle GetHandle(String key);
 		Boolean Has(String key);
 		Boolean Remove(String key);
 		void RemoveAll();
@@ -122,7 +123,7 @@ namespace Luny
 		/// </summary>
 		/// <param name="key"></param>
 		/// <returns></returns>
-		internal VarHandle GetHandle(String key)
+		public VarHandle GetHandle(String key)
 		{
 			if (!_table.TryGetValue(key, out var handle))
 			{
@@ -158,7 +159,7 @@ namespace Luny
 #endif
 		}
 
-		internal sealed class VarHandle
+		public sealed class VarHandle
 		{
 			private readonly Table _owner;
 			private readonly String _name;

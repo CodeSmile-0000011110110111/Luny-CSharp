@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 
 namespace Luny
@@ -86,13 +87,21 @@ namespace Luny
 				: throw new NotSupportedException($"Unsupported Type: {value.GetType().Name}"),
 		};
 
-		public Boolean AsBoolean() => _type == ValueType.Boolean && IsTrue;
+		public Boolean AsBoolean() => IsTrue;
 		public Number AsNumber() => _type == ValueType.Number ? _numValue : 0.0;
 		public Double AsDouble() => _type == ValueType.Number ? _numValue : 0.0;
-		public Single AsSingle() => _type == ValueType.Number ? TryRead<Single>(out var value) ? value : 0f : 0f;
-		public Int64 AsInt64() => _type == ValueType.Number ? TryRead<Int64>(out var value) ? value : 0L : 0L;
-		public Int32 AsInt32() => _type == ValueType.Number ? TryRead<Int32>(out var value) ? value : 0 : 0;
-		public String AsString() => _type == ValueType.String && _refValue != null ? (String)_refValue : String.Empty;
+		public Single AsSingle() => _type == ValueType.Number ? (Single)_numValue : 0f;
+		public Int64 AsInt64() => _type == ValueType.Number ? (Int64)_numValue : 0L;
+		public Int32 AsInt32() => _type == ValueType.Number ? (Int32)_numValue : 0;
+
+		public String AsString() => _type switch
+		{
+			ValueType.Null => "<Null>",
+			ValueType.Number => Convert.ToString(_numValue, CultureInfo.InvariantCulture),
+			ValueType.Boolean => Convert.ToString(AsBoolean()),
+			ValueType.String => _refValue is String str ? str : _refValue?.ToString() ?? String.Empty,
+			var _ => throw new ArgumentOutOfRangeException(_type.ToString()),
+		};
 
 		public T As<T>()
 		{
