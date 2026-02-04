@@ -34,6 +34,14 @@ namespace Luny
 		public Boolean IsNormalized => _type == ValueType.Number && Math.Abs(_numValue) <= 1.0;
 
 		public Int32 Length => _type == ValueType.String && _refValue != null ? ((String)_refValue).Length : 0;
+		public Object Value => _type switch
+		{
+			ValueType.Null => null,
+			ValueType.Number => AsNumber(),
+			ValueType.Boolean => AsBoolean(),
+			ValueType.String => AsString(),
+			var _ => throw new ArgumentOutOfRangeException(),
+		};
 
 		private Variable(Double value, ValueType type, String name = null)
 		{
@@ -178,7 +186,7 @@ namespace Luny
 		public static implicit operator Variable(Single v) => new(v, ValueType.Number);
 		public static implicit operator Variable(Double v) => new(v, ValueType.Number);
 		public static implicit operator Variable(Boolean v) => new(v ? 1.0 : 0.0, ValueType.Boolean);
-		public static implicit operator Variable(String v) => new Variable(v, ValueType.String);
+		public static implicit operator Variable(String v) => new(v, ValueType.String);
 		public static implicit operator Variable(Number v) => new(v, ValueType.Number);
 
 		public static implicit operator Int32(Variable v) => v.AsInt32();

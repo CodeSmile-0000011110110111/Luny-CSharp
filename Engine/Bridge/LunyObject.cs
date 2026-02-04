@@ -113,6 +113,16 @@ namespace Luny.Engine.Bridge
 		Boolean IsVisible { get; set; }
 
 		/// <summary>
+		/// Called when the framework decides to work with the object ("object awakes").
+		/// This sends the OnCreate event and - if Enabled - the OnEnable event.
+		/// </summary>
+		/// <remarks>
+		/// Must only be called once prior to using the LunyObject instance.
+		/// LunyScript will automatically call this.
+		/// </remarks>
+		void Initialize();
+
+		/// <summary>
 		/// Gets the engine-native object as type T. Returns null for non-matching types.
 		/// </summary>
 		/// <typeparam name="T"></typeparam>
@@ -125,16 +135,6 @@ namespace Luny.Engine.Bridge
 		/// <typeparam name="T"></typeparam>
 		/// <returns></returns>
 		T Cast<T>();
-
-		/// <summary>
-		/// Called when the framework decides to work with the object ("object awakes").
-		/// This sends the OnCreate event and - if Enabled - the OnEnable event.
-		/// </summary>
-		/// <remarks>
-		/// Must only be called once prior to using the LunyObject instance.
-		/// LunyScript will automatically call this.
-		/// </remarks>
-		void ActivateOnceBeforeUse();
 
 		/// <summary>
 		/// Marks this object for destruction.
@@ -218,7 +218,7 @@ namespace Luny.Engine.Bridge
 		protected LunyObject(SystemObject nativeObject, Int64 nativeObjectID, Boolean isNativeObjectEnabled, Boolean isNativeObjectVisible)
 		{
 			if (nativeObject == null)
-				throw new LunyBridgeException($"{this}: {nameof(LunyObject)} initialized with a <null> reference");
+				throw new LunyBridgeException($"{this}: {nameof(LunyObject)} created with a <null> reference");
 
 			_state.IsEnabled = isNativeObjectEnabled;
 			_state.IsVisible = isNativeObjectVisible;
@@ -235,10 +235,10 @@ namespace Luny.Engine.Bridge
 		public T As<T>() where T : class => _nativeObject as T;
 		public T Cast<T>() => (T)_nativeObject;
 
-		public void ActivateOnceBeforeUse()
+		public void Initialize()
 		{
-			ThrowIfActivatedAgain();
-			_state.IsActivated = true;
+			ThrowIfInitializedAgain();
+			_state.IsInitialized = true;
 
 			DebugNativeObjectName = GetNativeObjectName();
 
@@ -294,7 +294,13 @@ namespace Luny.Engine.Bridge
 		}
 
 		// LunyObjectLifecycleManager calls this
-		internal void InvokeOnReady() => OnReady?.Invoke();
+		internal void InvokeOnReady()
+		{
+			ThrowIfAlreadyReady();
+
+			_state.IsReady = true;
+			OnReady?.Invoke();
+		}
 
 		// Should only be called internally by LunyObjectLifecycleManager from pending destroy queue processing
 		internal void DestroyNativeObjectInternal()
@@ -320,11 +326,20 @@ namespace Luny.Engine.Bridge
 		public override String ToString() => $"{(IsEnabled ? "☑" : "☐")} {Name} ({LunyObjectID}, {NativeObjectID})";
 
 		[Conditional("DEBUG")] [Conditional("LUNY_DEBUG")]
-		private void ThrowIfActivatedAgain()
+		private void ThrowIfInitializedAgain()
 		{
 #if DEBUG || LUNY_DEBUG
-			if (_state.IsActivated)
-				throw new LunyLifecycleException($"{this} has already been activated!");
+			if (_state.IsInitialized)
+				throw new LunyLifecycleException($"{this} has already been initialized!");
+#endif
+		}
+
+		[Conditional("DEBUG")] [Conditional("LUNY_DEBUG")]
+		private void ThrowIfAlreadyReady()
+		{
+#if DEBUG || LUNY_DEBUG
+			if (_state.IsReady)
+				throw new LunyLifecycleException($"{this} is already Ready!");
 #endif
 		}
 
@@ -334,17 +349,18 @@ namespace Luny.Engine.Bridge
 			private enum StateFlags
 			{
 				Destroyed = 1 << 0,
-				Activated = 1 << 1,
+				Initialized = 1 << 1,
 				Enabled = 1 << 2,
 				Visible = 1 << 3,
+				Ready = 1 << 4,
 			}
 
 			private StateFlags _flags;
 
-			public Boolean IsActivated
+			public Boolean IsInitialized
 			{
-				get => (_flags & StateFlags.Activated) != 0;
-				set => SetFlag(StateFlags.Activated, value);
+				get => (_flags & StateFlags.Initialized) != 0;
+				set => SetFlag(StateFlags.Initialized, value);
 			}
 
 			public Boolean IsEnabled
@@ -363,6 +379,12 @@ namespace Luny.Engine.Bridge
 			{
 				get => (_flags & StateFlags.Destroyed) != 0;
 				set => SetFlag(StateFlags.Destroyed, value);
+			}
+
+			public Boolean IsReady
+			{
+				get => (_flags & StateFlags.Ready) != 0;
+				set => SetFlag(StateFlags.Ready, value);
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -384,10 +406,10 @@ namespace Luny.Engine.Bridge
 					sb.Append(nameof(StateFlags.Destroyed));
 					first = false;
 				}
-				if (IsActivated)
+				if (IsInitialized)
 				{
 					AppendSeparatorIfNeeded();
-					sb.Append(nameof(StateFlags.Activated));
+					sb.Append(nameof(StateFlags.Initialized));
 					first = false;
 				}
 				if (IsEnabled)
@@ -400,6 +422,11 @@ namespace Luny.Engine.Bridge
 				{
 					AppendSeparatorIfNeeded();
 					sb.Append(nameof(StateFlags.Visible));
+				}
+				if (IsReady)
+				{
+					AppendSeparatorIfNeeded();
+					sb.Append(nameof(StateFlags.Ready));
 				}
 
 				sb.Append(")");

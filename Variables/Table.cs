@@ -164,6 +164,8 @@ namespace Luny
 			private readonly String _name;
 			private Variable _value;
 
+			public String Name => _name;
+
 			public Variable Value
 			{
 				get => _value;
@@ -180,6 +182,8 @@ namespace Luny
 				_owner = owner;
 				_name = name;
 			}
+
+			public override String ToString() => $"{_name}[{_value}]";
 		}
 	}
 }
