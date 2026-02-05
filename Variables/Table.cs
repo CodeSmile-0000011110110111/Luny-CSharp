@@ -30,6 +30,7 @@ namespace Luny
 		Variable this[String key] { get; set; }
 		T Get<T>(String key);
 		Table.VarHandle GetHandle(String key);
+		Table.VarHandle DefineConstant(String key, Variable value);
 		Boolean Has(String key);
 		Boolean Remove(String key);
 		void RemoveAll();
@@ -116,6 +117,23 @@ namespace Luny
 		}
 
 		/// <summary>
+		/// Defines a constant variable that cannot be modified after creation.
+		/// </summary>
+		/// <param name="key">The constant name.</param>
+		/// <param name="value">The constant value.</param>
+		/// <returns>The handle to the constant.</returns>
+		public VarHandle DefineConstant(String key, Variable value)
+		{
+			if (_table.TryGetValue(key, out var existing))
+				throw new InvalidOperationException($"Attempt to redefine constant: {existing}");
+
+			var handle = new VarHandle(this, key, true);
+			handle.SetInitialValue(value);
+			_table[key] = handle;
+			return handle;
+		}
+
+		/// <summary>
 		/// Resets a variable's value to default.
 		/// </summary>
 		/// <param name="key"></param>
@@ -163,28 +181,36 @@ namespace Luny
 		{
 			private readonly Table _owner;
 			private readonly String _name;
+			private readonly Boolean _isConstant;
 			private Variable _value;
 
 			public String Name => _name;
+			public Boolean IsConstant => _isConstant;
 
 			public Variable Value
 			{
 				get => _value;
 				set
 				{
+					if (_isConstant)
+						throw new InvalidOperationException($"Cannot modify constant '{_name}'");
+
 					var previous = _value;
 					_value = value;
 					_owner.NotifyVariableChanged(_name, value, previous);
 				}
 			}
 
-			internal VarHandle(Table owner, String name)
+			internal VarHandle(Table owner, String name, Boolean isConstant = false)
 			{
 				_owner = owner;
 				_name = name;
+				_isConstant = isConstant;
 			}
 
-			public override String ToString() => $"{_name}[{_value}]";
+			internal void SetInitialValue(Variable value) => _value = value;
+
+			public override String ToString() => $"{_name}[{_value}] {(_isConstant ? "(const)" : "")}";
 		}
 	}
 }
