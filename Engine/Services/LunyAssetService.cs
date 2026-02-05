@@ -60,7 +60,7 @@ namespace Luny.Engine.Services
 			if (_cache.Remove(id, out var asset))
 			{
 				_pathToId.Remove(asset.AssetPath.AgnosticPath);
-				UnloadNative(asset);
+				UnloadAsset(asset);
 			}
 		}
 
@@ -96,7 +96,7 @@ namespace Luny.Engine.Services
 			}
 
 			var agnosticPath = path.AgnosticPath;
-			var typeFolderName = GetTypeFolderName(typeof(T));
+			var typeFolderName = GetFolderNameFromType(typeof(T));
 
 			foreach (var ext in extensions)
 			{
@@ -108,14 +108,14 @@ namespace Luny.Engine.Services
 					lunyPath = Path.ChangeExtension(lunyPath, ext);
 
 				var assetPath = LunyAssetPath.FromAgnostic(lunyPath);
-				var asset = LoadNative<T>(assetPath);
+				var asset = LoadAsset<T>(assetPath);
 				if (asset != null)
 					return asset;
 
 				// Tier 2: {Path}.{ext}
 				var directPath = isExtValid ? Path.ChangeExtension(agnosticPath, ext) : agnosticPath;
 				assetPath = LunyAssetPath.FromAgnostic(directPath);
-				asset = LoadNative<T>(assetPath);
+				asset = LoadAsset<T>(assetPath);
 				if (asset != null)
 					return asset;
 			}
@@ -123,26 +123,27 @@ namespace Luny.Engine.Services
 			return null;
 		}
 
-		private String GetTypeFolderName(Type type)
+		private String GetFolderNameFromType(Type type)
 		{
 			var name = type.Name;
 			if (name.StartsWith("ILuny"))
-				name = name.Substring(5);
-			else if (name.StartsWith("Luny"))
-				name = name.Substring(4);
+				return name.Substring(5);
 
-			return name;
+			if (name.StartsWith("Luny"))
+				return name.Substring(4);
+
+			throw new ArgumentException($"Unhandled asset type: {type.Name}");
 		}
 
 		/// <summary>
 		/// Engine-native implementation of tiered asset lookup.
 		/// </summary>
-		protected abstract T LoadNative<T>(LunyAssetPath path) where T : class, ILunyAsset;
+		protected abstract T LoadAsset<T>(LunyAssetPath path) where T : class, ILunyAsset;
 
 		/// <summary>
 		/// Engine-native implementation of asset unloading.
 		/// </summary>
-		protected abstract void UnloadNative(ILunyAsset asset);
+		protected abstract void UnloadAsset(ILunyAsset asset);
 
 		/// <summary>
 		/// Provides the extension mapping for different asset types.
