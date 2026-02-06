@@ -69,13 +69,13 @@ namespace Luny.Engine
 		static void ShutdownComplete(ILunyEngineNativeAdapter adapter) => LunyTraceLogger.LogInfoShutdownComplete(adapter);
 
 		static void FixedStep(Double deltaTime, ILunyEngineNativeAdapter nativeAdapter, ILunyEngineLifecycle lunyEngine) =>
-			lunyEngine?.OnEngineFixedStep(deltaTime, nativeAdapter);
+			lunyEngine?.OnEngineHeartbeat(deltaTime, nativeAdapter);
 
 		static void Update(Double deltaTime, ILunyEngineNativeAdapter nativeAdapter, ILunyEngineLifecycle lunyEngine) =>
-			lunyEngine?.OnEngineUpdate(deltaTime, nativeAdapter);
+			lunyEngine?.OnEngineFrameUpdate(deltaTime, nativeAdapter);
 
 		static void LateUpdate(Double deltaTime, ILunyEngineNativeAdapter nativeAdapter, ILunyEngineLifecycle lunyEngine) =>
-			lunyEngine?.OnEngineLateUpdate(deltaTime, nativeAdapter);
+			lunyEngine?.OnEngineFrameLateUpdate(deltaTime, nativeAdapter);
 
 		// ReSharper disable once UnusedMember.Global
 		static void EndLogging()

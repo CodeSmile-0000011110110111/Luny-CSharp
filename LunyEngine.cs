@@ -60,9 +60,9 @@ namespace Luny
 
 		// Lifecycle callbacks for engine adapter
 		void OnEngineStartup(ILunyEngineNativeAdapter nativeAdapter);
-		void OnEngineFixedStep(Double fixedDeltaTime, ILunyEngineNativeAdapter nativeAdapter);
-		void OnEngineUpdate(Double deltaTime, ILunyEngineNativeAdapter nativeAdapter);
-		void OnEngineLateUpdate(Double deltaTime, ILunyEngineNativeAdapter nativeAdapter);
+		void OnEngineHeartbeat(Double fixedDeltaTime, ILunyEngineNativeAdapter nativeAdapter);
+		void OnEngineFrameUpdate(Double deltaTime, ILunyEngineNativeAdapter nativeAdapter);
+		void OnEngineFrameLateUpdate(Double deltaTime, ILunyEngineNativeAdapter nativeAdapter);
 		void OnEngineShutdown(ILunyEngineNativeAdapter nativeAdapter);
 	}
 

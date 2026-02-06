@@ -11,7 +11,7 @@ namespace Luny
 		/// <summary>
 		/// CAUTION: Must only be called by engine-native lifecycle adapter!
 		/// </summary>
-		public void OnEngineFixedStep(Double fixedDeltaTime, ILunyEngineNativeAdapter nativeAdapter)
+		public void OnEngineHeartbeat(Double fixedDeltaTime, ILunyEngineNativeAdapter nativeAdapter)
 		{
 			ILunyEngineLifecycle.ThrowIfNotCurrentAdapter(nativeAdapter, s_EngineAdapter);
 			RunEnginePreUpdateOnce();
@@ -21,7 +21,7 @@ namespace Luny
 				_profiler.BeginObserver(observer);
 				try
 				{
-					observer.OnEngineFixedStep(fixedDeltaTime);
+					observer.OnEngineHeartbeat(fixedDeltaTime);
 				}
 				catch (Exception e)
 				{
@@ -39,7 +39,7 @@ namespace Luny
 		/// <summary>
 		/// CAUTION: Must only be called by engine-native lifecycle adapter!
 		/// </summary>
-		public void OnEngineUpdate(Double deltaTime, ILunyEngineNativeAdapter nativeAdapter)
+		public void OnEngineFrameUpdate(Double deltaTime, ILunyEngineNativeAdapter nativeAdapter)
 		{
 			ILunyEngineLifecycle.ThrowIfNotCurrentAdapter(nativeAdapter, s_EngineAdapter);
 			RunEnginePreUpdateOnce();
@@ -51,7 +51,7 @@ namespace Luny
 				{
 					// TODO: check if enabled state changed to true, if so send OnEnable
 
-					observer.OnEngineUpdate(deltaTime);
+					observer.OnEngineFrameUpdate(deltaTime);
 				}
 				catch (Exception e)
 				{
@@ -69,7 +69,7 @@ namespace Luny
 		/// <summary>
 		/// CAUTION: Must only be called by engine-native lifecycle adapter!
 		/// </summary>
-		public void OnEngineLateUpdate(Double deltaTime, ILunyEngineNativeAdapter nativeAdapter)
+		public void OnEngineFrameLateUpdate(Double deltaTime, ILunyEngineNativeAdapter nativeAdapter)
 		{
 			ILunyEngineLifecycle.ThrowIfNotCurrentAdapter(nativeAdapter, s_EngineAdapter);
 
@@ -78,7 +78,7 @@ namespace Luny
 				_profiler.BeginObserver(observer);
 				try
 				{
-					observer.OnEngineLateUpdate(deltaTime);
+					observer.OnEngineFrameLateUpdate(deltaTime);
 
 					// TODO: check if enabled state changed to false, if so send OnDisable
 				}
@@ -112,7 +112,7 @@ namespace Luny
 					_profiler.BeginObserver(observer);
 					try
 					{
-						observer.OnEnginePreUpdate();
+						observer.OnEngineFrameBegins();
 					}
 					catch (Exception e)
 					{
@@ -135,7 +135,7 @@ namespace Luny
 				_profiler.BeginObserver(observer);
 				try
 				{
-					observer.OnEnginePostUpdate();
+					observer.OnEngineFrameEnds();
 				}
 				catch (Exception e)
 				{

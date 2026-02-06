@@ -11,11 +11,11 @@ namespace Luny.Engine
 		public Boolean Enabled => true;
 
 		void OnEngineStartup();
-		void OnEnginePreUpdate() {}
-		void OnEngineFixedStep(Double fixedDeltaTime);
-		void OnEngineUpdate(Double deltaTime);
-		void OnEngineLateUpdate(Double deltaTime);
-		void OnEnginePostUpdate() {}
+		void OnEngineFrameBegins() {}
+		void OnEngineHeartbeat(Double fixedDeltaTime);
+		void OnEngineFrameUpdate(Double deltaTime);
+		void OnEngineFrameLateUpdate(Double deltaTime);
+		void OnEngineFrameEnds() {}
 		void OnEngineShutdown();
 
 		void OnSceneLoaded(ILunyScene loadedScene) {}

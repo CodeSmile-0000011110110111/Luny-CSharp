@@ -25,7 +25,7 @@ namespace Luny.Engine.Services
 		/// Gets the total number of frames LunyEngine has run since launch. This value is consistent across engines.
 		/// </summary>
 		/// <remarks>
-		/// Initialization (startup, OnCreate, OnEnable) occurs in FrameCount 0. By OnReady and the first OnFixedStep/OnUpdate FrameCount is 1.
+		/// Initialization (startup, OnCreate, OnEnable) occurs in FrameCount 0. By OnReady (and before first OnHeartbeat/OnFrame) FrameCount will be 1.
 		/// </remarks>
 		Int64 FrameCount { get; }
 
