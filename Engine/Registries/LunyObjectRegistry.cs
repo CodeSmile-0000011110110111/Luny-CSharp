@@ -136,5 +136,21 @@ namespace Luny.Engine.Registries
 			_objectsByLunyID = null;
 			_objectsByNativeID = null;
 		}
+
+		internal void OnSceneUnloaded(ILunyScene unloadedScene) => DestroyInvalidatedObjects();
+
+		private void DestroyInvalidatedObjects()
+		{
+			// TODO: avoid the list copy - Destroy() may modify AllObjects
+			var allObjects = AllObjects.ToArray();
+			foreach (var lunyObject in allObjects)
+			{
+				if (!lunyObject.IsValid)
+				{
+					LunyLogger.LogWarning($"Object {lunyObject} is no longer valid, destroying.", this);
+					lunyObject.Destroy();
+				}
+			}
+		}
 	}
 }

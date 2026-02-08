@@ -1,6 +1,5 @@
 using Luny.Engine.Bridge.Identity;
 using Luny.Engine.Registries;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -20,13 +19,9 @@ namespace Luny.Engine.Bridge
 	/// </summary>
 	internal sealed class LunyObjectLifecycle : ILunyObjectLifecycleInternal
 	{
-		private ILunyObjectRegistryInternal _lunyObjects;
 		private Queue<ILunyObject> _pendingReady = new();
 		private Queue<ILunyObject> _pendingDestroy = new();
 		private Dictionary<LunyObjectID, ILunyObject> _pendingReadyWaitingForEnable = new();
-
-		public LunyObjectLifecycle(ILunyObjectRegistryInternal objectRegistry) =>
-			_lunyObjects = objectRegistry ?? throw new ArgumentNullException(nameof(objectRegistry));
 
 		/// <summary>
 		/// Queues an object for its OnReady event.
@@ -42,11 +37,7 @@ namespace Luny.Engine.Bridge
 		/// <summary>
 		/// Queues an object for deferred destruction.
 		/// </summary>
-		public void OnObjectDestroyed(ILunyObject lunyObject)
-		{
-			_pendingDestroy.Enqueue(lunyObject);
-			_lunyObjects.Unregister(lunyObject);
-		}
+		public void OnObjectDestroyed(ILunyObject lunyObject) => _pendingDestroy.Enqueue(lunyObject);
 
 		/// <summary>
 		/// Notifies the manager that an object's enabled state has changed.
@@ -64,19 +55,6 @@ namespace Luny.Engine.Bridge
 
 		public void OnEnginePreUpdate() => ProcessPendingReady();
 		public void OnEnginePostUpdate() => ProcessPendingDestroy();
-
-		internal void DestroyNativeNullObjects()
-		{
-			var allObjects = _lunyObjects.AllObjects.ToList(); // need to operate on a copy
-			foreach (var lunyObject in allObjects)
-			{
-				if (!lunyObject.IsValid)
-				{
-					LunyLogger.LogWarning($"Object {lunyObject} is no longer valid, destroying.", this);
-					lunyObject.Destroy();
-				}
-			}
-		}
 
 		private void ProcessPendingReady()
 		{
@@ -116,7 +94,6 @@ namespace Luny.Engine.Bridge
 			_pendingReady = null;
 			_pendingDestroy = null;
 			_pendingReadyWaitingForEnable = null;
-			_lunyObjects = null;
 		}
 	}
 }

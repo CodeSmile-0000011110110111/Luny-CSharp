@@ -151,7 +151,7 @@ namespace Luny
 				_profiler = new LunyEngineProfiler(Time);
 				_observerRegistry = new LunyEngineObserverRegistry();
 				_objectRegistry = new LunyObjectRegistry();
-				_lifecycle = new LunyObjectLifecycle(_objectRegistry);
+				_lifecycle = new LunyObjectLifecycle();
 
 				LunyTraceLogger.LogInfoInitialized(this);
 			}
@@ -286,7 +286,7 @@ namespace Luny
 		private void OnSceneUnloaded(ILunyScene unloadedScene) // called by SceneService
 		{
 			LunyTraceLogger.LogInfoEventCallback(nameof(OnSceneLoaded), unloadedScene?.ToString(), this);
-			_lifecycle.DestroyNativeNullObjects();
+			_objectRegistry.OnSceneUnloaded(unloadedScene);
 			InvokeObserversOnSceneUnloaded(unloadedScene);
 		}
 	}

@@ -258,10 +258,12 @@ namespace Luny.Engine.Bridge
 			IsEnabled = false; // may trigger OnDisable
 			OnDestroy?.Invoke();
 			UnregisterAllEvents();
-			Lifecycle.OnObjectDestroyed(this);
 
 			// Mark as destroyed (native destruction happens at the end of the frame)
 			_state.IsDestroyed = true;
+
+			Lifecycle.OnObjectDestroyed(this);
+			((ILunyObjectRegistryInternal)LunyEngine.Instance.Objects).Unregister(this);
 		}
 
 		private void UnregisterAllEvents()
