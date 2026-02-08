@@ -28,6 +28,10 @@ namespace Luny.Engine.Services
 
 	internal interface ILunyApplicationServiceInternal {}
 
-	public abstract class LunyApplicationServiceBase : LunyEngineServiceBase,
-		ILunyApplicationServiceInternal {}
+	public abstract class LunyApplicationServiceBase : LunyEngineServiceBase, ILunyApplicationService, ILunyApplicationServiceInternal
+	{
+		public abstract Boolean IsEditor { get; }
+		public abstract Boolean IsPlaying { get; }
+		public abstract void Quit(Int32 exitCode = 0);
+	}
 }

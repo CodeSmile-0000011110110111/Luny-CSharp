@@ -31,7 +31,7 @@ namespace Luny.Engine.Services
 
 	internal interface ILunyAssetServiceInternal {}
 
-	public abstract class LunyAssetServiceBase : LunyEngineServiceBase, ILunyAssetServiceInternal, ILunyAssetService
+	public abstract class LunyAssetServiceBase : LunyEngineServiceBase, ILunyAssetService, ILunyAssetServiceInternal
 	{
 		private readonly Dictionary<LunyAssetID, ILunyAsset> _cache = new();
 		private readonly Dictionary<String, LunyAssetID> _pathToId = new();

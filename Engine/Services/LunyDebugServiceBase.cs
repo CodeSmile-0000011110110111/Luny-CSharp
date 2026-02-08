@@ -21,5 +21,11 @@ namespace Luny.Engine.Services
 
 	internal interface ILunyDebugServiceInternal {}
 
-	public abstract class LunyDebugServiceBase : LunyEngineServiceBase, ILunyDebugServiceInternal {}
+	public abstract class LunyDebugServiceBase : LunyEngineServiceBase, ILunyDebugService, ILunyDebugServiceInternal
+	{
+		public abstract void LogInfo(String message);
+		public abstract void LogWarning(String message);
+		public abstract void LogError(String message);
+		public abstract void LogException(Exception exception);
+	}
 }

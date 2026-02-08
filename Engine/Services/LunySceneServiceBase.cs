@@ -34,12 +34,15 @@ namespace Luny.Engine.Services
 		event Action<ILunyScene> OnSceneUnloaded;
 	}
 
-	public abstract class LunySceneServiceBase : LunyEngineServiceBase, ILunySceneServiceInternal
+	public abstract class LunySceneServiceBase : LunyEngineServiceBase, ILunySceneService, ILunySceneServiceInternal
 	{
 		public event Action<ILunyScene> OnSceneLoaded;
 		public event Action<ILunyScene> OnSceneUnloaded;
 		private ILunyScene _currentScene;
 		[MaybeNull] public ILunyScene CurrentScene { get => _currentScene; protected set => _currentScene = value; }
+		public abstract void ReloadScene();
+		public abstract IReadOnlyList<ILunyObject> GetObjects(IReadOnlyCollection<String> objectNames);
+		public abstract ILunyObject FindObjectByName(String name);
 
 		protected void InvokeOnSceneLoaded(ILunyScene scene) => OnSceneLoaded?.Invoke(scene);
 		protected void InvokeOnSceneUnloaded(ILunyScene scene) => OnSceneUnloaded?.Invoke(scene);

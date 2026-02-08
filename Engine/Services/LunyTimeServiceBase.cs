@@ -60,12 +60,14 @@ namespace Luny.Engine.Services
 		void IncrementFrameCounters();
 	}
 
-	public abstract class LunyTimeServiceBase : LunyEngineServiceBase, ILunyTimeServiceInternal
+	public abstract class LunyTimeServiceBase : LunyEngineServiceBase, ILunyTimeService, ILunyTimeServiceInternal
 	{
 		public Int64 HeartbeatCount { get; private set; }
 		public Int64 FrameCount { get; private set; }
 		public Double FixedDeltaTime { get; private set; }
 		public Double DeltaTime { get; private set; }
+		public abstract Double ElapsedSeconds { get; }
+		public abstract Int64 EngineFrameCount { get; }
 
 		void ILunyTimeServiceInternal.SetLunyFrameAndHeartbeatCount(Int64 frameCount)
 		{

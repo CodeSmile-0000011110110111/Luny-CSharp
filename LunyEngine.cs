@@ -68,7 +68,7 @@ namespace Luny
 
 	internal interface ILunyEngineInternal
 	{
-		ILunyObjectLifecycleInternal Lifecycle { get; }
+		ILunyObjectLifecycleInternal ObjectLifecycle { get; }
 	}
 
 	/// <summary>
@@ -83,18 +83,21 @@ namespace Luny
 		private LunyServiceRegistry _serviceRegistry;
 		private LunyEngineObserverRegistry _observerRegistry;
 		private LunyObjectRegistry _objectRegistry;
-		private LunyObjectLifecycle _lifecycle;
+		private LunyObjectLifecycle _objectLifecycle;
 		private LunyEngineProfiler _profiler;
 		private ILunyTimeServiceInternal _timeInternal;
 
-		public ILunyObjectRegistry Objects => _objectRegistry;
+		// API Services
+		public ILunyApplicationService Application { get; private set; }
+		public ILunyAssetService Asset { get; private set; }
+		public ILunyDebugService Debug { get; private set; }
+		public ILunyEditorService Editor { get; private set; }
+		public ILunyObjectService Object { get; private set; }
+		public ILunySceneService Scene { get; private set; }
+		public ILunyTimeService Time { get; private set; }
 
-		/// <summary>
-		/// Gets the active path converter.
-		/// </summary>
-		public ILunyPathConverter PathConverter => LunyPath.Converter;
-
-		ILunyObjectLifecycleInternal ILunyEngineInternal.Lifecycle => _lifecycle;
+		ILunyObjectRegistry ILunyEngine.Objects => _objectRegistry;
+		ILunyObjectLifecycleInternal ILunyEngineInternal.ObjectLifecycle => _objectLifecycle;
 
 		/// <summary>
 		/// Gets the engine profiler for performance monitoring.
@@ -151,7 +154,7 @@ namespace Luny
 				_profiler = new LunyEngineProfiler(Time);
 				_observerRegistry = new LunyEngineObserverRegistry();
 				_objectRegistry = new LunyObjectRegistry();
-				_lifecycle = new LunyObjectLifecycle();
+				_objectLifecycle = new LunyObjectLifecycle();
 
 				LunyTraceLogger.LogInfoInitialized(this);
 			}
@@ -162,132 +165,28 @@ namespace Luny
 			}
 		}
 
-		/// <summary>
-		/// CAUTION: Must only be called by engine-native lifecycle adapter!
-		/// </summary>
-		public void EngineStartup(ILunyEngineNativeAdapter nativeAdapter)
+		public Boolean HasService<TService>() where TService : LunyEngineServiceBase => _serviceRegistry.Has<TService>();
+		public TService GetService<TService>() where TService : LunyEngineServiceBase => _serviceRegistry.Get<TService>();
+
+		public Boolean TryGetService<TService>(out TService service) where TService : LunyEngineServiceBase =>
+			_serviceRegistry.TryGet(out service);
+
+		public void EnableObserver<T>() where T : ILunyEngineObserver => _observerRegistry.EnableObserver<T>();
+		public void DisableObserver<T>() where T : ILunyEngineObserver => _observerRegistry.DisableObserver<T>();
+		public Boolean IsObserverEnabled<T>() where T : ILunyEngineObserver => _observerRegistry.IsObserverEnabled<T>();
+		public T GetObserver<T>() where T : ILunyEngineObserver => _observerRegistry.GetObserver<T>();
+
+		private void AssignMandatoryServices()
 		{
-			ILunyEngineLifecycle.ThrowIfNotCurrentAdapter(nativeAdapter, s_EngineAdapter);
-			LunyTraceLogger.LogInfoStartingUp(this);
-
-			// Observers Startup
-			foreach (var observer in _observerRegistry.EnabledObservers)
-			{
-				_profiler.BeginObserver(observer);
-				try
-				{
-					observer.OnEngineStartup();
-				}
-				catch (Exception e)
-				{
-					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnEngineStartup, e);
-					LunyLogger.LogException(e, this);
-					throw;
-				}
-				finally
-				{
-					_profiler.EndObserver(observer, LunyEngineLifecycleEvents.OnEngineStartup);
-				}
-			}
-
-			// Services Startup
-			try
-			{
-				var sceneService = (ILunySceneServiceInternal)Scene;
-				sceneService.OnSceneLoaded += OnSceneLoaded;
-				sceneService.OnSceneUnloaded += OnSceneUnloaded;
-
-				_serviceRegistry.Startup();
-			}
-			catch (Exception)
-			{
-				LunyLogger.LogError($"Error during {nameof(LunyEngine)} {nameof(EngineStartup)}!", this);
-				throw;
-			}
-
-			LunyTraceLogger.LogInfoStartupComplete(this);
+			Application = GetService<LunyApplicationServiceBase>();
+			Asset = GetService<LunyAssetServiceBase>();
+			Debug = GetService<LunyDebugServiceBase>();
+			Editor = GetService<LunyEditorServiceBase>();
+			Object = GetService<LunyObjectServiceBase>();
+			Scene = GetService<LunySceneServiceBase>();
+			Time = GetService<LunyTimeServiceBase>();
 		}
-
-		/// <summary>
-		/// CAUTION: Must only be called by engine-native lifecycle adapter!
-		/// </summary>
-		public void EngineShutdown(ILunyEngineNativeAdapter nativeAdapter)
-		{
-			LunyTraceLogger.LogInfoShuttingDown(this);
-			ILunyEngineLifecycle.ThrowIfNotCurrentAdapter(nativeAdapter, s_EngineAdapter);
-
-			// Observers Shutdown
-			foreach (var observer in _observerRegistry.EnabledObservers)
-			{
-				_profiler.BeginObserver(observer);
-				try
-				{
-					observer.OnEngineShutdown();
-				}
-				catch (Exception e)
-				{
-					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnEngineShutdown, e);
-					LunyLogger.LogException(e, this);
-					throw;
-				}
-				finally
-				{
-					_profiler.EndObserver(observer, LunyEngineLifecycleEvents.OnEngineShutdown);
-				}
-			}
-
-			// Services & Engine Shutdown
-			try
-			{
-				var sceneService = (ILunySceneServiceInternal)Scene;
-				sceneService.OnSceneLoaded -= OnSceneLoaded;
-				sceneService.OnSceneUnloaded -= OnSceneUnloaded;
-
-				_lifecycle.Shutdown(_objectRegistry);
-				_objectRegistry.Shutdown();
-				_serviceRegistry.Shutdown();
-			}
-			catch (Exception)
-			{
-				LunyLogger.LogError($"Error during {nameof(LunyEngine)} {nameof(EngineShutdown)}!", this);
-				throw;
-			}
-			finally
-			{
-				_serviceRegistry = null;
-				_observerRegistry = null;
-				_objectRegistry = null;
-				_lifecycle = null;
-				_profiler = null;
-				_timeInternal = null;
-
-				LunyPath.Converter = null;
-
-				// ensure we won't get re-instantiated after this point
-				s_IsDisposed = true;
-				s_EngineAdapter = null;
-				s_Instance = null;
-			}
-
-			LunyTraceLogger.LogInfoShutdownComplete(this);
-		}
-
-		internal void OnObjectRegistered(ILunyObject lunyObject) => InvokeObserversOnObjectRegistered(lunyObject);
-		internal void OnObjectUnregistered(ILunyObject lunyObject) => InvokeObserversOnObjectUnregistered(lunyObject);
 
 		~LunyEngine() => LunyTraceLogger.LogInfoFinalized(this);
-
-		private void OnSceneLoaded(ILunyScene loadedScene) // called by SceneService
-		{
-			LunyTraceLogger.LogInfoEventCallback(nameof(OnSceneLoaded), loadedScene?.ToString(), this);
-			InvokeObserversOnSceneLoaded(loadedScene);
-		}
-
-		private void OnSceneUnloaded(ILunyScene unloadedScene) // called by SceneService
-		{
-			LunyTraceLogger.LogInfoEventCallback(nameof(OnSceneLoaded), unloadedScene?.ToString(), this);
-			_objectRegistry.OnSceneUnloaded(unloadedScene);
-			InvokeObserversOnSceneUnloaded(unloadedScene);
-		}
 	}
 }

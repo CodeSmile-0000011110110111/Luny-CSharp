@@ -1,5 +1,7 @@
 ﻿using Luny.Engine;
+using Luny.Engine.Bridge;
 using Luny.Engine.Diagnostics;
+using Luny.Engine.Services;
 using System;
 
 namespace Luny
@@ -8,10 +10,110 @@ namespace Luny
 	{
 		private Boolean _didCallPreUpdateThisFrame;
 
-		/// <summary>
-		/// CAUTION: Must only be called by engine-native lifecycle adapter!
-		/// </summary>
-		public void EngineHeartbeat(ILunyEngineNativeAdapter nativeAdapter, Double fixedDeltaTime)
+		void ILunyEngineLifecycle.EngineStartup(ILunyEngineNativeAdapter nativeAdapter)
+		{
+			ILunyEngineLifecycle.ThrowIfNotCurrentAdapter(nativeAdapter, s_EngineAdapter);
+			LunyTraceLogger.LogInfoStartingUp(this);
+
+			// Observers Startup
+			foreach (var observer in _observerRegistry.EnabledObservers)
+			{
+				_profiler.BeginObserver(observer);
+				try
+				{
+					observer.OnEngineStartup();
+				}
+				catch (Exception e)
+				{
+					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnEngineStartup, e);
+					LunyLogger.LogException(e, this);
+					throw;
+				}
+				finally
+				{
+					_profiler.EndObserver(observer, LunyEngineLifecycleEvents.OnEngineStartup);
+				}
+			}
+
+			// Services Startup
+			try
+			{
+				var sceneService = (ILunySceneServiceInternal)Scene;
+				sceneService.OnSceneLoaded += OnSceneLoaded;
+				sceneService.OnSceneUnloaded += OnSceneUnloaded;
+
+				_serviceRegistry.Startup();
+			}
+			catch (Exception)
+			{
+				LunyLogger.LogError($"Error during {nameof(LunyEngine)} {nameof(ILunyEngineLifecycle.EngineStartup)}!", this);
+				throw;
+			}
+
+			LunyTraceLogger.LogInfoStartupComplete(this);
+		}
+
+		void ILunyEngineLifecycle.EngineShutdown(ILunyEngineNativeAdapter nativeAdapter)
+		{
+			LunyTraceLogger.LogInfoShuttingDown(this);
+			ILunyEngineLifecycle.ThrowIfNotCurrentAdapter(nativeAdapter, s_EngineAdapter);
+
+			// Observers Shutdown
+			foreach (var observer in _observerRegistry.EnabledObservers)
+			{
+				_profiler.BeginObserver(observer);
+				try
+				{
+					observer.OnEngineShutdown();
+				}
+				catch (Exception e)
+				{
+					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnEngineShutdown, e);
+					LunyLogger.LogException(e, this);
+					throw;
+				}
+				finally
+				{
+					_profiler.EndObserver(observer, LunyEngineLifecycleEvents.OnEngineShutdown);
+				}
+			}
+
+			// Services & Engine Shutdown
+			try
+			{
+				var sceneService = (ILunySceneServiceInternal)Scene;
+				sceneService.OnSceneLoaded -= OnSceneLoaded;
+				sceneService.OnSceneUnloaded -= OnSceneUnloaded;
+
+				_objectLifecycle.Shutdown(_objectRegistry);
+				_objectRegistry.Shutdown();
+				_serviceRegistry.Shutdown();
+			}
+			catch (Exception)
+			{
+				LunyLogger.LogError($"Error during {nameof(LunyEngine)} {nameof(ILunyEngineLifecycle.EngineShutdown)}!", this);
+				throw;
+			}
+			finally
+			{
+				_serviceRegistry = null;
+				_observerRegistry = null;
+				_objectRegistry = null;
+				_objectLifecycle = null;
+				_profiler = null;
+				_timeInternal = null;
+				LunyPath.Converter = null;
+
+				// ensure we won't get re-instantiated after this point
+				s_IsDisposed = true;
+				s_EngineAdapter = null;
+				s_Instance = null;
+			}
+
+			LunyTraceLogger.LogInfoShutdownComplete(this);
+		}
+
+		void ILunyEngineLifecycle.EngineHeartbeat(ILunyEngineNativeAdapter nativeAdapter, Double fixedDeltaTime)
 		{
 			ILunyEngineLifecycle.ThrowIfNotCurrentAdapter(nativeAdapter, s_EngineAdapter);
 
@@ -38,10 +140,7 @@ namespace Luny
 			}
 		}
 
-		/// <summary>
-		/// CAUTION: Must only be called by engine-native lifecycle adapter!
-		/// </summary>
-		public void EngineFrameUpdate(ILunyEngineNativeAdapter nativeAdapter, Double deltaTime)
+		void ILunyEngineLifecycle.EngineFrameUpdate(ILunyEngineNativeAdapter nativeAdapter, Double deltaTime)
 		{
 			ILunyEngineLifecycle.ThrowIfNotCurrentAdapter(nativeAdapter, s_EngineAdapter);
 
@@ -68,10 +167,7 @@ namespace Luny
 			}
 		}
 
-		/// <summary>
-		/// CAUTION: Must only be called by engine-native lifecycle adapter!
-		/// </summary>
-		public void EngineFrameLateUpdate(ILunyEngineNativeAdapter nativeAdapter)
+		void ILunyEngineLifecycle.EngineFrameLateUpdate(ILunyEngineNativeAdapter nativeAdapter)
 		{
 			ILunyEngineLifecycle.ThrowIfNotCurrentAdapter(nativeAdapter, s_EngineAdapter);
 
@@ -106,7 +202,7 @@ namespace Luny
 				// engine services first
 				_timeInternal.IncrementFrameCounters();
 				_serviceRegistry.OnEnginePreUpdate();
-				_lifecycle.OnEnginePreUpdate();
+				_objectLifecycle.OnEnginePreUpdate();
 
 				foreach (var observer in _observerRegistry.EnabledObservers)
 				{
@@ -152,7 +248,7 @@ namespace Luny
 
 			// run "structural changes" here ..
 			_serviceRegistry.OnEnginePostUpdate();
-			_lifecycle.OnEnginePostUpdate(); // should run last to guarantee object cleanup
+			_objectLifecycle.OnEnginePostUpdate(); // should run last to guarantee object cleanup
 
 			_didCallPreUpdateThisFrame = false;
 		}

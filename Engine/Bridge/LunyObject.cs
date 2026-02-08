@@ -160,7 +160,8 @@ namespace Luny.Engine.Bridge
 		private SystemObject _nativeObject;
 		private ObjectState _state;
 
-		[NotNull] private static ILunyObjectLifecycleInternal Lifecycle => ((ILunyEngineInternal)LunyEngine.Instance).Lifecycle;
+		[NotNull] private static ILunyObjectLifecycleInternal Lifecycle => ((ILunyEngineInternal)LunyEngine.Instance).ObjectLifecycle;
+		[NotNull] private static ILunyObjectRegistryInternal Objects => (ILunyObjectRegistryInternal)LunyEngine.Instance.Objects;
 
 		public LunyObjectID LunyObjectID => _lunyObjectID;
 		public LunyNativeObjectID NativeObjectID => _nativeObjectID;
@@ -225,12 +226,10 @@ namespace Luny.Engine.Bridge
 			_nativeObject = nativeObject;
 			_nativeObjectID = nativeObjectID;
 			_lunyObjectID = LunyObjectID.Generate();
-
-			((ILunyObjectRegistryInternal)LunyEngine.Instance.Objects).Register(this);
+			Objects.Register(this);
 		}
 
-		protected static Boolean TryGetCached(Int64 nativeId, out ILunyObject lunyObject) =>
-			LunyEngine.Instance.Objects.TryGetByNativeID(nativeId, out lunyObject);
+		protected static Boolean TryGetCached(Int64 nativeId, out ILunyObject lunyObject) => Objects.TryGetByNativeID(nativeId, out lunyObject);
 
 		public T As<T>() where T : class => _nativeObject as T;
 		public T Cast<T>() => (T)_nativeObject;
@@ -263,7 +262,7 @@ namespace Luny.Engine.Bridge
 			_state.IsDestroyed = true;
 
 			Lifecycle.OnObjectDestroyed(this);
-			((ILunyObjectRegistryInternal)LunyEngine.Instance.Objects).Unregister(this);
+			Objects.Unregister(this);
 		}
 
 		private void UnregisterAllEvents()

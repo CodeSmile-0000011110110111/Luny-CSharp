@@ -17,5 +17,8 @@ namespace Luny.Engine.Services
 
 	internal interface ILunyEditorServiceInternal {}
 
-	public abstract class LunyEditorServiceBase : LunyEngineServiceBase, ILunyEditorServiceInternal {}
+	public abstract class LunyEditorServiceBase : LunyEngineServiceBase, ILunyEditorService, ILunyEditorServiceInternal
+	{
+		public abstract void PausePlayer();
+	}
 }

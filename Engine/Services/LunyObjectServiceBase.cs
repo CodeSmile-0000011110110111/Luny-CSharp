@@ -18,5 +18,10 @@ namespace Luny.Engine.Services
 		ILunyObject CreateFromPrefab(ILunyPrefab prefab);
 	}
 
-	public abstract class LunyObjectServiceBase : LunyEngineServiceBase {}
+	public abstract class LunyObjectServiceBase : LunyEngineServiceBase, ILunyObjectService
+	{
+		public abstract ILunyObject CreateEmpty(String name);
+		public abstract ILunyObject CreatePrimitive(String name, LunyPrimitiveType type);
+		public abstract ILunyObject CreateFromPrefab(ILunyPrefab prefab);
+	}
 }

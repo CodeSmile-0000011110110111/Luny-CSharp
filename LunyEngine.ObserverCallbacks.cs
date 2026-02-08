@@ -1,5 +1,4 @@
-﻿using Luny.Engine;
-using Luny.Engine.Bridge;
+﻿using Luny.Engine.Bridge;
 using Luny.Engine.Diagnostics;
 using System;
 
@@ -7,10 +6,18 @@ namespace Luny
 {
 	public sealed partial class LunyEngine
 	{
-		public void EnableObserver<T>() where T : ILunyEngineObserver => _observerRegistry.EnableObserver<T>();
-		public void DisableObserver<T>() where T : ILunyEngineObserver => _observerRegistry.DisableObserver<T>();
-		public Boolean IsObserverEnabled<T>() where T : ILunyEngineObserver => _observerRegistry.IsObserverEnabled<T>();
-		public T GetObserver<T>() where T : ILunyEngineObserver => _observerRegistry.GetObserver<T>();
+		private void OnSceneLoaded(ILunyScene loadedScene) // called by SceneService
+		{
+			LunyTraceLogger.LogInfoEventCallback(nameof(OnSceneLoaded), loadedScene?.ToString(), this);
+			InvokeObserversOnSceneLoaded(loadedScene);
+		}
+
+		private void OnSceneUnloaded(ILunyScene unloadedScene) // called by SceneService
+		{
+			LunyTraceLogger.LogInfoEventCallback(nameof(OnSceneLoaded), unloadedScene?.ToString(), this);
+			_objectRegistry.OnSceneUnloaded(unloadedScene);
+			InvokeObserversOnSceneUnloaded(unloadedScene);
+		}
 
 		private void InvokeObserversOnSceneUnloaded(ILunyScene loadedScene)
 		{
@@ -57,6 +64,10 @@ namespace Luny
 				}
 			}
 		}
+
+		// called by LunyObjectRegistry
+		internal void ObjectRegistered(ILunyObject lunyObject) => InvokeObserversOnObjectRegistered(lunyObject);
+		internal void ObjectUnregistered(ILunyObject lunyObject) => InvokeObserversOnObjectUnregistered(lunyObject);
 
 		private void InvokeObserversOnObjectRegistered(ILunyObject lunyObject)
 		{
