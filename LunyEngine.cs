@@ -272,8 +272,8 @@ namespace Luny
 			LunyTraceLogger.LogInfoShutdownComplete(this);
 		}
 
-		internal void OnObjectCreated(ILunyObject lunyObject) => InvokeObserversOnObjectCreated(lunyObject);
-		internal void OnObjectDestroyed(ILunyObject lunyObject) => InvokeObserversOnObjectDestroyed(lunyObject);
+		internal void OnObjectRegistered(ILunyObject lunyObject) => InvokeObserversOnObjectRegistered(lunyObject);
+		internal void OnObjectUnregistered(ILunyObject lunyObject) => InvokeObserversOnObjectUnregistered(lunyObject);
 
 		~LunyEngine() => LunyTraceLogger.LogInfoFinalized(this);
 

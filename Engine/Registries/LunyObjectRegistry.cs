@@ -60,7 +60,7 @@ namespace Luny.Engine.Registries
 			_objectsByLunyID[lunyID] = lunyObject;
 			_objectsByNativeID[nativeID] = lunyObject;
 
-			((LunyEngine)LunyEngine.Instance).OnObjectCreated(lunyObject);
+			((LunyEngine)LunyEngine.Instance).OnObjectRegistered(lunyObject);
 		}
 
 		/// <summary>
@@ -73,7 +73,7 @@ namespace Luny.Engine.Registries
 
 			var removed = TryRemove(lunyObject.LunyObjectID);
 			if (removed)
-				((LunyEngine)LunyEngine.Instance).OnObjectDestroyed(lunyObject);
+				((LunyEngine)LunyEngine.Instance).OnObjectUnregistered(lunyObject);
 			return removed;
 		}
 

@@ -58,14 +58,14 @@ namespace Luny
 			}
 		}
 
-		private void InvokeObserversOnObjectCreated(ILunyObject lunyObject)
+		private void InvokeObserversOnObjectRegistered(ILunyObject lunyObject)
 		{
 			foreach (var observer in _observerRegistry.EnabledObservers)
 			{
 				_profiler.BeginObserver(observer);
 				try
 				{
-					observer.OnObjectCreated(lunyObject);
+					observer.OnObjectRegistered(lunyObject);
 				}
 				catch (Exception e)
 				{
@@ -79,14 +79,14 @@ namespace Luny
 			}
 		}
 
-		private void InvokeObserversOnObjectDestroyed(ILunyObject lunyObject)
+		private void InvokeObserversOnObjectUnregistered(ILunyObject lunyObject)
 		{
 			foreach (var observer in _observerRegistry.EnabledObservers)
 			{
 				_profiler.BeginObserver(observer);
 				try
 				{
-					observer.OnObjectDestroyed(lunyObject);
+					observer.OnObjectUnregistered(lunyObject);
 				}
 				catch (Exception e)
 				{
