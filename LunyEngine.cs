@@ -148,7 +148,7 @@ namespace Luny
 				_serviceRegistry = new LunyServiceRegistry(engine);
 				AssignMandatoryServices();
 				_timeInternal = (ILunyTimeServiceInternal)Time;
-				_timeInternal.SetLunyFrameCount(0); // frame "0" marks anything before OnEngineStartup()
+				_timeInternal.SetLunyFrameAndHeartbeatCount(0); // frame "0" marks anything before OnEngineStartup()
 
 				_profiler = new LunyEngineProfiler(Time);
 				_observerRegistry = new LunyEngineObserverRegistry();
@@ -170,8 +170,6 @@ namespace Luny
 		public void OnEngineStartup(ILunyEngineNativeAdapter nativeAdapter)
 		{
 			ILunyEngineLifecycle.ThrowIfNotCurrentAdapter(nativeAdapter, s_EngineAdapter);
-
-			_timeInternal.IncrementLunyFrameCount(); // bump FrameCount before first log
 			LunyTraceLogger.LogInfoStartingUp(this);
 
 			// Observers Startup

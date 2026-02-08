@@ -103,6 +103,9 @@ namespace Luny
 			{
 				_didCallPreUpdateThisFrame = true;
 
+				_timeInternal.IncrementHeartbeatCount();
+				_timeInternal.IncrementFrameCount();
+
 				// engine first
 				_serviceRegistry.OnEnginePreUpdate();
 				_lifecycle.OnEnginePreUpdate();
