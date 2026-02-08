@@ -35,24 +35,21 @@ namespace Luny.Engine.Services
 		Int64 HeartbeatCount { get; }
 
 		/// <summary>
-		/// Gets the time in seconds since the application started.
-		/// Uses real time (not affected by Time.timeScale).
+		/// Gets the time in seconds since the application started. Uses real time (not affected by Time.timeScale).
 		/// </summary>
 		Double ElapsedSeconds { get; }
 
 		/// <summary>
-		/// Time since last frame update. Updates once before frame processing begins. Value changes with framerate.
+		/// Time since last frame update. Updates once after heartbeat. Value varies with framerate.
 		/// </summary>
+		/// <remarks>
+		/// When read in a Heartbeat method, be aware that DeltaTime is last frame's deltaTime.
+		/// </remarks>
 		Double DeltaTime { get; }
 		/// <summary>
-		/// Time between two heartbeats. Value remains the same during runtime (constant).
+		/// Time between two heartbeats. Value remains fixed (constant) at runtime.
 		/// </summary>
 		Double FixedDeltaTime { get; }
-
-		/// <summary>
-		/// Holds timing related values.
-		/// </summary>
-		LunyTime Time { get; }
 	}
 
 	internal interface ILunyTimeServiceInternal
@@ -60,37 +57,29 @@ namespace Luny.Engine.Services
 		void SetLunyFrameAndHeartbeatCount(Int64 frameCount);
 		void SetFixedDeltaTime(Double fixedDeltaTime);
 		void SetDeltaTime(Double deltaTime);
-		void IncrementHeartbeatCount();
-		void IncrementFrameCount();
-	}
-
-	public class LunyTime
-	{
-		public Int64 HeartbeatCount { get; internal set; }
-		public Int64 FrameCount { get; internal set; }
-		public Double DeltaTime { get; internal set; }
-		public Double FixedDeltaTime { get; internal set; }
+		void IncrementFrameCounters();
 	}
 
 	public abstract class LunyTimeServiceBase : LunyEngineServiceBase, ILunyTimeServiceInternal
 	{
-		private readonly LunyTime _time = new();
-		public LunyTime Time => _time;
-
-		public Int64 HeartbeatCount => _time.HeartbeatCount;
-		public Int64 FrameCount => _time.FrameCount;
-		public Double FixedDeltaTime => _time.FixedDeltaTime;
-		public Double DeltaTime => _time.DeltaTime;
+		public Int64 HeartbeatCount { get; private set; }
+		public Int64 FrameCount { get; private set; }
+		public Double FixedDeltaTime { get; private set; }
+		public Double DeltaTime { get; private set; }
 
 		void ILunyTimeServiceInternal.SetLunyFrameAndHeartbeatCount(Int64 frameCount)
 		{
-			_time.FrameCount = frameCount;
-			_time.HeartbeatCount = frameCount;
+			FrameCount = frameCount;
+			HeartbeatCount = frameCount;
 		}
 
-		void ILunyTimeServiceInternal.SetFixedDeltaTime(Double fixedDeltaTime) => _time.FixedDeltaTime = fixedDeltaTime;
-		void ILunyTimeServiceInternal.SetDeltaTime(Double deltaTime) => _time.DeltaTime = deltaTime;
-		void ILunyTimeServiceInternal.IncrementHeartbeatCount() => _time.HeartbeatCount++;
-		void ILunyTimeServiceInternal.IncrementFrameCount() => _time.FrameCount++;
+		void ILunyTimeServiceInternal.SetFixedDeltaTime(Double fixedDeltaTime) => FixedDeltaTime = fixedDeltaTime;
+		void ILunyTimeServiceInternal.SetDeltaTime(Double deltaTime) => DeltaTime = deltaTime;
+
+		void ILunyTimeServiceInternal.IncrementFrameCounters()
+		{
+			HeartbeatCount++;
+			FrameCount++;
+		}
 	}
 }

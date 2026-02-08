@@ -58,24 +58,24 @@ namespace Luny.Engine
 		}
 
 		static void Startup(ILunyEngineNativeAdapter nativeAdapter, ILunyEngineLifecycle lunyEngineInternal) =>
-			lunyEngineInternal?.OnEngineStartup(nativeAdapter);
+			lunyEngineInternal?.EngineStartup(nativeAdapter);
 
 		static void Shutdown(ILunyEngineNativeAdapter adapter, ILunyEngineLifecycle lunyEngineInternal)
 		{
 			LunyTraceLogger.LogInfoShuttingDown(adapter);
-			lunyEngineInternal?.OnEngineShutdown(adapter);
+			lunyEngineInternal?.EngineShutdown(adapter);
 		}
 
 		static void ShutdownComplete(ILunyEngineNativeAdapter adapter) => LunyTraceLogger.LogInfoShutdownComplete(adapter);
 
-		static void FixedStep(Double deltaTime, ILunyEngineNativeAdapter nativeAdapter, ILunyEngineLifecycle lunyEngine) =>
-			lunyEngine?.OnEngineHeartbeat(deltaTime, nativeAdapter);
+		static void Heartbeat(Double fixedDeltaTime, ILunyEngineNativeAdapter nativeAdapter, ILunyEngineLifecycle lunyEngine) =>
+			lunyEngine?.EngineHeartbeat(nativeAdapter, fixedDeltaTime);
 
-		static void Update(Double deltaTime, ILunyEngineNativeAdapter nativeAdapter, ILunyEngineLifecycle lunyEngine) =>
-			lunyEngine?.OnEngineFrameUpdate(deltaTime, nativeAdapter);
+		static void FrameUpdate(Double deltaTime, ILunyEngineNativeAdapter nativeAdapter, ILunyEngineLifecycle lunyEngine) =>
+			lunyEngine?.EngineFrameUpdate(nativeAdapter, deltaTime);
 
-		static void LateUpdate(Double deltaTime, ILunyEngineNativeAdapter nativeAdapter, ILunyEngineLifecycle lunyEngine) =>
-			lunyEngine?.OnEngineFrameLateUpdate(deltaTime, nativeAdapter);
+		static void FrameLateUpdate(ILunyEngineNativeAdapter nativeAdapter, ILunyEngineLifecycle lunyEngine) =>
+			lunyEngine?.EngineFrameLateUpdate(nativeAdapter);
 
 		// ReSharper disable once UnusedMember.Global
 		static void EndLogging()

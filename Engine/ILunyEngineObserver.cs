@@ -1,4 +1,5 @@
 using Luny.Engine.Bridge;
+using Luny.Engine.Services;
 using System;
 
 namespace Luny.Engine
@@ -12,9 +13,9 @@ namespace Luny.Engine
 
 		void OnEngineStartup();
 		void OnEngineFrameBegins() {}
-		void OnEngineHeartbeat(Double fixedDeltaTime);
-		void OnEngineFrameUpdate(Double deltaTime);
-		void OnEngineFrameLateUpdate(Double deltaTime);
+		void OnEngineHeartbeat();
+		void OnEngineFrameUpdate();
+		void OnEngineFrameLateUpdate() {}
 		void OnEngineFrameEnds() {}
 		void OnEngineShutdown();
 

@@ -59,17 +59,16 @@ namespace Luny
 		}
 
 		// Lifecycle callbacks for engine adapter
-		void OnEngineStartup(ILunyEngineNativeAdapter nativeAdapter);
-		void OnEngineHeartbeat(Double fixedDeltaTime, ILunyEngineNativeAdapter nativeAdapter);
-		void OnEngineFrameUpdate(Double deltaTime, ILunyEngineNativeAdapter nativeAdapter);
-		void OnEngineFrameLateUpdate(Double deltaTime, ILunyEngineNativeAdapter nativeAdapter);
-		void OnEngineShutdown(ILunyEngineNativeAdapter nativeAdapter);
+		void EngineStartup(ILunyEngineNativeAdapter nativeAdapter);
+		void EngineHeartbeat(ILunyEngineNativeAdapter nativeAdapter, Double fixedDeltaTime);
+		void EngineFrameUpdate(ILunyEngineNativeAdapter nativeAdapter, Double deltaTime);
+		void EngineFrameLateUpdate(ILunyEngineNativeAdapter nativeAdapter);
+		void EngineShutdown(ILunyEngineNativeAdapter nativeAdapter);
 	}
 
 	internal interface ILunyEngineInternal
 	{
 		ILunyObjectLifecycleInternal Lifecycle { get; }
-		ILunyServiceRegistryInternal Services { get; }
 	}
 
 	/// <summary>
@@ -96,7 +95,6 @@ namespace Luny
 		public ILunyPathConverter PathConverter => LunyPath.Converter;
 
 		ILunyObjectLifecycleInternal ILunyEngineInternal.Lifecycle => _lifecycle;
-		ILunyServiceRegistryInternal ILunyEngineInternal.Services => _serviceRegistry;
 
 		/// <summary>
 		/// Gets the engine profiler for performance monitoring.
@@ -167,7 +165,7 @@ namespace Luny
 		/// <summary>
 		/// CAUTION: Must only be called by engine-native lifecycle adapter!
 		/// </summary>
-		public void OnEngineStartup(ILunyEngineNativeAdapter nativeAdapter)
+		public void EngineStartup(ILunyEngineNativeAdapter nativeAdapter)
 		{
 			ILunyEngineLifecycle.ThrowIfNotCurrentAdapter(nativeAdapter, s_EngineAdapter);
 			LunyTraceLogger.LogInfoStartingUp(this);
@@ -203,7 +201,7 @@ namespace Luny
 			}
 			catch (Exception)
 			{
-				LunyLogger.LogError($"Error during {nameof(LunyEngine)} {nameof(OnEngineStartup)}!", this);
+				LunyLogger.LogError($"Error during {nameof(LunyEngine)} {nameof(EngineStartup)}!", this);
 				throw;
 			}
 
@@ -213,7 +211,7 @@ namespace Luny
 		/// <summary>
 		/// CAUTION: Must only be called by engine-native lifecycle adapter!
 		/// </summary>
-		public void OnEngineShutdown(ILunyEngineNativeAdapter nativeAdapter)
+		public void EngineShutdown(ILunyEngineNativeAdapter nativeAdapter)
 		{
 			LunyTraceLogger.LogInfoShuttingDown(this);
 			ILunyEngineLifecycle.ThrowIfNotCurrentAdapter(nativeAdapter, s_EngineAdapter);
@@ -251,7 +249,7 @@ namespace Luny
 			}
 			catch (Exception)
 			{
-				LunyLogger.LogError($"Error during {nameof(LunyEngine)} {nameof(OnEngineShutdown)}!", this);
+				LunyLogger.LogError($"Error during {nameof(LunyEngine)} {nameof(EngineShutdown)}!", this);
 				throw;
 			}
 			finally

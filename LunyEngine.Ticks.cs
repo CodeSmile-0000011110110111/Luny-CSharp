@@ -1,5 +1,6 @@
 ﻿using Luny.Engine;
 using Luny.Engine.Diagnostics;
+using Luny.Engine.Services;
 using System;
 
 namespace Luny
@@ -11,17 +12,19 @@ namespace Luny
 		/// <summary>
 		/// CAUTION: Must only be called by engine-native lifecycle adapter!
 		/// </summary>
-		public void OnEngineHeartbeat(Double fixedDeltaTime, ILunyEngineNativeAdapter nativeAdapter)
+		public void EngineHeartbeat(ILunyEngineNativeAdapter nativeAdapter, Double fixedDeltaTime)
 		{
 			ILunyEngineLifecycle.ThrowIfNotCurrentAdapter(nativeAdapter, s_EngineAdapter);
-			RunEnginePreUpdateOnce();
+
+			_timeInternal.SetFixedDeltaTime(fixedDeltaTime);
+			RunEnginePreUpdateOncePerFrame();
 
 			foreach (var observer in _observerRegistry.EnabledObservers)
 			{
 				_profiler.BeginObserver(observer);
 				try
 				{
-					observer.OnEngineHeartbeat(fixedDeltaTime);
+					observer.OnEngineHeartbeat();
 				}
 				catch (Exception e)
 				{
@@ -39,19 +42,19 @@ namespace Luny
 		/// <summary>
 		/// CAUTION: Must only be called by engine-native lifecycle adapter!
 		/// </summary>
-		public void OnEngineFrameUpdate(Double deltaTime, ILunyEngineNativeAdapter nativeAdapter)
+		public void EngineFrameUpdate(ILunyEngineNativeAdapter nativeAdapter, Double deltaTime)
 		{
 			ILunyEngineLifecycle.ThrowIfNotCurrentAdapter(nativeAdapter, s_EngineAdapter);
-			RunEnginePreUpdateOnce();
+
+			_timeInternal.SetDeltaTime(deltaTime);
+			RunEnginePreUpdateOncePerFrame();
 
 			foreach (var observer in _observerRegistry.EnabledObservers)
 			{
 				_profiler.BeginObserver(observer);
 				try
 				{
-					// TODO: check if enabled state changed to true, if so send OnEnable
-
-					observer.OnEngineFrameUpdate(deltaTime);
+					observer.OnEngineFrameUpdate();
 				}
 				catch (Exception e)
 				{
@@ -69,7 +72,7 @@ namespace Luny
 		/// <summary>
 		/// CAUTION: Must only be called by engine-native lifecycle adapter!
 		/// </summary>
-		public void OnEngineFrameLateUpdate(Double deltaTime, ILunyEngineNativeAdapter nativeAdapter)
+		public void EngineFrameLateUpdate(ILunyEngineNativeAdapter nativeAdapter)
 		{
 			ILunyEngineLifecycle.ThrowIfNotCurrentAdapter(nativeAdapter, s_EngineAdapter);
 
@@ -78,9 +81,7 @@ namespace Luny
 				_profiler.BeginObserver(observer);
 				try
 				{
-					observer.OnEngineFrameLateUpdate(deltaTime);
-
-					// TODO: check if enabled state changed to false, if so send OnDisable
+					observer.OnEngineFrameLateUpdate();
 				}
 				catch (Exception e)
 				{
@@ -97,16 +98,14 @@ namespace Luny
 			RunEnginePostUpdate();
 		}
 
-		private void RunEnginePreUpdateOnce()
+		private void RunEnginePreUpdateOncePerFrame()
 		{
 			if (!_didCallPreUpdateThisFrame)
 			{
 				_didCallPreUpdateThisFrame = true;
 
-				_timeInternal.IncrementHeartbeatCount();
-				_timeInternal.IncrementFrameCount();
-
-				// engine first
+				// engine services first
+				_timeInternal.IncrementFrameCounters();
 				_serviceRegistry.OnEnginePreUpdate();
 				_lifecycle.OnEnginePreUpdate();
 
