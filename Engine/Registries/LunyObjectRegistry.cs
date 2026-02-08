@@ -20,7 +20,6 @@ namespace Luny.Engine.Registries
 	{
 		void Register(ILunyObject lunyObject);
 		Boolean Unregister(ILunyObject lunyObject);
-		Boolean Unregister(LunyObjectID lunyObjectID);
 	}
 
 	/// <summary>
@@ -72,23 +71,10 @@ namespace Luny.Engine.Registries
 			if (lunyObject == null)
 				return false;
 
-			var removed = Unregister(lunyObject.LunyObjectID);
+			var removed = TryRemove(lunyObject.LunyObjectID);
 			if (removed)
 				((LunyEngine)LunyEngine.Instance).OnObjectDestroyed(lunyObject);
 			return removed;
-		}
-
-		/// <summary>
-		/// Unregisters an object by its LunyID.
-		/// </summary>
-		public Boolean Unregister(LunyObjectID lunyObjectID)
-		{
-			if (_objectsByLunyID.Remove(lunyObjectID, out var lunyObject))
-			{
-				_objectsByNativeID.Remove(lunyObject.NativeObjectID);
-				return true;
-			}
-			return false;
 		}
 
 		public ILunyObject GetByName(String objectName) => _objectsByLunyID.Values.FirstOrDefault(obj => obj.Name == objectName);
@@ -127,6 +113,19 @@ namespace Luny.Engine.Registries
 		/// </summary>
 		public Boolean TryGetByLunyID(LunyObjectID lunyObjectID, out ILunyObject lunyObject) =>
 			_objectsByLunyID.TryGetValue(lunyObjectID, out lunyObject);
+
+		/// <summary>
+		/// Unregisters an object by its LunyID.
+		/// </summary>
+		private Boolean TryRemove(LunyObjectID lunyObjectID)
+		{
+			if (_objectsByLunyID.Remove(lunyObjectID, out var lunyObject))
+			{
+				_objectsByNativeID.Remove(lunyObject.NativeObjectID);
+				return true;
+			}
+			return false;
+		}
 
 		~LunyObjectRegistry() => LunyTraceLogger.LogInfoFinalized(this);
 

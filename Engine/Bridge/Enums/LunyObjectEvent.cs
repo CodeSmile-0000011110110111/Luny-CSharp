@@ -48,16 +48,16 @@ namespace Luny.Engine.Bridge.Enums
 		/// CAUTION: Unsuitable for Input Event handling! Input events may be missed, especially first-frame triggers.
 		/// Unity: FixedUpdate | Godot: _physics_process
 		/// </summary>
-		OnFixedStep,
+		OnHeartbeat,
 		/// <summary>
 		/// Runs in sync with engine's update.
 		/// Unity: Update | Godot: _process
 		/// </summary>
-		OnUpdate,
+		OnFrameUpdate,
 		/// <summary>
 		/// Runs in sync with engine's update, directly after OnUpdate.
 		/// Unity: LateUpdate | Godot: N/A
 		/// </summary>
-		OnLateUpdate,
+		OnFrameLateUpdate,
 	}
 }
