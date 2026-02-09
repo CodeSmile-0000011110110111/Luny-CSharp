@@ -7,6 +7,8 @@ namespace Luny
 {
 	public readonly struct Variable : IEquatable<Variable>, IEquatable<Boolean>, IEquatable<Double>, IEquatable<String>
 	{
+		private static Int32 s_UniqueNameID;
+
 		public enum ValueType
 		{
 			Null,
@@ -17,7 +19,7 @@ namespace Luny
 
 		private const String DefaultName = "(N/A)";
 
-#if DEBUG || LUNYSCRIPT_DEBUG
+#if DEBUG || LUNY_DEBUG
 		private readonly String _name;
 		public String Name => _name ?? DefaultName;
 #else
@@ -34,14 +36,17 @@ namespace Luny
 		public Boolean IsHigh => _type == ValueType.Number && Math.Abs(_numValue) >= 0.5;
 		public Boolean IsNormalized => _type == ValueType.Number && Math.Abs(_numValue) <= 1.0;
 
-		public Int32 Length => _type == ValueType.String && _refValue != null ? ((String)_refValue).Length : 0;
-		public Object Value => _type switch
+		public Double Value => _type switch
 		{
-			ValueType.Null => null,
-			ValueType.Number => AsNumber(),
-			ValueType.Boolean => AsBoolean(),
-			ValueType.String => AsString(),
-			var _ => throw new ArgumentOutOfRangeException(),
+			ValueType.Number => _numValue,
+			ValueType.Boolean => _numValue,
+			var _ => 0.0,
+		};
+		public Object Object => _type switch
+		{
+			ValueType.Null => _refValue,
+			ValueType.String => _refValue,
+			var _ => null,
 		};
 
 		private Variable(Double value, ValueType type, String name = null)
@@ -49,8 +54,12 @@ namespace Luny
 			_numValue = value;
 			_refValue = null;
 			_type = type;
-#if DEBUG || LUNYSCRIPT_DEBUG
-			_name = name;
+#if DEBUG || LUNY_DEBUG
+			_name = String.IsNullOrWhiteSpace(name) ? GenerateUniqueName(type, _refValue, _numValue) : name;
+			if (Double.IsNaN(_numValue))
+				LunyLogger.LogWarning($"Variable {name}: value is 'NaN' (not a number)");
+			if (Double.IsInfinity(_numValue))
+				LunyLogger.LogWarning($"Variable {name}: value is 'Infinity' ('division by zero' or value overflow)");
 #endif
 		}
 
@@ -59,10 +68,15 @@ namespace Luny
 			_numValue = 0;
 			_refValue = value;
 			_type = type;
-#if DEBUG || LUNYSCRIPT_DEBUG
-			_name = name;
+#if DEBUG || LUNY_DEBUG
+			_name = String.IsNullOrWhiteSpace(name) ? GenerateUniqueName(type, _refValue, _numValue) : name;
 #endif
 		}
+
+#if DEBUG || LUNY_DEBUG
+		private static String GenerateUniqueName(ValueType type, Object refValue, Double numValue) =>
+			$"{nameof(Variable)}[{++s_UniqueNameID}] {type} with initial value: {(type == ValueType.Number ? numValue : type == ValueType.Boolean ? numValue != 0.0 : refValue)}";
+#endif
 
 		public static Variable Named(Boolean value, String name) => new(value ? 1.0 : 0.0, ValueType.Boolean, name);
 		public static Variable Named(Double value, String name) => new(value, ValueType.Number, name);

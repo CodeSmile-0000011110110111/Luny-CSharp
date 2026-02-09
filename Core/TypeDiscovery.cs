@@ -16,7 +16,9 @@ namespace Luny
 		/// </summary>
 		public static IEnumerable<Type> FindAll<T>() => AppDomain.CurrentDomain.GetAssemblies()
 			.SelectMany(GetTypesFromAssembly)
-			.Where(t => typeof(T).IsAssignableFrom(t) && !t.IsAbstract && !t.IsInterface);
+			.Where(t => typeof(T).IsAssignableFrom(t) && !t.IsAbstract && !t.IsInterface)
+			.GroupBy(t => t.AssemblyQualifiedName)
+			.Select(t => t.First()); // excludes shadow copied Assemblies during NUnit test runs
 
 		/// <summary>
 		/// Safe wrapper for Assembly.GetTypes() with consistent error handling.

@@ -16,7 +16,12 @@ namespace Luny.Engine.Registries
 
 		public IEnumerable<ILunyEngineObserver> EnabledObservers => _enabledObservers;
 
-		public LunyEngineObserverRegistry() => DiscoverAndInstantiateObservers();
+		public LunyEngineObserverRegistry()
+		{
+			LunyTraceLogger.LogInfoInitializing(this);
+			DiscoverAndInstantiateObservers();
+			LunyTraceLogger.LogInfoInitialized(this);
+		}
 
 		~LunyEngineObserverRegistry() => LunyTraceLogger.LogInfoFinalized(this);
 

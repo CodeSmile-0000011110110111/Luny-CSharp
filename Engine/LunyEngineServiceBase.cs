@@ -10,23 +10,23 @@ namespace Luny.Engine
 	{
 		internal void Initialize()
 		{
-			LunyTraceLogger.LogInfoInitializing(this);
+			// LunyTraceLogger.LogInfoInitializing(this);
 			OnServiceInitialize();
-			LunyTraceLogger.LogInfoInitialized(this);
+			// LunyTraceLogger.LogInfoInitialized(this);
 		}
 
 		internal void Startup()
 		{
-			LunyTraceLogger.LogInfoStartingUp(this);
+			// LunyTraceLogger.LogInfoStartingUp(this);
 			OnServiceStartup();
-			LunyTraceLogger.LogInfoStartupComplete(this);
+			// LunyTraceLogger.LogInfoStartupComplete(this);
 		}
 
 		internal void Shutdown()
 		{
-			LunyTraceLogger.LogInfoShuttingDown(this);
+			// LunyTraceLogger.LogInfoShuttingDown(this);
 			OnServiceShutdown();
-			LunyTraceLogger.LogInfoShutdownComplete(this);
+			// LunyTraceLogger.LogInfoShutdownComplete(this);
 		}
 
 		internal void PreUpdate() => OnServicePreUpdate();

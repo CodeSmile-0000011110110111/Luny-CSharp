@@ -47,8 +47,10 @@ namespace Luny.Engine.Registries
 
 		internal LunyServiceRegistry(NativeEngine engine)
 		{
+			LunyTraceLogger.LogInfoInitializing(this);
 			DiscoverAndInstantiateServices(engine);
 			InitializeServices();
+			LunyTraceLogger.LogInfoInitialized(this);
 		}
 
 		void ILunyServiceRegistryInternal.RegisterService(LunyEngineServiceBase service)
@@ -114,7 +116,8 @@ namespace Luny.Engine.Registries
 				// Find the specific service interface (not IEngineServiceProvider directly)
 				var serviceInterface = GetServiceInterface(type);
 
-				LunyLogger.LogInfo($"{serviceInterface.Name} => {type.FullName} registered", this);
+				//LunyLogger.LogInfo($"{serviceInterface.Name} => {type.FullName} registered", this);
+
 				var service = Activator.CreateInstance(type) as LunyEngineServiceBase;
 				if (service == null)
 					throw new LunyServiceException($"{serviceInterface} does not inherit from {nameof(LunyEngineServiceBase)}");

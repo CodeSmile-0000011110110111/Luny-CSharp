@@ -17,7 +17,7 @@ namespace Luny
 	}
 
 	/// <summary>
-	/// Dictionary-based variable storage for LunyScript contexts.
+	/// Dictionary-based variable storage..
 	/// </summary>
 	public interface ITable : IEnumerable<KeyValuePair<String, Variable>>
 	{
@@ -37,7 +37,7 @@ namespace Luny
 	}
 
 	/// <summary>
-	/// Dictionary-based variable storage for LunyScript contexts.
+	/// Dictionary-based variable storage.
 	/// </summary>
 	public sealed class Table : ITable
 	{
@@ -46,7 +46,7 @@ namespace Luny
 		/// </summary>
 		public event EventHandler<VariableChangedArgs> OnVariableChanged;
 
-#if DEBUG || LUNYSCRIPT_DEBUG
+#if DEBUG || LUNY_DEBUG
 		private static readonly VariableChangedArgs s_CachedChangedEventArgs = new();
 #endif
 
@@ -166,10 +166,10 @@ namespace Luny
 			return sb.ToString();
 		}
 
-		[Conditional("DEBUG")] [Conditional("LUNYSCRIPT_DEBUG")]
+		[Conditional("DEBUG")] [Conditional("LUNY_DEBUG")]
 		internal void NotifyVariableChanged(String key, Variable currentValue, Variable previousValue)
 		{
-#if DEBUG || LUNYSCRIPT_DEBUG
+#if DEBUG || LUNY_DEBUG
 			s_CachedChangedEventArgs.Name = key;
 			s_CachedChangedEventArgs.Previous = previousValue;
 			s_CachedChangedEventArgs.Current = currentValue;
