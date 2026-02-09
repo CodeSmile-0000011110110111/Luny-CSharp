@@ -22,7 +22,7 @@ namespace Luny.Engine.Registries
 
 		private void DiscoverAndInstantiateObservers()
 		{
-			var sw = Stopwatch.StartNew();
+			var sw = System.Diagnostics.Stopwatch.StartNew();
 
 			var observerTypes = TypeDiscovery.FindAll<ILunyEngineObserver>();
 

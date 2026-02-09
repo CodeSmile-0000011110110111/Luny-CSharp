@@ -97,7 +97,7 @@ namespace Luny.Engine.Registries
 
 		private void DiscoverAndInstantiateServices(NativeEngine engine)
 		{
-			var sw = Stopwatch.StartNew();
+			var sw = System.Diagnostics.Stopwatch.StartNew();
 
 			var engineName = engine.ToString();
 			var serviceTypes = TypeDiscovery.FindAll<ILunyEngineService>();

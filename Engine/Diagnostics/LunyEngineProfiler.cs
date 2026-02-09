@@ -69,7 +69,7 @@ namespace Luny.Engine.Diagnostics
 	internal sealed class LunyEngineProfiler : ILunyEngineProfiler
 	{
 		private readonly Dictionary<Type, Dictionary<LunyEngineLifecycleEvents, LunyObserverMetrics>> _metrics = new();
-		private readonly Dictionary<ILunyEngineObserver, Stopwatch> _activeObservers = new();
+		private readonly Dictionary<ILunyEngineObserver, System.Diagnostics.Stopwatch> _activeObservers = new();
 		private Int32 _rollingAverageWindow = 30;
 		private ILunyTimeService _timeService;
 
@@ -117,7 +117,7 @@ namespace Luny.Engine.Diagnostics
 #if DEBUG || LUNY_DEBUG || LUNY_PROFILE
 			if (!_activeObservers.TryGetValue(observer, out var sw))
 			{
-				sw = new Stopwatch();
+				sw = new System.Diagnostics.Stopwatch();
 				_activeObservers[observer] = sw;
 			}
 			sw.Restart();
