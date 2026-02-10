@@ -82,6 +82,7 @@ namespace Luny
 				{
 					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnObjectCreated, e);
 					LunyLogger.LogException(e);
+					throw;
 				}
 				finally
 				{
@@ -103,6 +104,7 @@ namespace Luny
 				{
 					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnObjectDestroyed, e);
 					LunyLogger.LogException(e);
+					throw;
 				}
 				finally
 				{
