@@ -8,18 +8,32 @@ namespace Luny
 	/// </summary>
 	public sealed class Timer
 	{
+		public event Action OnElapsed;
 		public Double Current { get; private set; }
 		public Double Duration { get; set; }
 		public Double TimeScale { get; set; } = 1.0;
 		public Boolean IsRunning { get; set; }
 		public Boolean AutoRepeat { get; set; }
 
-		public event Action OnElapsed;
+		/// <summary>
+		/// Returns the progress as a normalized value (0.0 to 1.0).
+		/// </summary>
+		public Double Progress => Duration > 0.0 ? Math.Min(1.0, Current / Duration) : 1.0;
 
 		/// <summary>
-		/// Creates a new timer with duration in seconds.
+		/// Returns the remaining time in seconds.
 		/// </summary>
-		public Timer(Double duration) => Duration = duration;
+		public Double RemainingSeconds => Math.Max(0.0, Duration - Current);
+
+		/// <summary>
+		/// Returns the remaining time in milliseconds.
+		/// </summary>
+		public Double RemainingMilliseconds => RemainingSeconds * 1000.0;
+
+		/// <summary>
+		/// Returns the remaining time in minutes.
+		/// </summary>
+		public Double RemainingMinutes => RemainingSeconds / 60.0;
 
 		/// <summary>
 		/// Creates a new timer with duration in seconds.
@@ -35,6 +49,11 @@ namespace Luny
 		/// Creates a new timer with duration in minutes.
 		/// </summary>
 		public static Timer FromMinutes(Double minutes) => new(minutes * 60.0);
+
+		/// <summary>
+		/// Creates a new timer with duration in seconds.
+		/// </summary>
+		public Timer(Double duration) => Duration = duration;
 
 		/// <summary>
 		/// Starts or restarts the timer from zero.
@@ -87,26 +106,6 @@ namespace Luny
 					IsRunning = false;
 			}
 		}
-
-		/// <summary>
-		/// Returns the progress as a normalized value (0.0 to 1.0).
-		/// </summary>
-		public Double Progress => Duration > 0.0 ? Math.Min(1.0, Current / Duration) : 1.0;
-
-		/// <summary>
-		/// Returns the remaining time in seconds.
-		/// </summary>
-		public Double RemainingSeconds => Math.Max(0.0, Duration - Current);
-
-		/// <summary>
-		/// Returns the remaining time in milliseconds.
-		/// </summary>
-		public Double RemainingMilliseconds => RemainingSeconds * 1000.0;
-
-		/// <summary>
-		/// Returns the remaining time in minutes.
-		/// </summary>
-		public Double RemainingMinutes => RemainingSeconds / 60.0;
 
 		public override String ToString() => ToString(@"mm\:ss");
 

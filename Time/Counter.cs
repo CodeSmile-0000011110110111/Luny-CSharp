@@ -8,12 +8,21 @@ namespace Luny
 	/// </summary>
 	public sealed class Counter
 	{
+		public event Action OnElapsed;
 		public Int32 Current { get; private set; }
 		public Int32 Target { get; set; }
 		public Boolean IsRunning { get; set; }
 		public Boolean AutoRepeat { get; set; }
 
-		public event Action OnElapsed;
+		/// <summary>
+		/// Returns the progress as a normalized value (0.0 to 1.0).
+		/// </summary>
+		public Double Progress => Target > 0 ? Math.Min(1.0, (Double)Current / Target) : 1.0;
+
+		/// <summary>
+		/// Returns the remaining count.
+		/// </summary>
+		public Int32 Remaining => Math.Max(0, Target - Current);
 
 		/// <summary>
 		/// Creates a counter with a count-towards target.
@@ -69,16 +78,6 @@ namespace Luny
 					Pause();
 			}
 		}
-
-		/// <summary>
-		/// Returns the progress as a normalized value (0.0 to 1.0).
-		/// </summary>
-		public Double Progress => Target > 0 ? Math.Min(1.0, (Double)Current / Target) : 1.0;
-
-		/// <summary>
-		/// Returns the remaining count.
-		/// </summary>
-		public Int32 Remaining => Math.Max(0, Target - Current);
 
 		public override String ToString() => $"{Current}/{Target}";
 	}
