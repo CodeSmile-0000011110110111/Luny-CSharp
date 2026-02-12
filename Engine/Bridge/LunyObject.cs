@@ -90,6 +90,10 @@ namespace Luny.Engine.Bridge
 		/// </summary>
 		Boolean IsValid { get; }
 		/// <summary>
+		/// Set when Destroy() was called. Some actions may still be valid at this point though.
+		/// </summary>
+		Boolean IsDestroyed { get; }
+		/// <summary>
 		/// Whether the engine object is processing and visible.
 		/// Matches the "Active" state of Unity. Most events (update, input, collision, ..) will not run when the object is disabled.
 		/// OnDestroy is the exception: It will run for a disabled object when it gets destroyed.
@@ -188,7 +192,8 @@ namespace Luny.Engine.Bridge
 			}
 		}
 
-		public Boolean IsValid => !_state.IsDestroyed && !_state.IsDestroying && IsNativeObjectValid();
+		public Boolean IsValid => !IsDestroyed && IsNativeObjectValid();
+		public Boolean IsDestroyed => _state.IsDestroyed || _state.IsDestroying;
 
 		public Boolean IsEnabled
 		{
@@ -245,6 +250,8 @@ namespace Luny.Engine.Bridge
 			OnCreate?.Invoke();
 
 			SetVisibleState(_state.IsVisible);
+
+			// bypassing property is intentional
 			if (_state.IsEnabled)
 				SetEnabledState(_state.IsEnabled); // will trigger OnEnable
 		}
@@ -259,8 +266,9 @@ namespace Luny.Engine.Bridge
 			// prevents re-entry from other On.Disabled/On.Destroyed event blocks which might run Object.Destroy()
 			_state.IsDestroying = true;
 
-			// triggers OnDisable if Object is enabled
-			IsEnabled = false;
+			// bypassing property is intentional (IsValid is false now)
+			if (_state.IsEnabled)
+				SetEnabledState(false);
 
 			OnDestroy?.Invoke();
 

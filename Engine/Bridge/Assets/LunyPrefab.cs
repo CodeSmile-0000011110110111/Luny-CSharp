@@ -9,8 +9,8 @@ namespace Luny.Engine.Bridge
 
 	public abstract class LunyPrefab : LunyAsset, ILunyPrefab
 	{
-		protected LunyPrefab(Object nativeAsset, LunyAssetPath assetPath)
-			: base(nativeAsset, assetPath) {}
+		protected LunyPrefab(Object nativePrefabAsset, LunyAssetPath assetPath)
+			: base(nativePrefabAsset, assetPath) {}
 
 		public abstract T Instantiate<T>() where T : class;
 	}
