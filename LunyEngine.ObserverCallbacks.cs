@@ -14,7 +14,7 @@ namespace Luny
 
 		private void OnSceneUnloaded(ILunyScene unloadedScene) // called by SceneService
 		{
-			LunyTraceLogger.LogInfoEventCallback(nameof(OnSceneLoaded), unloadedScene?.ToString(), this);
+			LunyTraceLogger.LogInfoEventCallback(nameof(OnSceneUnloaded), unloadedScene?.ToString(), this);
 			_objectRegistry.OnSceneUnloaded(unloadedScene);
 			InvokeObserversOnSceneUnloaded(unloadedScene);
 		}

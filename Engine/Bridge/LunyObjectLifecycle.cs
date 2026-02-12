@@ -1,5 +1,6 @@
 using Luny.Engine.Bridge.Identity;
 using Luny.Engine.Registries;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -92,6 +93,7 @@ namespace Luny.Engine.Bridge
 			_pendingReady = null;
 			_pendingDestroy = null;
 			_pendingReadyWaitingForEnable = null;
+			GC.SuppressFinalize(this);
 		}
 	}
 }

@@ -39,19 +39,22 @@ namespace Luny.Engine.Services
 		public T Load<T>(LunyAssetPath path) where T : class, ILunyAsset
 		{
 			var agnosticPath = path.AgnosticPath;
-			if (TryGetCached(agnosticPath, out T load))
-				return load;
+			if (TryGetCached(agnosticPath, out T cachedAsset))
+			{
+				LunyLogger.LogInfo($"CACHED: {cachedAsset}", this);
+				return cachedAsset;
+			}
 
 			// Try to load via tiered lookup
 			var loadedAsset = TryLoadWithTieredLookup<T>(path);
 			if (loadedAsset == null)
 			{
-				LunyLogger.LogWarning($"Asset not found: '{agnosticPath}' (type: {typeof(T).Name}) => using placeholder");
+				LunyLogger.LogWarning($"Asset not found: '{agnosticPath}' (type: {typeof(T).Name}) => using placeholder", this);
 				loadedAsset = GetPlaceholder<T>(path);
 			}
 
+			LunyLogger.LogInfo($"LOADED: {loadedAsset}", this);
 			AddToCache(loadedAsset, agnosticPath);
-
 			return loadedAsset;
 		}
 
@@ -66,7 +69,7 @@ namespace Luny.Engine.Services
 
 		private void AddToCache<T>(T loadedAsset, String agnosticPath) where T : class, ILunyAsset
 		{
-			var assetId = new LunyAssetID();
+			var assetId = LunyAssetID.Generate();
 			_cache[assetId] = loadedAsset;
 			_pathToId[agnosticPath] = assetId;
 		}
@@ -91,7 +94,7 @@ namespace Luny.Engine.Services
 			var mappings = GetExtensionMapping();
 			if (!mappings.TryGetValue(typeof(T), out var extensions))
 			{
-				LunyLogger.LogError($"No extension mapping found for asset type {typeof(T).Name}");
+				LunyLogger.LogError($"No extension mapping found for asset type {typeof(T).Name}", this);
 				return null;
 			}
 
@@ -102,19 +105,19 @@ namespace Luny.Engine.Services
 			{
 				var isExtValid = !String.IsNullOrWhiteSpace(ext);
 
-				// Tier 1: Luny/{Type}/{Path}.{ext}
-				var lunyPath = $"Luny/{typeFolderName}/{agnosticPath}";
-				if (isExtValid)
-					lunyPath = Path.ChangeExtension(lunyPath, ext);
-
-				var assetPath = LunyAssetPath.FromAgnostic(lunyPath);
+				// Tier 1: direct load {Path}.{ext}
+				var directPath = isExtValid ? Path.ChangeExtension(agnosticPath, ext) : agnosticPath;
+				var assetPath = LunyAssetPath.FromAgnostic(directPath);
 				var asset = LoadAsset<T>(assetPath);
 				if (asset != null)
 					return asset;
 
-				// Tier 2: {Path}.{ext}
-				var directPath = isExtValid ? Path.ChangeExtension(agnosticPath, ext) : agnosticPath;
-				assetPath = LunyAssetPath.FromAgnostic(directPath);
+				// Tier 2: Luny/{Type}/{Path}.{ext}
+				var lunyPath = $"Luny/{typeFolderName}/{agnosticPath}";
+				if (isExtValid)
+					lunyPath = Path.ChangeExtension(lunyPath, ext);
+
+				assetPath = LunyAssetPath.FromAgnostic(lunyPath);
 				asset = LoadAsset<T>(assetPath);
 				if (asset != null)
 					return asset;

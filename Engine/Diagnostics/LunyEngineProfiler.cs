@@ -31,7 +31,7 @@ namespace Luny.Engine.Diagnostics
 		/// <summary>
 		/// Runs in sync with engine's "fixed update" or "physics processing" event.
 		/// </summary>
-		OnEngineFixedStep = 1 << 4,
+		OnEngineHeartbeat = 1 << 4,
 		/// <summary>
 		/// Runs in sync with engine's "update/process" event.
 		/// </summary>
@@ -193,6 +193,8 @@ namespace Luny.Engine.Diagnostics
 			_activeObservers.Clear();
 #endif
 		}
+
+		internal void Shutdown() => GC.SuppressFinalize(this);
 	}
 
 	/// <summary>

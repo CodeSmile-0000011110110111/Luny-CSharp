@@ -82,6 +82,8 @@ namespace Luny.Engine.Registries
 		{
 			foreach (var service in _registeredServices.Values)
 				service.Shutdown();
+
+			GC.SuppressFinalize(this);
 		}
 
 		internal void OnEnginePreUpdate()

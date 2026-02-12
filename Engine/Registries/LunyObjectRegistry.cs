@@ -137,10 +137,14 @@ namespace Luny.Engine.Registries
 
 		internal void Shutdown()
 		{
+			DestroyInvalidatedObjects();
+
 			_objectsByLunyID.Clear();
 			_objectsByNativeID.Clear();
 			_objectsByLunyID = null;
 			_objectsByNativeID = null;
+
+			GC.SuppressFinalize(this);
 		}
 
 		internal void OnSceneUnloaded(ILunyScene unloadedScene) => DestroyInvalidatedObjects();
@@ -151,10 +155,10 @@ namespace Luny.Engine.Registries
 			var allObjects = AllObjects.ToArray();
 			foreach (var lunyObject in allObjects)
 			{
-				if (!lunyObject.IsValid)
+				if (lunyObject.NativeObject == null)
 				{
-					LunyLogger.LogWarning($"Object {lunyObject} is no longer valid, destroying.", this);
-					lunyObject.Destroy();
+					LunyLogger.LogInfo($"{lunyObject} no longer valid, unregistering ...", this);
+					Unregister(lunyObject);
 				}
 			}
 		}

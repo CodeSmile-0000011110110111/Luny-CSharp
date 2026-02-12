@@ -85,9 +85,11 @@ namespace Luny
 				sceneService.OnSceneLoaded -= OnSceneLoaded;
 				sceneService.OnSceneUnloaded -= OnSceneUnloaded;
 
+				_profiler.Shutdown();
 				_objectLifecycle.Shutdown(_objectRegistry);
 				_objectRegistry.Shutdown();
 				_serviceRegistry.Shutdown();
+				_observerRegistry.Shutdown();
 			}
 			catch (Exception)
 			{
@@ -108,9 +110,10 @@ namespace Luny
 				s_IsDisposed = true;
 				s_EngineAdapter = null;
 				s_Instance = null;
-			}
+				GC.SuppressFinalize(this);
 
-			LunyTraceLogger.LogInfoShutdownComplete(this);
+				LunyTraceLogger.LogInfoShutdownComplete(this);
+			}
 		}
 
 		void ILunyEngineLifecycle.EngineHeartbeat(ILunyEngineNativeAdapter nativeAdapter, Double fixedDeltaTime)
@@ -129,14 +132,14 @@ namespace Luny
 				}
 				catch (Exception e)
 				{
-					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnEngineFixedStep, e);
+					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnEngineHeartbeat, e);
 					/* keep dispatch resilient */
 					//LunyLogger.LogException(e, this);
 					throw;
 				}
 				finally
 				{
-					_profiler.EndObserver(observer, LunyEngineLifecycleEvents.OnEngineFixedStep);
+					_profiler.EndObserver(observer, LunyEngineLifecycleEvents.OnEngineHeartbeat);
 				}
 			}
 		}

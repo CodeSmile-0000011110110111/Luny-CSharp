@@ -72,5 +72,7 @@ namespace Luny.Engine.Registries
 
 		private Boolean TryGetObserver<T>(out T observer) where T : ILunyEngineObserver =>
 			(observer = _registeredObservers.TryGetValue(typeof(T), out var o) ? (T)o : default) is not null;
+
+		internal void Shutdown() => GC.SuppressFinalize(this);
 	}
 }

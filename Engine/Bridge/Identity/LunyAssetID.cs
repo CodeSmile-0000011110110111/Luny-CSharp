@@ -12,8 +12,10 @@ namespace Luny.Engine.Bridge.Identity
 		private static Int32 s_NextID = StartID;
 		private readonly Int32 _value;
 
+		public Boolean IsValid => _value >= StartID;
 		internal static void Reset() => s_NextID = StartID;
 
+		//private LunyAssetID() {} // requires C# 10
 		private LunyAssetID(Int32 value) => _value = value;
 
 		/// <summary>

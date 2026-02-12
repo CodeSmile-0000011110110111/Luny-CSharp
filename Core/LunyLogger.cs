@@ -278,7 +278,7 @@ namespace Luny
 		public static void LogInfoFinalized(Object source)
 		{
 #if DEBUG || LUNY_DEBUG
-			LunyLogger.LogInfo($"finalized {source?.GetHashCode()}", source);
+			LunyLogger.LogWarning($"LEAKED: ({source?.GetHashCode()}) or did not call Shutdown? => investigate!", source);
 #endif
 		}
 
