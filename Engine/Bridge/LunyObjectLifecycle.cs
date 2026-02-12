@@ -68,9 +68,6 @@ namespace Luny.Engine.Bridge
 
 		private void ProcessPendingDestroy()
 		{
-			if (_pendingDestroy.Count > 0)
-				LunyTraceLogger.LogTrace($"Destroying {_pendingDestroy.Count} pending objects ...", this);
-
 			while (_pendingDestroy.Count > 0)
 			{
 				var obj = _pendingDestroy.Dequeue();
@@ -86,6 +83,7 @@ namespace Luny.Engine.Bridge
 			foreach (var lunyObject in allObjects)
 				lunyObject.Destroy();
 
+			// cleans up any pending to be destroyed native objects
 			OnEnginePostUpdate();
 
 			_pendingReady.Clear();

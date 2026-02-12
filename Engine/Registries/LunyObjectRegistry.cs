@@ -74,6 +74,12 @@ namespace Luny.Engine.Registries
 			var removed = TryRemove(lunyObject.LunyObjectID);
 			if (removed)
 				((LunyEngine)LunyEngine.Instance).ObjectUnregistered(lunyObject);
+
+#if DEBUG
+			if (!removed)
+				LunyLogger.LogWarning($"Tried to unregister non-existent LunyID {lunyObject.LunyObjectID}");
+#endif
+
 			return removed;
 		}
 

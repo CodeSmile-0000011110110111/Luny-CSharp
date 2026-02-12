@@ -254,6 +254,8 @@ namespace Luny.Engine.Bridge
 			if (_state.IsDestroyed)
 				return;
 
+			LunyLogger.LogInfo($"Destroying ... {this}", this);
+
 			IsEnabled = false; // may trigger OnDisable
 			OnDestroy?.Invoke();
 			UnregisterAllEvents();
@@ -263,6 +265,8 @@ namespace Luny.Engine.Bridge
 
 			Lifecycle.OnObjectDestroyed(this);
 			Objects.Unregister(this);
+
+			LunyLogger.LogInfo($"Destroyed: {this}", this);
 		}
 
 		private void UnregisterAllEvents()
@@ -316,6 +320,8 @@ namespace Luny.Engine.Bridge
 		// Should only be called internally by LunyObjectLifecycleManager from pending destroy queue processing
 		internal void DestroyNativeObjectInternal()
 		{
+			LunyLogger.LogInfo($"Destroying native object: {_nativeObject}", this);
+
 			if (!_state.IsDestroyed)
 				throw new LunyLifecycleException($"{this}: {nameof(DestroyNativeObjectInternal)}() called without prior {nameof(Destroy)}()");
 
