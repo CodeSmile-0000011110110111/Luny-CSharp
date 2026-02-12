@@ -8,7 +8,7 @@ namespace Luny.Engine.Bridge
 	internal interface ILunyObjectLifecycleInternal
 	{
 		void OnObjectCreated(ILunyObject lunyObject);
-		void OnObjectDestroyed(ILunyObject lunyObject);
+		void ScheduleNativeObjectDestruction(ILunyObject lunyObject);
 		void OnObjectEnabled(ILunyObject lunyObject);
 		void OnObjectDisabled(ILunyObject lunyObject);
 	}
@@ -37,7 +37,7 @@ namespace Luny.Engine.Bridge
 		/// <summary>
 		/// Queues an object for deferred destruction.
 		/// </summary>
-		public void OnObjectDestroyed(ILunyObject lunyObject) => _pendingDestroy.Enqueue(lunyObject);
+		public void ScheduleNativeObjectDestruction(ILunyObject lunyObject) => _pendingDestroy.Enqueue(lunyObject);
 
 		/// <summary>
 		/// Notifies the manager that an object's enabled state has changed.

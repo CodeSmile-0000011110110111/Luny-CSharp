@@ -251,20 +251,25 @@ namespace Luny.Engine.Bridge
 
 		public void Destroy()
 		{
-			if (_state.IsDestroyed)
+			if (_state.IsDestroying || _state.IsDestroyed)
 				return;
 
 			LunyLogger.LogInfo($"Destroying ... {this}", this);
 
-			IsEnabled = false; // may trigger OnDisable
+			// prevents re-entry from other On.Disabled/On.Destroyed event blocks which might run Object.Destroy()
+			_state.IsDestroying = true;
+
+			// triggers OnDisable if Object is enabled
+			IsEnabled = false;
+
 			OnDestroy?.Invoke();
 			UnregisterAllEvents();
 
-			// Mark as destroyed (native destruction happens at the end of the frame)
-			_state.IsDestroyed = true;
-
-			Lifecycle.OnObjectDestroyed(this);
+			Lifecycle.ScheduleNativeObjectDestruction(this);
 			Objects.Unregister(this);
+
+			// LunyObject gets destroyed while NativeObject is pending destruction => end of frame
+			_state.IsDestroyed = true;
 
 			LunyLogger.LogInfo($"Destroyed: {this}", this);
 		}
@@ -365,11 +370,12 @@ namespace Luny.Engine.Bridge
 			[Flags]
 			private enum StateFlags
 			{
-				Destroyed = 1 << 0,
-				Initialized = 1 << 1,
-				Enabled = 1 << 2,
-				Visible = 1 << 3,
-				Ready = 1 << 4,
+				Initialized = 1 << 0,
+				Ready = 1 << 1,
+				Destroying = 1 << 2,
+				Destroyed = 1 << 3,
+				Enabled = 1 << 4,
+				Visible = 1 << 5,
 			}
 
 			private StateFlags _flags;
@@ -398,6 +404,12 @@ namespace Luny.Engine.Bridge
 				set => SetFlag(StateFlags.Destroyed, value);
 			}
 
+			public Boolean IsDestroying
+			{
+				get => (_flags & StateFlags.Destroying) != 0;
+				set => SetFlag(StateFlags.Destroying, value);
+			}
+
 			public Boolean IsReady
 			{
 				get => (_flags & StateFlags.Ready) != 0;
@@ -418,8 +430,14 @@ namespace Luny.Engine.Bridge
 				var sb = new StringBuilder("(");
 				var first = true;
 
+				if (IsDestroying)
+				{
+					sb.Append(nameof(StateFlags.Destroying));
+					first = false;
+				}
 				if (IsDestroyed)
 				{
+					AppendSeparatorIfNeeded();
 					sb.Append(nameof(StateFlags.Destroyed));
 					first = false;
 				}
@@ -427,6 +445,12 @@ namespace Luny.Engine.Bridge
 				{
 					AppendSeparatorIfNeeded();
 					sb.Append(nameof(StateFlags.Initialized));
+					first = false;
+				}
+				if (IsReady)
+				{
+					AppendSeparatorIfNeeded();
+					sb.Append(nameof(StateFlags.Ready));
 					first = false;
 				}
 				if (IsEnabled)
@@ -439,11 +463,7 @@ namespace Luny.Engine.Bridge
 				{
 					AppendSeparatorIfNeeded();
 					sb.Append(nameof(StateFlags.Visible));
-				}
-				if (IsReady)
-				{
-					AppendSeparatorIfNeeded();
-					sb.Append(nameof(StateFlags.Ready));
+					first = false;
 				}
 
 				sb.Append(")");
