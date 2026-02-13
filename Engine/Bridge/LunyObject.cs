@@ -83,7 +83,7 @@ namespace Luny.Engine.Bridge
 		/// <summary>
 		/// The name of the object in the scene hierarchy.
 		/// </summary>
-		String Name { get; }
+		String Name { get; set; }
 		/// <summary>
 		/// Whether the underlying engine object is valid/exists. Most commonly this means "not null" but in some engines like Godot,
 		/// it also means the object is still in the scene hierarchy.
@@ -186,6 +186,7 @@ namespace Luny.Engine.Bridge
 				{
 					SetNativeObjectName(value);
 #if DEBUG || LUNY_DEBUG
+					// engine may modify names we set, thus get it from the engine, not 'value'
 					DebugNativeObjectName = GetNativeObjectName();
 #endif
 				}
