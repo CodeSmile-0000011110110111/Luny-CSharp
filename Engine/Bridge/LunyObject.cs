@@ -138,7 +138,7 @@ namespace Luny.Engine.Bridge
 		/// </summary>
 		/// <typeparam name="T"></typeparam>
 		/// <returns></returns>
-		T Cast<T>();
+		T Cast<T>() where T : class;
 
 		/// <summary>
 		/// Marks this object for destruction.
@@ -237,7 +237,7 @@ namespace Luny.Engine.Bridge
 		protected static Boolean TryGetCached(Int64 nativeId, out ILunyObject lunyObject) => Objects.TryGetByNativeID(nativeId, out lunyObject);
 
 		public T As<T>() where T : class => _nativeObject as T;
-		public T Cast<T>() => (T)_nativeObject;
+		public T Cast<T>() where T : class => (T)_nativeObject;
 
 		public void Initialize()
 		{
