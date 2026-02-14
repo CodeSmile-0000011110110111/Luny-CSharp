@@ -36,19 +36,11 @@ namespace Luny
 			}
 
 			// Services Startup
-			try
-			{
-				var sceneService = (ILunySceneServiceInternal)Scene;
-				sceneService.OnSceneLoaded += OnSceneLoaded;
-				sceneService.OnSceneUnloaded += OnSceneUnloaded;
+			var sceneService = (ILunySceneServiceInternal)Scene;
+			sceneService.OnSceneLoaded += OnSceneLoaded;
+			sceneService.OnSceneUnloaded += OnSceneUnloaded;
 
-				_serviceRegistry.Startup();
-			}
-			catch (Exception)
-			{
-				//LunyLogger.LogError($"Error during {nameof(LunyEngine)} {nameof(ILunyEngineLifecycle.EngineStartup)}!", this);
-				throw;
-			}
+			_serviceRegistry.Startup();
 
 			LunyTraceLogger.LogInfoStartupComplete(this);
 		}
