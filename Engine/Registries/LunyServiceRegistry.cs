@@ -1,4 +1,4 @@
-using Luny.Engine.Bridge.Enums;
+using Luny.Engine.Bridge;
 using Luny.Exceptions;
 using System;
 using System.Collections.Generic;

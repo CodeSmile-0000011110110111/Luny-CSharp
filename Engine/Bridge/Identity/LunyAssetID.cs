@@ -1,6 +1,6 @@
 using System;
 
-namespace Luny.Engine.Bridge.Identity
+namespace Luny.Engine.Bridge
 {
 	/// <summary>
 	/// Represents a unique internal ID for an engine asset.

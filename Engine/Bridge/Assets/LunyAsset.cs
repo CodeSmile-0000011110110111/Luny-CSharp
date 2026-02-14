@@ -1,4 +1,3 @@
-using Luny.Engine.Bridge.Identity;
 using System;
 
 namespace Luny.Engine.Bridge
