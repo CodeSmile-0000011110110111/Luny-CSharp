@@ -4,5 +4,6 @@ namespace Luny.Engine.Bridge
 	{
 		Axis,
 		Button,
+		Vector2,
 	}
 }

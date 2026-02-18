@@ -98,10 +98,7 @@ namespace Luny.Engine.Services
 		/// </summary>
 		protected override void OnServicePostUpdate()
 		{
-			_axisValues.Clear();
-			_buttonPressed.Clear();
 			_buttonJustPressed.Clear();
-			_buttonValues.Clear();
 		}
 	}
 }
