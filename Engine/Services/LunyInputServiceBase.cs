@@ -47,19 +47,15 @@ namespace Luny.Engine.Services
 		private readonly Dictionary<String, Boolean> _buttonJustPressed = new();
 		private readonly Dictionary<String, Single> _buttonValues = new();
 
-		public LunyVector2 GetAxisValue(String actionName) =>
-			_axisValues.TryGetValue(actionName, out var v) ? v : default;
+		public LunyVector2 GetAxisValue(String actionName) => _axisValues.TryGetValue(actionName, out var v) ? v : default;
 
-		public Boolean GetButtonPressed(String actionName) =>
-			_buttonPressed.TryGetValue(actionName, out var v) && v;
+		public Boolean GetButtonPressed(String actionName) => _buttonPressed.TryGetValue(actionName, out var v) && v;
 
-		public Boolean GetButtonJustPressed(String actionName) =>
-			_buttonJustPressed.TryGetValue(actionName, out var v) && v;
+		public Boolean GetButtonJustPressed(String actionName) => _buttonJustPressed.TryGetValue(actionName, out var v) && v;
 
-		public Single GetButtonValue(String actionName) =>
-			_buttonValues.TryGetValue(actionName, out var v) ? v : 0f;
+		public Single GetButtonValue(String actionName) => _buttonValues.TryGetValue(actionName, out var v) ? v : 0f;
 
-		protected void RaiseAxisInput(String actionName, LunyVector2 value)
+		protected void RaiseDirectionalInput(String actionName, LunyVector2 value)
 		{
 			_axisValues[actionName] = value;
 			OnInputAction?.Invoke(new LunyInputEvent
@@ -69,6 +65,21 @@ namespace Luny.Engine.Services
 				AxisValue = value,
 			});
 		}
+
+		protected void RaiseAxisInput(String actionName, float value)
+		{
+			throw new NotImplementedException(nameof(RaiseAxisInput));
+			/*
+			_axisValues[actionName] = value;
+			OnInputAction?.Invoke(new LunyInputEvent
+			{
+				ActionName = actionName,
+				ActionType = LunyInputActionType.Axis,
+				AxisValue = value,
+			});
+		*/
+		}
+
 
 		protected void RaiseButtonInput(String actionName, Boolean pressed, Single analogValue = 1f)
 		{
@@ -89,9 +100,16 @@ namespace Luny.Engine.Services
 		/// <summary>
 		/// Clears per-frame transition flags. Called at the start of each frame via OnServicePreUpdate.
 		/// </summary>
-		protected override void OnServicePreUpdate()
+		protected override void OnServicePostUpdate()
 		{
-			_buttonJustPressed.Clear();
+			foreach (var kvp in _axisValues)
+				_axisValues[kvp.Key] = LunyVector2.Zero;
+			foreach (var kvp in _buttonPressed)
+				_buttonPressed[kvp.Key] = false;
+			foreach (var kvp in _buttonJustPressed)
+				_buttonJustPressed[kvp.Key] = false;
+			foreach (var kvp in _buttonValues)
+				_buttonValues[kvp.Key] = 0.0f;
 		}
 	}
 }
