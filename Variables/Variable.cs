@@ -11,6 +11,8 @@ namespace Luny
 		Boolean AsBoolean();
 		Double AsDouble();
 		String AsString();
+		LunyVector2 AsVector2();
+		LunyVector3 AsVector3();
 	}
 
 	public readonly struct Variable : IVariable, IEquatable<Variable>, IEquatable<Boolean>, IEquatable<Double>, IEquatable<String>
@@ -24,6 +26,8 @@ namespace Luny
 			Boolean,
 			String,
 			Struct,
+			Vector2,
+			Vector3,
 		}
 
 		private const String DefaultName = "(N/A)";
@@ -123,8 +127,16 @@ namespace Luny
 			ValueType.Number => Convert.ToString(_numValue, CultureInfo.InvariantCulture),
 			ValueType.Boolean => Convert.ToString(AsBoolean()),
 			ValueType.String => _refValue as String ?? _refValue?.ToString() ?? String.Empty,
+			ValueType.Vector2 => _refValue?.ToString() ?? LunyVector2.Zero.ToString(),
+			ValueType.Vector3 => _refValue?.ToString() ?? LunyVector3.Zero.ToString(),
 			var _ => throw new ArgumentOutOfRangeException(_type.ToString()),
 		};
+
+		public LunyVector2 AsVector2() => _type == ValueType.Vector2 && _refValue is LunyVector2 v2 ? v2 : default;
+		public LunyVector3 AsVector3() => _type == ValueType.Vector3 && _refValue is LunyVector3 v3 ? v3 : default;
+
+		public static Variable FromVector2(LunyVector2 value) => new(value, ValueType.Vector2);
+		public static Variable FromVector3(LunyVector3 value) => new(value, ValueType.Vector3);
 
 		public T As<T>()
 		{
@@ -207,6 +219,22 @@ namespace Luny
 						return true;
 					}
 					break;
+
+				case ValueType.Vector2:
+					if (t == typeof(LunyVector2) && _refValue is LunyVector2 v2)
+					{
+						result = Unsafe.As<LunyVector2, T>(ref v2);
+						return true;
+					}
+					break;
+
+				case ValueType.Vector3:
+					if (t == typeof(LunyVector3) && _refValue is LunyVector3 v3)
+					{
+						result = Unsafe.As<LunyVector3, T>(ref v3);
+						return true;
+					}
+					break;
 			}
 
 			result = default;
@@ -235,6 +263,8 @@ namespace Luny
 			ValueType.Number => $"{_numValue} ({_type})",
 			ValueType.Boolean => $"{IsTrue} ({_type})",
 			ValueType.String => $"{_refValue} ({_type})",
+			ValueType.Vector2 => $"{_refValue} ({_type})",
+			ValueType.Vector3 => $"{_refValue} ({_type})",
 			var _ => $"<{_type}>",
 		};
 

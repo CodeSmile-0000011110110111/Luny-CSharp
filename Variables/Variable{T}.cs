@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace Luny
 {
@@ -11,11 +12,35 @@ namespace Luny
 
 		public Variable(T value) => _value = value;
 
-		// IVariable (cold path — boxing acceptable)
-		public Variable.ValueType Type => Variable.ValueType.Struct;
+		// IVariable (cold path — boxing acceptable, except for matching vector types)
+		public Variable.ValueType Type =>
+			typeof(T) == typeof(LunyVector2) ? Variable.ValueType.Vector2 :
+			typeof(T) == typeof(LunyVector3) ? Variable.ValueType.Vector3 :
+			Variable.ValueType.Struct;
+
 		public Boolean AsBoolean() => _value != null;
 		public Double AsDouble() => 0.0;
 		public String AsString() => _value?.ToString() ?? "null";
+
+		public LunyVector2 AsVector2()
+		{
+			if (typeof(T) == typeof(LunyVector2))
+			{
+				var val = _value;
+				return Unsafe.As<T, LunyVector2>(ref val);
+			}
+			return default;
+		}
+
+		public LunyVector3 AsVector3()
+		{
+			if (typeof(T) == typeof(LunyVector3))
+			{
+				var val = _value;
+				return Unsafe.As<T, LunyVector3>(ref val);
+			}
+			return default;
+		}
 
 		public Boolean Equals(Variable<T> other) =>
 			EqualityComparer<T>.Default.Equals(_value, other._value);
