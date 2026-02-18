@@ -31,6 +31,7 @@ namespace Luny
 		T Get<T>(String key);
 		Table.ScalarVarHandle GetHandle(String key);
 		Table.ScalarVarHandle DefineConstant(String key, Variable value);
+		Table.VarHandle<T> GetHandle<T>(String key);
 		Boolean Has(String key);
 		Boolean Remove(String key);
 		void RemoveAll();
@@ -50,14 +51,14 @@ namespace Luny
 		private static readonly VariableChangedArgs s_CachedChangedEventArgs = new();
 #endif
 
-		private readonly Dictionary<String, ScalarVarHandle> _table = new();
+		private readonly Dictionary<String, VarHandle> _table = new();
 
 		/// <summary>
 		/// Gets or sets a variable by name.
 		/// </summary>
 		public Variable this[String key]
 		{
-			get => _table.TryGetValue(key, out var handle) ? handle.Value : null;
+			get => _table.TryGetValue(key, out var handle) && handle is ScalarVarHandle scalar ? scalar.Value : null;
 			set => GetHandle(key).Value = value;
 		}
 
@@ -69,7 +70,10 @@ namespace Luny
 		public IEnumerator<KeyValuePair<String, Variable>> GetEnumerator()
 		{
 			foreach (var kvp in _table)
-				yield return new KeyValuePair<String, Variable>(kvp.Key, kvp.Value.Value);
+			{
+				if (kvp.Value is ScalarVarHandle scalar)
+					yield return new KeyValuePair<String, Variable>(kvp.Key, scalar.Value);
+			}
 		}
 
 		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -82,7 +86,13 @@ namespace Luny
 			if (!_table.TryGetValue(key, out var handle))
 				return default;
 
-			return handle.Value.As<T>();
+			if (handle is ScalarVarHandle scalar)
+				return scalar.Value.As<T>();
+
+			if (handle is VarHandle<T> typed)
+				return typed.Value;
+
+			return default;
 		}
 
 		/// <summary>
@@ -107,13 +117,25 @@ namespace Luny
 		/// <returns></returns>
 		public ScalarVarHandle GetHandle(String key)
 		{
-			if (!_table.TryGetValue(key, out var handle))
-			{
-				handle = new ScalarVarHandle(this, key);
-				_table[key] = handle;
-			}
+			if (_table.TryGetValue(key, out var handle))
+				return (ScalarVarHandle)handle;
 
-			return handle;
+			var scalar = new ScalarVarHandle(this, key);
+			_table[key] = scalar;
+			return scalar;
+		}
+
+		/// <summary>
+		/// Gets or creates a typed handle to a variable.
+		/// </summary>
+		public VarHandle<T> GetHandle<T>(String key)
+		{
+			if (_table.TryGetValue(key, out var handle))
+				return handle.As<T>();
+
+			var typed = new VarHandle<T>(this, key);
+			_table[key] = typed;
+			return typed;
 		}
 
 		/// <summary>
@@ -140,7 +162,7 @@ namespace Luny
 		public void ResetValue(String key)
 		{
 			if (_table.TryGetValue(key, out var handle))
-				handle.Value = default;
+				handle.Reset();
 		}
 
 		/// <summary>
@@ -149,7 +171,7 @@ namespace Luny
 		public void ResetValues()
 		{
 			foreach (var handle in _table.Values)
-				handle.Value = default;
+				handle.Reset();
 		}
 
 		[ExcludeFromCodeCoverage]
@@ -161,7 +183,7 @@ namespace Luny
 			var sb = new StringBuilder();
 			sb.AppendLine($"{nameof(Table)} ({_table.Count}):");
 			foreach (var kvp in _table)
-				sb.AppendLine($"    [\"{kvp.Key}\"] = {kvp.Value.Value}");
+				sb.AppendLine($"    [\"{kvp.Key}\"] = {kvp.Value}");
 
 			return sb.ToString();
 		}
@@ -177,15 +199,42 @@ namespace Luny
 #endif
 		}
 
-		public sealed class ScalarVarHandle
+		public abstract class VarHandle
 		{
-			private readonly Table _owner;
-			private readonly String _name;
-			private readonly Boolean _isConstant;
-			private Variable _value;
+			protected readonly Table _owner;
+			protected readonly String _name;
+			protected readonly Boolean _isConstant;
 
 			public String Name => _name;
 			public Boolean IsConstant => _isConstant;
+
+			protected VarHandle(Table owner, String name, Boolean isConstant)
+			{
+				_owner = owner;
+				_name = name;
+				_isConstant = isConstant;
+			}
+
+			public abstract void Reset();
+
+			public VarHandle<T> As<T>()
+			{
+				if (this is VarHandle<T> typed)
+					return typed;
+
+				throw new InvalidCastException($"{nameof(VarHandle)} '{_name}' is {GetType().Name}, not {nameof(VarHandle)}<{typeof(T).Name}>");
+			}
+
+			public Boolean TryAs<T>(out VarHandle<T> result)
+			{
+				result = this as VarHandle<T>;
+				return result != null;
+			}
+		}
+
+		public sealed class ScalarVarHandle : VarHandle
+		{
+			private Variable _value;
 
 			public Variable Value
 			{
@@ -202,13 +251,37 @@ namespace Luny
 			}
 
 			internal ScalarVarHandle(Table owner, String name, Boolean isConstant = false)
-			{
-				_owner = owner;
-				_name = name;
-				_isConstant = isConstant;
-			}
+				: base(owner, name, isConstant) {}
 
 			internal void SetInitialValue(Variable value) => _value = value;
+
+			public override void Reset() => _value = default;
+
+			public override String ToString() => $"{_name}[{_value}] {(_isConstant ? "(const)" : "")}";
+		}
+
+		public sealed class VarHandle<T> : VarHandle
+		{
+			private T _value;
+
+			public T Value
+			{
+				get => _value;
+				set
+				{
+					if (_isConstant)
+						throw new InvalidOperationException($"Cannot modify constant '{_name}'");
+
+					_value = value;
+				}
+			}
+
+			internal VarHandle(Table owner, String name, Boolean isConstant = false)
+				: base(owner, name, isConstant) {}
+
+			internal void SetInitialValue(T value) => _value = value;
+
+			public override void Reset() => _value = default;
 
 			public override String ToString() => $"{_name}[{_value}] {(_isConstant ? "(const)" : "")}";
 		}

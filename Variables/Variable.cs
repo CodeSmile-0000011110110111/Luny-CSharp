@@ -5,7 +5,15 @@ using System.Runtime.CompilerServices;
 
 namespace Luny
 {
-	public readonly struct Variable : IEquatable<Variable>, IEquatable<Boolean>, IEquatable<Double>, IEquatable<String>
+	public interface IVariable
+	{
+		Variable.ValueType Type { get; }
+		Boolean AsBoolean();
+		Double AsDouble();
+		String AsString();
+	}
+
+	public readonly struct Variable : IVariable, IEquatable<Variable>, IEquatable<Boolean>, IEquatable<Double>, IEquatable<String>
 	{
 		private static Int32 s_UniqueNameID;
 
@@ -15,6 +23,7 @@ namespace Luny
 			Number,
 			Boolean,
 			String,
+			Struct,
 		}
 
 		private const String DefaultName = "(N/A)";
