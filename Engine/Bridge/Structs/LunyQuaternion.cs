@@ -1,3 +1,4 @@
+using Luny.Engine.Bridge;
 using System;
 using System.Runtime.CompilerServices;
 
@@ -81,7 +82,7 @@ namespace Luny
 				var sinp = 2f * (q.W * q.Y - q.Z * q.X);
 				Single pitch;
 				if (MathF.Abs(sinp) >= 1f)
-					pitch = MathF.CopySign(MathF.PI / 2f, sinp);
+					pitch = LunyMath.CopySign(MathF.PI / 2f, sinp);
 				else
 					pitch = MathF.Asin(sinp);
 

@@ -66,10 +66,9 @@ namespace Luny.Engine.Services
 			});
 		}
 
-		protected void RaiseAxisInput(String actionName, float value)
-		{
-			throw new NotImplementedException(nameof(RaiseAxisInput));
-			/*
+		protected void RaiseAxisInput(String actionName, Single value) => throw new NotImplementedException(nameof(RaiseAxisInput));
+
+		/*
 			_axisValues[actionName] = value;
 			OnInputAction?.Invoke(new LunyInputEvent
 			{
@@ -78,9 +77,6 @@ namespace Luny.Engine.Services
 				AxisValue = value,
 			});
 		*/
-		}
-
-
 		protected void RaiseButtonInput(String actionName, Boolean pressed, Single analogValue = 1f)
 		{
 			var wasPressed = GetButtonPressed(actionName);
@@ -102,14 +98,10 @@ namespace Luny.Engine.Services
 		/// </summary>
 		protected override void OnServicePostUpdate()
 		{
-			foreach (var kvp in _axisValues)
-				_axisValues[kvp.Key] = LunyVector2.Zero;
-			foreach (var kvp in _buttonPressed)
-				_buttonPressed[kvp.Key] = false;
-			foreach (var kvp in _buttonJustPressed)
-				_buttonJustPressed[kvp.Key] = false;
-			foreach (var kvp in _buttonValues)
-				_buttonValues[kvp.Key] = 0.0f;
+			_axisValues.Clear();
+			_buttonPressed.Clear();
+			_buttonJustPressed.Clear();
+			_buttonValues.Clear();
 		}
 	}
 }
