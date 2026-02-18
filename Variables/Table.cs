@@ -29,8 +29,8 @@ namespace Luny
 		event EventHandler<VariableChangedArgs> OnVariableChanged;
 		Variable this[String key] { get; set; }
 		T Get<T>(String key);
-		Table.VarHandle GetHandle(String key);
-		Table.VarHandle DefineConstant(String key, Variable value);
+		Table.ScalarVarHandle GetHandle(String key);
+		Table.ScalarVarHandle DefineConstant(String key, Variable value);
 		Boolean Has(String key);
 		Boolean Remove(String key);
 		void RemoveAll();
@@ -50,7 +50,7 @@ namespace Luny
 		private static readonly VariableChangedArgs s_CachedChangedEventArgs = new();
 #endif
 
-		private readonly Dictionary<String, VarHandle> _table = new();
+		private readonly Dictionary<String, ScalarVarHandle> _table = new();
 
 		/// <summary>
 		/// Gets or sets a variable by name.
@@ -105,11 +105,11 @@ namespace Luny
 		/// </summary>
 		/// <param name="key"></param>
 		/// <returns></returns>
-		public VarHandle GetHandle(String key)
+		public ScalarVarHandle GetHandle(String key)
 		{
 			if (!_table.TryGetValue(key, out var handle))
 			{
-				handle = new VarHandle(this, key);
+				handle = new ScalarVarHandle(this, key);
 				_table[key] = handle;
 			}
 
@@ -122,12 +122,12 @@ namespace Luny
 		/// <param name="key">The constant name.</param>
 		/// <param name="value">The constant value.</param>
 		/// <returns>The handle to the constant.</returns>
-		public VarHandle DefineConstant(String key, Variable value)
+		public ScalarVarHandle DefineConstant(String key, Variable value)
 		{
 			if (_table.TryGetValue(key, out var existing))
 				throw new InvalidOperationException($"Attempt to redefine constant: {existing}");
 
-			var handle = new VarHandle(this, key, true);
+			var handle = new ScalarVarHandle(this, key, true);
 			handle.SetInitialValue(value);
 			_table[key] = handle;
 			return handle;
@@ -177,7 +177,7 @@ namespace Luny
 #endif
 		}
 
-		public sealed class VarHandle
+		public sealed class ScalarVarHandle
 		{
 			private readonly Table _owner;
 			private readonly String _name;
@@ -201,7 +201,7 @@ namespace Luny
 				}
 			}
 
-			internal VarHandle(Table owner, String name, Boolean isConstant = false)
+			internal ScalarVarHandle(Table owner, String name, Boolean isConstant = false)
 			{
 				_owner = owner;
 				_name = name;
