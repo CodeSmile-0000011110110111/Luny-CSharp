@@ -1,8 +1,7 @@
-using Luny.Engine.Bridge;
 using System;
 using System.Runtime.CompilerServices;
 
-namespace Luny
+namespace Luny.Engine.Bridge
 {
 	public struct LunyQuaternion : IEquatable<LunyQuaternion>
 	{

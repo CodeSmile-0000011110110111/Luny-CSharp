@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
 
-namespace Luny
+namespace Luny.Engine.Bridge
 {
 	public struct LunyVector2 : IEquatable<LunyVector2>
 	{
