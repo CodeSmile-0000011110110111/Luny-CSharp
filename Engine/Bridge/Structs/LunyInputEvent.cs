@@ -6,9 +6,10 @@ namespace Luny.Engine.Bridge
 	{
 		public String ActionName;
 		public LunyInputActionType ActionType;
-		public LunyVector2 AxisValue;
+		public LunyVector2 Direction;
+		public Single Axis;
+		public Single Strength;
 		public Boolean IsJustPressed;
 		public Boolean IsPressed;
-		public Single ButtonValue;
 	}
 }

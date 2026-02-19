@@ -20,7 +20,12 @@ namespace Luny.Engine.Services
 		/// <summary>
 		/// Gets last known axis value for the named action.
 		/// </summary>
-		LunyVector2 GetAxisValue(String actionName);
+		LunyVector2 GetDirection(String actionName);
+
+		/// <summary>
+		/// Gets the analog trigger value (0.0–1.0) for the named button action.
+		/// </summary>
+		Single GetAxis(String actionName);
 
 		/// <summary>
 		/// True only on the frame the button transitioned to pressed.
@@ -33,69 +38,77 @@ namespace Luny.Engine.Services
 		Boolean GetButtonPressed(String actionName);
 
 		/// <summary>
-		/// Gets the analog trigger value (0.0–1.0) for the named button action.
+		/// Returns a button's pressed strength. Used by triggers configured to act like buttons.
 		/// </summary>
-		Single GetButtonValue(String actionName);
+		Single GetButtonStrength(String actionName);
 	}
 
 	public abstract class LunyInputServiceBase : LunyEngineServiceBase, ILunyInputService
 	{
 		public event Action<LunyInputEvent> OnInputAction;
 
-		private readonly Dictionary<String, LunyVector2> _axisValues = new();
+		private readonly Dictionary<String, LunyVector2> _directionVectors = new();
+		private readonly Dictionary<String, Single> _axisValues = new();
+		private readonly Dictionary<String, Single> _buttonStrengthValues = new();
 		private readonly Dictionary<String, Boolean> _buttonPressed = new();
 		private readonly Dictionary<String, Boolean> _buttonJustPressed = new();
-		private readonly Dictionary<String, Single> _buttonValues = new();
 
-		public LunyVector2 GetAxisValue(String actionName) => _axisValues.TryGetValue(actionName, out var v) ? v : default;
-
+		public LunyVector2 GetDirection(String actionName) => _directionVectors.TryGetValue(actionName, out var v) ? v : default;
+		public Single GetAxis(String actionName) => _axisValues.TryGetValue(actionName, out var v) ? v : 0f;
+		public Single GetButtonStrength(String actionName) => _buttonStrengthValues.TryGetValue(actionName, out var v) ? v : 0f;
 		public Boolean GetButtonPressed(String actionName) => _buttonPressed.TryGetValue(actionName, out var v) && v;
-
 		public Boolean GetButtonJustPressed(String actionName) => _buttonJustPressed.TryGetValue(actionName, out var v) && v;
 
-		public Single GetButtonValue(String actionName) => _buttonValues.TryGetValue(actionName, out var v) ? v : 0f;
-
-		protected void RaiseDirectionalInput(String actionName, LunyVector2 value)
+		protected void SetDirectionalInput(String actionName, LunyVector2 value)
 		{
-			_axisValues[actionName] = value;
-			OnInputAction?.Invoke(new LunyInputEvent
-			{
-				ActionName = actionName,
-				ActionType = LunyInputActionType.Axis,
-				AxisValue = value,
-			});
+			_directionVectors[actionName] = value;
+			var evt = new LunyInputEvent { ActionName = actionName, ActionType = LunyInputActionType.Directional, Direction = value };
+			OnInputAction?.Invoke(evt);
 		}
 
-		protected void RaiseAxisInput(String actionName, Single value) => throw new NotImplementedException(nameof(RaiseAxisInput));
-
-		/*
+		protected void SetAxisInput(String actionName, Single value)
+		{
 			_axisValues[actionName] = value;
-			OnInputAction?.Invoke(new LunyInputEvent
-			{
-				ActionName = actionName,
-				ActionType = LunyInputActionType.Axis,
-				AxisValue = value,
-			});
-		*/
-		protected void RaiseButtonInput(String actionName, Boolean pressed, Single analogValue = 1f)
+			var evt = new LunyInputEvent { ActionName = actionName, ActionType = LunyInputActionType.Axis, Axis = value };
+			OnInputAction?.Invoke(evt);
+		}
+
+		protected void SetButtonInput(String actionName, Boolean pressed, Single strength = 1f)
 		{
 			var wasPressed = GetButtonPressed(actionName);
-			_buttonPressed[actionName] = pressed;
-			_buttonJustPressed[actionName] = pressed && !wasPressed;
-			_buttonValues[actionName] = pressed ? analogValue : 0f;
-			OnInputAction?.Invoke(new LunyInputEvent
+			var justPressed = pressed && !wasPressed;
+			var strengthValue = pressed ? strength : 0f;
+
+			var evt = new LunyInputEvent
 			{
 				ActionName = actionName,
 				ActionType = LunyInputActionType.Button,
-				IsPressed = pressed,
-				IsJustPressed = pressed && !wasPressed,
-				ButtonValue = pressed ? analogValue : 0f,
-			});
+				IsPressed = _buttonPressed[actionName] = pressed,
+				IsJustPressed = _buttonJustPressed[actionName] = justPressed,
+				Strength = _buttonStrengthValues[actionName] = strengthValue,
+			};
+			OnInputAction?.Invoke(evt);
 		}
 
 		/// <summary>
 		/// Clears per-frame transition flags. Called at the start of each frame via OnServicePreUpdate.
 		/// </summary>
 		protected override void OnServicePostUpdate() => _buttonJustPressed.Clear();
+
+		/// <summary>
+		/// Simulates axis input for testing. In real Unity, this comes from InputSystem callbacks.
+		/// </summary>
+		internal void SimulateDirectionalInput(String actionName, LunyVector2 value) => SetDirectionalInput(actionName, value);
+
+		/// <summary>
+		/// Simulates axis input for testing. In real Unity, this comes from InputSystem callbacks.
+		/// </summary>
+		internal void SimulateAxisInput(String actionName, Single value) => SetAxisInput(actionName, value);
+
+		/// <summary>
+		/// Simulates button press for testing. In real Unity, this comes from InputSystem callbacks.
+		/// </summary>
+		internal void SimulateButtonInput(String actionName, Boolean pressed, Single analogValue = 1f) =>
+			SetButtonInput(actionName, pressed, analogValue);
 	}
 }
