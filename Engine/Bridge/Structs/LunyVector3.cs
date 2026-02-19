@@ -218,13 +218,22 @@ namespace Luny.Engine.Bridge
 		public static LunyVector3 operator *(LunyVector3 a, Single d) => new(a._value * d);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static LunyVector3 operator *(LunyVector3 a, Double d) => new(a._value * (Single)d);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static LunyVector3 operator *(Single d, LunyVector3 a) => new(a._value * d);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static LunyVector3 operator *(Double d, LunyVector3 a) => new(a._value * (Single)d);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static LunyVector3 operator *(LunyVector3 a, LunyVector3 b) => new(a._value * b._value);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static LunyVector3 operator /(LunyVector3 a, Single d) => new(a._value / d);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static LunyVector3 operator /(LunyVector3 a, Double d) => new(a._value / (Single)d);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static LunyVector3 operator /(LunyVector3 a, LunyVector3 b) => new(a._value / b._value);

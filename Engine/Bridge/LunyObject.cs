@@ -80,6 +80,10 @@ namespace Luny.Engine.Bridge
 		/// </summary>
 		SystemObject NativeObject { get; }
 		/// <summary>
+		/// The transform of this object.
+		/// </summary>
+		LunyTransform Transform { get; }
+		/// <summary>
 		/// The name of the object in the scene hierarchy.
 		/// </summary>
 		String Name { get; set; }
@@ -161,6 +165,7 @@ namespace Luny.Engine.Bridge
 		private readonly LunyObjectID _lunyObjectID;
 		private readonly LunyNativeObjectID _nativeObjectID;
 		private SystemObject _nativeObject;
+		private LunyTransform _transform;
 		private ObjectState _state;
 
 		[NotNull] private static ILunyObjectLifecycleInternal Lifecycle => ((ILunyEngineInternal)LunyEngine.Instance).ObjectLifecycle;
@@ -169,6 +174,7 @@ namespace Luny.Engine.Bridge
 		public LunyObjectID LunyObjectID => _lunyObjectID;
 		public LunyNativeObjectID NativeObjectID => _nativeObjectID;
 		public SystemObject NativeObject => _nativeObject;
+		public LunyTransform Transform => _transform ??= IsValid ? GetNativeTransform() : null;
 
 #if DEBUG || LUNY_DEBUG
 		private String DebugNativeObjectName { get; set; }
@@ -344,6 +350,7 @@ namespace Luny.Engine.Bridge
 			OnReady?.Invoke();
 		}
 
+		protected abstract LunyTransform GetNativeTransform();
 		protected abstract void DestroyNativeObject();
 		protected abstract Boolean IsNativeObjectValid();
 		protected abstract String GetNativeObjectName();
