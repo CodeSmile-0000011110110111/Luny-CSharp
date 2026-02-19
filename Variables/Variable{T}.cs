@@ -14,8 +14,7 @@ namespace Luny
 		public Variable(T value) => _value = value;
 
 		// IVariable (cold path — boxing acceptable, except for matching vector types)
-		public Variable.ValueType Type =>
-			typeof(T) == typeof(LunyVector2) ? Variable.ValueType.Vector2 :
+		public Variable.ValueType Type => typeof(T) == typeof(LunyVector2) ? Variable.ValueType.Vector2 :
 			typeof(T) == typeof(LunyVector3) ? Variable.ValueType.Vector3 :
 			Variable.ValueType.Struct;
 
@@ -43,14 +42,11 @@ namespace Luny
 			return default;
 		}
 
-		public Boolean Equals(Variable<T> other) =>
-			EqualityComparer<T>.Default.Equals(_value, other._value);
+		public Boolean Equals(Variable<T> other) => EqualityComparer<T>.Default.Equals(_value, other._value);
 
-		public override Boolean Equals(Object obj) =>
-			obj is Variable<T> other && Equals(other);
+		public override Boolean Equals(Object obj) => obj is Variable<T> other && Equals(other);
 
-		public override Int32 GetHashCode() =>
-			_value != null ? EqualityComparer<T>.Default.GetHashCode(_value) : 0;
+		public override Int32 GetHashCode() => _value != null ? EqualityComparer<T>.Default.GetHashCode(_value) : 0;
 
 		public static Boolean operator ==(Variable<T> left, Variable<T> right) => left.Equals(right);
 		public static Boolean operator !=(Variable<T> left, Variable<T> right) => !left.Equals(right);

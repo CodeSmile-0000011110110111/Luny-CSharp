@@ -1,11 +1,12 @@
 using System;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace Luny.Engine.Bridge
 {
 	public struct LunyQuaternion : IEquatable<LunyQuaternion>
 	{
-		private System.Numerics.Quaternion _value;
+		private Quaternion _value;
 
 		public Single X
 		{
@@ -47,24 +48,33 @@ namespace Luny.Engine.Bridge
 			{
 				switch (index)
 				{
-					case 0: X = value; break;
-					case 1: Y = value; break;
-					case 2: Z = value; break;
-					case 3: W = value; break;
-					default: throw new IndexOutOfRangeException($"Invalid {nameof(LunyQuaternion)} index: {index}");
+					case 0:
+						X = value;
+						break;
+					case 1:
+						Y = value;
+						break;
+					case 2:
+						Z = value;
+						break;
+					case 3:
+						W = value;
+						break;
+					default:
+						throw new IndexOutOfRangeException($"Invalid {nameof(LunyQuaternion)} index: {index}");
 				}
 			}
 		}
 
 		// Constructors
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public LunyQuaternion(Single x, Single y, Single z, Single w) => _value = new System.Numerics.Quaternion(x, y, z, w);
+		public LunyQuaternion(Single x, Single y, Single z, Single w) => _value = new Quaternion(x, y, z, w);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal LunyQuaternion(System.Numerics.Quaternion value) => _value = value;
+		internal LunyQuaternion(Quaternion value) => _value = value;
 
 		// Static properties
-		public static LunyQuaternion Identity => new(System.Numerics.Quaternion.Identity);
+		public static LunyQuaternion Identity => new(Quaternion.Identity);
 
 		// Instance properties
 		public LunyVector3 EulerAngles
@@ -107,7 +117,7 @@ namespace Luny.Engine.Bridge
 				var sinZ = MathF.Sin(halfZ);
 				var cosZ = MathF.Cos(halfZ);
 
-				_value = new System.Numerics.Quaternion(
+				_value = new Quaternion(
 					cosY * sinX * cosZ + sinY * cosX * sinZ,
 					sinY * cosX * cosZ - cosY * sinX * sinZ,
 					cosY * cosX * sinZ - sinY * sinX * cosZ,
@@ -119,45 +129,44 @@ namespace Luny.Engine.Bridge
 		public LunyQuaternion Normalized
 		{
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			get => new(System.Numerics.Quaternion.Normalize(_value));
+			get => new(Quaternion.Normalize(_value));
 		}
 
 		// Instance methods
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Normalize() => _value = System.Numerics.Quaternion.Normalize(_value);
+		public void Normalize() => _value = Quaternion.Normalize(_value);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Set(Single newX, Single newY, Single newZ, Single newW) => _value = new System.Numerics.Quaternion(newX, newY, newZ, newW);
+		public void Set(Single newX, Single newY, Single newZ, Single newW) => _value = new Quaternion(newX, newY, newZ, newW);
 
 		// Static methods
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static Single Dot(LunyQuaternion a, LunyQuaternion b) => System.Numerics.Quaternion.Dot(a._value, b._value);
+		public static Single Dot(LunyQuaternion a, LunyQuaternion b) => Quaternion.Dot(a._value, b._value);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static LunyQuaternion Slerp(LunyQuaternion a, LunyQuaternion b, Single t) =>
-			new(System.Numerics.Quaternion.Slerp(a._value, b._value, Math.Clamp(t, 0f, 1f)));
+			new(Quaternion.Slerp(a._value, b._value, Math.Clamp(t, 0f, 1f)));
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static LunyQuaternion SlerpUnclamped(LunyQuaternion a, LunyQuaternion b, Single t) =>
-			new(System.Numerics.Quaternion.Slerp(a._value, b._value, t));
+			new(Quaternion.Slerp(a._value, b._value, t));
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static LunyQuaternion Lerp(LunyQuaternion a, LunyQuaternion b, Single t) =>
-			new(System.Numerics.Quaternion.Lerp(a._value, b._value, Math.Clamp(t, 0f, 1f)));
+			new(Quaternion.Lerp(a._value, b._value, Math.Clamp(t, 0f, 1f)));
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static LunyQuaternion LerpUnclamped(LunyQuaternion a, LunyQuaternion b, Single t) =>
-			new(System.Numerics.Quaternion.Lerp(a._value, b._value, t));
+		public static LunyQuaternion LerpUnclamped(LunyQuaternion a, LunyQuaternion b, Single t) => new(Quaternion.Lerp(a._value, b._value, t));
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static LunyQuaternion Inverse(LunyQuaternion rotation) => new(System.Numerics.Quaternion.Inverse(rotation._value));
+		public static LunyQuaternion Inverse(LunyQuaternion rotation) => new(Quaternion.Inverse(rotation._value));
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static LunyQuaternion Conjugate(LunyQuaternion value) => new(System.Numerics.Quaternion.Conjugate(value._value));
+		public static LunyQuaternion Conjugate(LunyQuaternion value) => new(Quaternion.Conjugate(value._value));
 
 		public static Single Angle(LunyQuaternion a, LunyQuaternion b)
 		{
-			var dot = System.Numerics.Quaternion.Dot(a._value, b._value);
+			var dot = Quaternion.Dot(a._value, b._value);
 			return MathF.Acos(Math.Clamp(MathF.Abs(dot), 0f, 1f)) * 2f * (180f / MathF.PI);
 		}
 
@@ -175,9 +184,8 @@ namespace Luny.Engine.Bridge
 			return result;
 		}
 
-		public static LunyQuaternion AngleAxis(Single angle, LunyVector3 axis) =>
-			new(System.Numerics.Quaternion.CreateFromAxisAngle(
-				new System.Numerics.Vector3(axis.X, axis.Y, axis.Z), angle * (MathF.PI / 180f)));
+		public static LunyQuaternion AngleAxis(Single angle, LunyVector3 axis) => new(Quaternion.CreateFromAxisAngle(
+			new Vector3(axis.X, axis.Y, axis.Z), angle * (MathF.PI / 180f)));
 
 		public static LunyQuaternion LookRotation(LunyVector3 forward, LunyVector3 upwards)
 		{
@@ -186,9 +194,15 @@ namespace Luny.Engine.Bridge
 			var r = LunyVector3.Cross(u, f).Normalized;
 			u = LunyVector3.Cross(f, r);
 
-			var m00 = r.X; var m01 = r.Y; var m02 = r.Z;
-			var m10 = u.X; var m11 = u.Y; var m12 = u.Z;
-			var m20 = f.X; var m21 = f.Y; var m22 = f.Z;
+			var m00 = r.X;
+			var m01 = r.Y;
+			var m02 = r.Z;
+			var m10 = u.X;
+			var m11 = u.Y;
+			var m12 = u.Z;
+			var m20 = f.X;
+			var m21 = f.Y;
+			var m22 = f.Z;
 
 			var trace = m00 + m11 + m22;
 			Single x, y, z, w;
@@ -243,23 +257,21 @@ namespace Luny.Engine.Bridge
 		public static LunyVector3 operator *(LunyQuaternion rotation, LunyVector3 point)
 		{
 			var q = rotation._value;
-			var u = new System.Numerics.Vector3(q.X, q.Y, q.Z);
+			var u = new Vector3(q.X, q.Y, q.Z);
 			var s = q.W;
-			var p = new System.Numerics.Vector3(point.X, point.Y, point.Z);
-			var result = 2f * System.Numerics.Vector3.Dot(u, p) * u
-				+ (s * s - System.Numerics.Vector3.Dot(u, u)) * p
-				+ 2f * s * System.Numerics.Vector3.Cross(u, p);
+			var p = new Vector3(point.X, point.Y, point.Z);
+			var result = 2f * Vector3.Dot(u, p) * u
+			             + (s * s - Vector3.Dot(u, u)) * p
+			             + 2f * s * Vector3.Cross(u, p);
 			return new LunyVector3(result.X, result.Y, result.Z);
 		}
 
 		// Operators
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static LunyQuaternion operator *(LunyQuaternion lhs, LunyQuaternion rhs) =>
-			new(System.Numerics.Quaternion.Multiply(lhs._value, rhs._value));
+		public static LunyQuaternion operator *(LunyQuaternion lhs, LunyQuaternion rhs) => new(Quaternion.Multiply(lhs._value, rhs._value));
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static Boolean operator ==(LunyQuaternion lhs, LunyQuaternion rhs) =>
-			MathF.Abs(Dot(lhs, rhs)) > 1f - 1e-06f;
+		public static Boolean operator ==(LunyQuaternion lhs, LunyQuaternion rhs) => MathF.Abs(Dot(lhs, rhs)) > 1f - 1e-06f;
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static Boolean operator !=(LunyQuaternion lhs, LunyQuaternion rhs) => !(lhs == rhs);
@@ -278,7 +290,7 @@ namespace Luny.Engine.Bridge
 		public String ToString(String format) => $"({X.ToString(format)}, {Y.ToString(format)}, {Z.ToString(format)}, {W.ToString(format)})";
 
 		// Internal accessor for engine bridge extensions
-		internal System.Numerics.Quaternion InternalValue
+		internal Quaternion InternalValue
 		{
 			[MethodImpl(MethodImplOptions.AggressiveInlining)] get => _value;
 		}

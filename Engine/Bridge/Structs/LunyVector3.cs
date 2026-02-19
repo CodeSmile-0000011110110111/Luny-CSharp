@@ -1,11 +1,12 @@
 using System;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace Luny.Engine.Bridge
 {
 	public struct LunyVector3 : IEquatable<LunyVector3>
 	{
-		private System.Numerics.Vector3 _value;
+		private Vector3 _value;
 
 		public Single X
 		{
@@ -40,27 +41,34 @@ namespace Luny.Engine.Bridge
 			{
 				switch (index)
 				{
-					case 0: X = value; break;
-					case 1: Y = value; break;
-					case 2: Z = value; break;
-					default: throw new IndexOutOfRangeException($"Invalid {nameof(LunyVector3)} index: {index}");
+					case 0:
+						X = value;
+						break;
+					case 1:
+						Y = value;
+						break;
+					case 2:
+						Z = value;
+						break;
+					default:
+						throw new IndexOutOfRangeException($"Invalid {nameof(LunyVector3)} index: {index}");
 				}
 			}
 		}
 
 		// Constructors
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public LunyVector3(Single x, Single y, Single z) => _value = new System.Numerics.Vector3(x, y, z);
+		public LunyVector3(Single x, Single y, Single z) => _value = new Vector3(x, y, z);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public LunyVector3(Single x, Single y) => _value = new System.Numerics.Vector3(x, y, 0f);
+		public LunyVector3(Single x, Single y) => _value = new Vector3(x, y, 0f);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal LunyVector3(System.Numerics.Vector3 value) => _value = value;
+		internal LunyVector3(Vector3 value) => _value = value;
 
 		// Static properties
-		public static LunyVector3 Zero => new(System.Numerics.Vector3.Zero);
-		public static LunyVector3 One => new(System.Numerics.Vector3.One);
+		public static LunyVector3 Zero => new(Vector3.Zero);
+		public static LunyVector3 One => new(Vector3.One);
 		public static LunyVector3 Up => new(0f, 1f, 0f);
 		public static LunyVector3 Down => new(0f, -1f, 0f);
 		public static LunyVector3 Left => new(-1f, 0f, 0f);
@@ -87,7 +95,7 @@ namespace Luny.Engine.Bridge
 			get
 			{
 				var len = _value.Length();
-				return len > 1e-05f ? new(_value / len) : Zero;
+				return len > 1e-05f ? new LunyVector3(_value / len) : Zero;
 			}
 		}
 
@@ -99,48 +107,46 @@ namespace Luny.Engine.Bridge
 			if (len > 1e-05f)
 				_value /= len;
 			else
-				_value = System.Numerics.Vector3.Zero;
+				_value = Vector3.Zero;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Set(Single newX, Single newY, Single newZ) => _value = new System.Numerics.Vector3(newX, newY, newZ);
+		public void Set(Single newX, Single newY, Single newZ) => _value = new Vector3(newX, newY, newZ);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Scale(LunyVector3 scale) => _value *= scale._value;
 
 		// Static methods
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static Single Dot(LunyVector3 lhs, LunyVector3 rhs) => System.Numerics.Vector3.Dot(lhs._value, rhs._value);
+		public static Single Dot(LunyVector3 lhs, LunyVector3 rhs) => Vector3.Dot(lhs._value, rhs._value);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static LunyVector3 Cross(LunyVector3 lhs, LunyVector3 rhs) => new(System.Numerics.Vector3.Cross(lhs._value, rhs._value));
+		public static LunyVector3 Cross(LunyVector3 lhs, LunyVector3 rhs) => new(Vector3.Cross(lhs._value, rhs._value));
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static Single Distance(LunyVector3 a, LunyVector3 b) => System.Numerics.Vector3.Distance(a._value, b._value);
+		public static Single Distance(LunyVector3 a, LunyVector3 b) => Vector3.Distance(a._value, b._value);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static Single SqrDistance(LunyVector3 a, LunyVector3 b) => System.Numerics.Vector3.DistanceSquared(a._value, b._value);
+		public static Single SqrDistance(LunyVector3 a, LunyVector3 b) => Vector3.DistanceSquared(a._value, b._value);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static LunyVector3 Lerp(LunyVector3 a, LunyVector3 b, Single t) =>
-			new(System.Numerics.Vector3.Lerp(a._value, b._value, Math.Clamp(t, 0f, 1f)));
+		public static LunyVector3 Lerp(LunyVector3 a, LunyVector3 b, Single t) => new(Vector3.Lerp(a._value, b._value, Math.Clamp(t, 0f, 1f)));
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static LunyVector3 LerpUnclamped(LunyVector3 a, LunyVector3 b, Single t) =>
-			new(System.Numerics.Vector3.Lerp(a._value, b._value, t));
+		public static LunyVector3 LerpUnclamped(LunyVector3 a, LunyVector3 b, Single t) => new(Vector3.Lerp(a._value, b._value, t));
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static LunyVector3 Max(LunyVector3 lhs, LunyVector3 rhs) => new(System.Numerics.Vector3.Max(lhs._value, rhs._value));
+		public static LunyVector3 Max(LunyVector3 lhs, LunyVector3 rhs) => new(Vector3.Max(lhs._value, rhs._value));
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static LunyVector3 Min(LunyVector3 lhs, LunyVector3 rhs) => new(System.Numerics.Vector3.Min(lhs._value, rhs._value));
+		public static LunyVector3 Min(LunyVector3 lhs, LunyVector3 rhs) => new(Vector3.Min(lhs._value, rhs._value));
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static LunyVector3 Scale(LunyVector3 a, LunyVector3 b) => new(a._value * b._value);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static LunyVector3 Reflect(LunyVector3 inDirection, LunyVector3 inNormal) =>
-			new(System.Numerics.Vector3.Reflect(inDirection._value, inNormal._value));
+			new(Vector3.Reflect(inDirection._value, inNormal._value));
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static LunyVector3 Normalize(LunyVector3 value) => value.Normalized;
@@ -152,7 +158,7 @@ namespace Luny.Engine.Bridge
 			if (sqrMag > maxLength * maxLength)
 			{
 				var mag = MathF.Sqrt(sqrMag);
-				return new(vector._value / mag * maxLength);
+				return new LunyVector3(vector._value / mag * maxLength);
 			}
 			return vector;
 		}
@@ -164,17 +170,17 @@ namespace Luny.Engine.Bridge
 			if (dist <= maxDistanceDelta || dist < 1e-05f)
 				return target;
 
-			return new(current._value + diff / dist * maxDistanceDelta);
+			return new LunyVector3(current._value + diff / dist * maxDistanceDelta);
 		}
 
 		public static LunyVector3 Project(LunyVector3 vector, LunyVector3 onNormal)
 		{
-			var sqrMag = System.Numerics.Vector3.Dot(onNormal._value, onNormal._value);
+			var sqrMag = Vector3.Dot(onNormal._value, onNormal._value);
 			if (sqrMag < Single.Epsilon)
 				return Zero;
 
-			var dot = System.Numerics.Vector3.Dot(vector._value, onNormal._value);
-			return new(onNormal._value * (dot / sqrMag));
+			var dot = Vector3.Dot(vector._value, onNormal._value);
+			return new LunyVector3(onNormal._value * (dot / sqrMag));
 		}
 
 		public static LunyVector3 ProjectOnPlane(LunyVector3 vector, LunyVector3 planeNormal) =>
@@ -186,7 +192,7 @@ namespace Luny.Engine.Bridge
 			if (denominator < 1e-15f)
 				return 0f;
 
-			var dot = Math.Clamp(System.Numerics.Vector3.Dot(from._value, to._value) / denominator, -1f, 1f);
+			var dot = Math.Clamp(Vector3.Dot(from._value, to._value) / denominator, -1f, 1f);
 			return MathF.Acos(dot) * (180f / MathF.PI);
 		}
 
@@ -243,7 +249,7 @@ namespace Luny.Engine.Bridge
 		public String ToString(String format) => $"({X.ToString(format)}, {Y.ToString(format)}, {Z.ToString(format)})";
 
 		// Internal accessor for engine bridge extensions
-		internal System.Numerics.Vector3 InternalValue
+		internal Vector3 InternalValue
 		{
 			[MethodImpl(MethodImplOptions.AggressiveInlining)] get => _value;
 		}

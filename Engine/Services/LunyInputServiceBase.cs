@@ -96,9 +96,6 @@ namespace Luny.Engine.Services
 		/// <summary>
 		/// Clears per-frame transition flags. Called at the start of each frame via OnServicePreUpdate.
 		/// </summary>
-		protected override void OnServicePostUpdate()
-		{
-			_buttonJustPressed.Clear();
-		}
+		protected override void OnServicePostUpdate() => _buttonJustPressed.Clear();
 	}
 }
