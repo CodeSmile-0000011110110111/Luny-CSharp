@@ -115,7 +115,13 @@ namespace Luny.Engine.Bridge
 		public static LunyVector2 Lerp(LunyVector2 a, LunyVector2 b, Single t) => new(Vector2.Lerp(a._value, b._value, Math.Clamp(t, 0f, 1f)));
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static LunyVector2 Lerp(LunyVector2 a, LunyVector2 b, Double t) => Lerp(a, b, (Single)t);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static LunyVector2 LerpUnclamped(LunyVector2 a, LunyVector2 b, Single t) => new(Vector2.Lerp(a._value, b._value, t));
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static LunyVector2 LerpUnclamped(LunyVector2 a, LunyVector2 b, Double t) => LerpUnclamped(a, b, (Single)t);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static LunyVector2 Max(LunyVector2 lhs, LunyVector2 rhs) => new(Vector2.Max(lhs._value, rhs._value));
@@ -145,6 +151,9 @@ namespace Luny.Engine.Bridge
 			return vector;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static LunyVector2 ClampMagnitude(LunyVector2 vector, Double maxLength) => ClampMagnitude(vector, (Single)maxLength);
+
 		public static LunyVector2 MoveTowards(LunyVector2 current, LunyVector2 target, Single maxDistanceDelta)
 		{
 			var diff = target._value - current._value;
@@ -154,6 +163,9 @@ namespace Luny.Engine.Bridge
 
 			return new LunyVector2(current._value + diff / dist * maxDistanceDelta);
 		}
+
+		public static LunyVector2 MoveTowards(LunyVector2 current, LunyVector2 target, Double maxDistanceDelta) =>
+			MoveTowards(current, target, (Single)maxDistanceDelta);
 
 		public static LunyVector2 Perpendicular(LunyVector2 inDirection) => new(-inDirection.Y, inDirection.X);
 
@@ -192,13 +204,22 @@ namespace Luny.Engine.Bridge
 		public static LunyVector2 operator *(LunyVector2 a, Single d) => new(a._value * d);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static LunyVector2 operator *(LunyVector2 a, Double d) => new(a._value * (Single)d);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static LunyVector2 operator *(Single d, LunyVector2 a) => new(a._value * d);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static LunyVector2 operator *(Double d, LunyVector2 a) => new(a._value * (Single)d);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static LunyVector2 operator *(LunyVector2 a, LunyVector2 b) => new(a._value * b._value);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static LunyVector2 operator /(LunyVector2 a, Single d) => new(a._value / d);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static LunyVector2 operator /(LunyVector2 a, Double d) => new(a._value / (Single)d);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static LunyVector2 operator /(LunyVector2 a, LunyVector2 b) => new(a._value / b._value);
