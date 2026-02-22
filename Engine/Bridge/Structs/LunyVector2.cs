@@ -51,6 +51,9 @@ namespace Luny.Engine.Bridge
 		public LunyVector2(Single x, Single y) => _value = new Vector2(x, y);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public LunyVector2(Double x, Double y) => _value = new Vector2((Single)x, (Single)y);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal LunyVector2(Vector2 value) => _value = value;
 
 		// Static properties
@@ -239,7 +242,7 @@ namespace Luny.Engine.Bridge
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public override Int32 GetHashCode() => _value.GetHashCode();
 
-		public override String ToString() => $"({X:F1}, {Y:F1})";
+		public override String ToString() => $"({X:0.###}, {Y:0.###})";
 
 		public String ToString(String format) => $"({X.ToString(format)}, {Y.ToString(format)})";
 

@@ -61,7 +61,13 @@ namespace Luny.Engine.Bridge
 		public LunyVector3(Single x, Single y, Single z) => _value = new Vector3(x, y, z);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public LunyVector3(Double x, Double y, Double z) => _value = new Vector3((Single)x, (Single)y, (Single)z);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public LunyVector3(Single x, Single y) => _value = new Vector3(x, y, 0f);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public LunyVector3(Double x, Double y) => _value = new Vector3((Single)x, (Single)y, 0f);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal LunyVector3(Vector3 value) => _value = value;
@@ -253,7 +259,7 @@ namespace Luny.Engine.Bridge
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public override Int32 GetHashCode() => _value.GetHashCode();
 
-		public override String ToString() => $"({X:F1}, {Y:F1}, {Z:F1})";
+		public override String ToString() => $"({X:0.###}, {Y:0.###}, {Z:0.###})";
 
 		public String ToString(String format) => $"({X.ToString(format)}, {Y.ToString(format)}, {Z.ToString(format)})";
 
