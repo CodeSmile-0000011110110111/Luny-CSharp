@@ -189,6 +189,9 @@ namespace Luny.Engine.Bridge
 
 		public static LunyQuaternion LookRotation(LunyVector3 forward, LunyVector3 upwards)
 		{
+			if (forward == LunyVector3.Zero || upwards == LunyVector3.Zero)
+				return Identity;
+
 			var f = forward.Normalized;
 			var u = upwards.Normalized;
 			var r = LunyVector3.Cross(u, f).Normalized;

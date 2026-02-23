@@ -75,7 +75,7 @@ namespace Luny.Engine.Bridge
 		// Static properties
 		public static LunyVector3 Zero => new(Vector3.Zero);
 		public static LunyVector3 One => new(Vector3.One);
-		public static LunyVector3 Up => new(0f, 1f, 0f);
+		public static LunyVector3 Up = new(0f, 1f, 0f);
 		public static LunyVector3 Down => new(0f, -1f, 0f);
 		public static LunyVector3 Left => new(-1f, 0f, 0f);
 		public static LunyVector3 Right => new(1f, 0f, 0f);
@@ -269,7 +269,7 @@ namespace Luny.Engine.Bridge
 
 		// Equality
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public Boolean Equals(LunyVector3 other) => _value.Equals(other._value);
+		public Boolean Equals(LunyVector3 other) => (_value - other._value).LengthSquared() < 9.99999944e-11f;
 
 		public override Boolean Equals(Object obj) => obj is LunyVector3 other && Equals(other);
 

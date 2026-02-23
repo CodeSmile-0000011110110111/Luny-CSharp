@@ -29,6 +29,7 @@ namespace Luny
 			Struct,
 			Vector2,
 			Vector3,
+			Quaternion,
 		}
 
 		private const String DefaultName = "(N/A)";
@@ -115,12 +116,37 @@ namespace Luny
 				: throw new NotSupportedException($"Unsupported Type: {value.GetType().Name}"),
 		};
 
+		public static Variable FromVector2(LunyVector2 value) => new(value, ValueType.Vector2);
+		public static Variable FromVector3(LunyVector3 value) => new(value, ValueType.Vector3);
+		public static Variable FromQuaternion(LunyQuaternion value) => new(value, ValueType.Quaternion);
+
 		public Boolean AsBoolean() => IsTrue;
 		public Number AsNumber() => _type == ValueType.Number ? _numValue : 0.0;
 		public Double AsDouble() => _type == ValueType.Number ? _numValue : 0.0;
 		public Single AsSingle() => _type == ValueType.Number ? (Single)_numValue : 0f;
 		public Int64 AsInt64() => _type == ValueType.Number ? (Int64)_numValue : 0L;
 		public Int32 AsInt32() => _type == ValueType.Number ? (Int32)_numValue : 0;
+		public LunyVector2 AsVector2() => _type == ValueType.Vector2 && _refValue is LunyVector2 v2 ? v2 : default;
+		public LunyVector3 AsVector3() => _type == ValueType.Vector3 && _refValue is LunyVector3 v3 ? v3 : default;
+
+		public LunyQuaternion AsQuaternion()
+		{
+			switch (_type)
+			{
+				case ValueType.Vector2:
+				{
+					var v2 = AsVector2();
+					return LunyQuaternion.Euler(v2.X, 0f, v2.Y);
+				}
+				case ValueType.Vector3:
+				{
+					var v3 = AsVector3();
+					return LunyQuaternion.Euler(v3);
+				}
+				default:
+					throw new NotSupportedException($"{nameof(AsQuaternion)}: Unsupported input type: {_type}");
+			}
+		}
 
 		public String AsString() => _type switch
 		{
@@ -132,12 +158,6 @@ namespace Luny
 			ValueType.Vector3 => _refValue?.ToString() ?? LunyVector3.Zero.ToString(),
 			var _ => throw new ArgumentOutOfRangeException(_type.ToString()),
 		};
-
-		public LunyVector2 AsVector2() => _type == ValueType.Vector2 && _refValue is LunyVector2 v2 ? v2 : default;
-		public LunyVector3 AsVector3() => _type == ValueType.Vector3 && _refValue is LunyVector3 v3 ? v3 : default;
-
-		public static Variable FromVector2(LunyVector2 value) => new(value, ValueType.Vector2);
-		public static Variable FromVector3(LunyVector3 value) => new(value, ValueType.Vector3);
 
 		public T As<T>()
 		{

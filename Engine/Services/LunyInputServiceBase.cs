@@ -18,9 +18,19 @@ namespace Luny.Engine.Services
 		event Action<LunyInputEvent> OnInputAction;
 
 		/// <summary>
-		/// Gets last known axis value for the named action.
+		/// Gets last known axis vector for the named action.
 		/// </summary>
 		LunyVector2 GetDirection(String actionName);
+
+		/// <summary>
+		/// Gets last known axis vector as rotation (quaternion). Assumes positive Y is up vector.
+		/// </summary>
+		LunyQuaternion GetRotation(String actionName);
+
+		/// <summary>
+		/// Gets last known axis vector as rotation (quaternion) with custom up vector.
+		/// </summary>
+		LunyQuaternion GetRotation(String actionName, LunyVector3 worldUp);
 
 		/// <summary>
 		/// Gets the analog trigger value (0.0–1.0) for the named button action.
@@ -54,6 +64,23 @@ namespace Luny.Engine.Services
 		private readonly Dictionary<String, Boolean> _buttonJustPressed = new();
 
 		public LunyVector2 GetDirection(String actionName) => _directionVectors.TryGetValue(actionName, out var v) ? v : default;
+
+		public LunyQuaternion GetRotation(String actionName)
+		{
+			if (_directionVectors.TryGetValue(actionName, out var v) && v != LunyVector2.Zero)
+				return LunyQuaternion.Euler(v.X, 0f, v.Y);
+			else
+				return LunyQuaternion.Identity;
+		}
+
+		public LunyQuaternion GetRotation(String actionName, LunyVector3 worldUp)
+		{
+			if (_directionVectors.TryGetValue(actionName, out var v) && v != LunyVector2.Zero)
+				return LunyQuaternion.LookRotation(new LunyVector3(v.X, 0f, v.Y), worldUp);
+			else
+				return LunyQuaternion.Identity;
+		}
+
 		public Single GetAxis(String actionName) => _axisValues.TryGetValue(actionName, out var v) ? v : 0f;
 		public Single GetButtonStrength(String actionName) => _buttonStrengthValues.TryGetValue(actionName, out var v) ? v : 0f;
 		public Boolean GetButtonPressed(String actionName) => _buttonPressed.TryGetValue(actionName, out var v) && v;
