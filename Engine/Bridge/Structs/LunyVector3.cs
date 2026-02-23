@@ -141,6 +141,23 @@ namespace Luny.Engine.Bridge
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static LunyVector3 LerpUnclamped(LunyVector3 a, LunyVector3 b, Single t) => new(Vector3.Lerp(a._value, b._value, t));
 
+		public static LunyVector3 Slerp(LunyVector3 a, LunyVector3 b, Single t)
+		{
+			t = Math.Clamp(t, 0f, 1f);
+			var dot = Math.Clamp(Vector3.Dot(Vector3.Normalize(a._value), Vector3.Normalize(b._value)), -1f, 1f);
+			var theta = MathF.Acos(dot) * t;
+			var relativeVec = Vector3.Normalize(b._value - a._value * dot);
+			return new LunyVector3(a._value * MathF.Cos(theta) + relativeVec * MathF.Sin(theta));
+		}
+
+		public static LunyVector3 SlerpUnclamped(LunyVector3 a, LunyVector3 b, Single t)
+		{
+			var dot = Math.Clamp(Vector3.Dot(Vector3.Normalize(a._value), Vector3.Normalize(b._value)), -1f, 1f);
+			var theta = MathF.Acos(dot) * t;
+			var relativeVec = Vector3.Normalize(b._value - a._value * dot);
+			return new LunyVector3(a._value * MathF.Cos(theta) + relativeVec * MathF.Sin(theta));
+		}
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static LunyVector3 Max(LunyVector3 lhs, LunyVector3 rhs) => new(Vector3.Max(lhs._value, rhs._value));
 
