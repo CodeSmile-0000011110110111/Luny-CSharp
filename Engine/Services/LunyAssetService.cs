@@ -40,7 +40,7 @@ namespace Luny.Engine.Services
 			var agnosticPath = path.AgnosticPath;
 			if (TryGetCached(agnosticPath, out T cachedAsset))
 			{
-				LunyLogger.LogInfo($"CACHED: {cachedAsset}", this);
+				LunyLogger.LogInfo($"Skip load, asset already cached: {cachedAsset}", this);
 				return cachedAsset;
 			}
 
@@ -48,11 +48,10 @@ namespace Luny.Engine.Services
 			var loadedAsset = TryLoadWithTieredLookup<T>(path);
 			if (loadedAsset == null)
 			{
-				LunyLogger.LogWarning($"Asset not found: '{agnosticPath}' (type: {typeof(T).Name}) => using placeholder", this);
 				loadedAsset = GetPlaceholder<T>(path);
+				LunyLogger.LogWarning($"Asset not found: '{agnosticPath}' (type: {typeof(T).Name}) => using placeholder: {loadedAsset}", this);
 			}
 
-			LunyLogger.LogInfo($"LOADED: {loadedAsset}", this);
 			AddToCache(loadedAsset, agnosticPath);
 			return loadedAsset;
 		}

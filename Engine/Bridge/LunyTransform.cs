@@ -9,6 +9,8 @@ namespace Luny.Engine.Bridge
 	/// </summary>
 	public abstract class LunyTransform
 	{
+		public abstract Object NativeObject { get; }
+
 		public abstract LunyVector3 Position { get; set; }
 		public abstract LunyQuaternion Rotation { get; set; }
 		public abstract LunyVector3 EulerAngles { get; set; }
