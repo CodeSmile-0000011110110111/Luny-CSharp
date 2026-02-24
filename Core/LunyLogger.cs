@@ -8,7 +8,9 @@ namespace Luny
 {
 	public interface ILunyLogger
 	{
-		// TODO: add overloads accepting an object
+		void LogInfo(Object obj);
+		void LogWarning(Object obj);
+		void LogError(Object obj);
 		void LogInfo(String message);
 		void LogWarning(String message);
 		void LogError(String message);
@@ -69,6 +71,7 @@ namespace Luny
 	/// </summary>
 	public static class LunyLogger
 	{
+		private const String Null = "<null>";
 		private static readonly ILunyLogger _consoleLogger = new ConsoleLogger();
 		private static ILunyLogger _logger = _consoleLogger;
 
@@ -85,6 +88,15 @@ namespace Luny
 		/// in an internal list with frame/time information. Useful for in-game console, file logging, etc.
 		/// </summary>
 		public static Boolean EnableInternalLogging { get; set; }
+
+		public static void LogInfo(Object obj, Object context = null) =>
+			LogMessage(obj != null ? obj.ToString() : Null, LogLevel.Info, context);
+
+		public static void LogWarning(Object obj, Object context = null) =>
+			LogMessage(obj != null ? obj.ToString() : Null, LogLevel.Warning, context);
+
+		public static void LogError(Object obj, Object context = null) =>
+			LogMessage(obj != null ? obj.ToString() : Null, LogLevel.Error, context);
 
 		public static void LogInfo(String message, Object context = null) => LogMessage(message, LogLevel.Info, context);
 		public static void LogWarning(String message, Object context = null) => LogMessage(message, LogLevel.Warning, context);
@@ -185,6 +197,9 @@ namespace Luny
 
 		private sealed class ConsoleLogger : ILunyLogger
 		{
+			public void LogInfo(Object obj) => LogInfo(obj != null ? obj.ToString() : Null);
+			public void LogWarning(Object obj) => LogWarning(obj != null ? obj.ToString() : Null);
+			public void LogError(Object obj) => LogError(obj != null ? obj.ToString() : Null);
 			public void LogInfo(String message) => Console.WriteLine(message);
 			public void LogWarning(String message) => Console.WriteLine($"[WARN] {message}");
 			public void LogError(String message) => Console.WriteLine($"[ERROR] {message}");

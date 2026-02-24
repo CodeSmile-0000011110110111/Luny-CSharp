@@ -51,6 +51,12 @@ namespace Luny.Engine.Services
 		/// Returns a button's pressed strength. Used by triggers configured to act like buttons.
 		/// </summary>
 		Single GetButtonStrength(String actionName);
+
+		/// <summary>
+		/// Activate a given control scheme eg "Gamepad" or "Keyboard&Mouse" to prevent other device input from coming through.
+		/// </summary>
+		/// <param name="schemeName"></param>
+		void SetControlScheme(String schemeName);
 	}
 
 	public abstract class LunyInputServiceBase : LunyEngineServiceBase, ILunyInputService
@@ -69,22 +75,24 @@ namespace Luny.Engine.Services
 		{
 			if (_directionVectors.TryGetValue(actionName, out var v) && v != LunyVector2.Zero)
 				return LunyQuaternion.Euler(v.X, 0f, v.Y);
-			else
-				return LunyQuaternion.Identity;
+
+			return LunyQuaternion.Identity;
 		}
 
 		public LunyQuaternion GetRotation(String actionName, LunyVector3 worldUp)
 		{
 			if (_directionVectors.TryGetValue(actionName, out var v) && v != LunyVector2.Zero)
 				return LunyQuaternion.LookRotation(new LunyVector3(v.X, 0f, v.Y), worldUp);
-			else
-				return LunyQuaternion.Identity;
+
+			return LunyQuaternion.Identity;
 		}
 
 		public Single GetAxis(String actionName) => _axisValues.TryGetValue(actionName, out var v) ? v : 0f;
 		public Single GetButtonStrength(String actionName) => _buttonStrengthValues.TryGetValue(actionName, out var v) ? v : 0f;
 		public Boolean GetButtonPressed(String actionName) => _buttonPressed.TryGetValue(actionName, out var v) && v;
 		public Boolean GetButtonJustPressed(String actionName) => _buttonJustPressed.TryGetValue(actionName, out var v) && v;
+
+		public abstract void SetControlScheme(String schemeName);
 
 		protected void SetDirectionalInput(String actionName, LunyVector2 value)
 		{
