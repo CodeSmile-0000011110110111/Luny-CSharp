@@ -1,3 +1,4 @@
+using Luny.Engine.Bridge.Physics;
 using Luny.Engine.Registries;
 using Luny.Exceptions;
 using System;
@@ -65,6 +66,19 @@ namespace Luny.Engine.Bridge
 		/// </summary>
 		public event Action OnDisable;
 
+		public event Action<LunyCollision> OnCollisionStarted;
+		public event Action<LunyCollision> OnCollisionEnded;
+		public event Action<LunyCollision> OnColliding;
+		public event Action OnTriggerEntered;
+		public event Action OnTriggerExited;
+		public event Action OnTriggering;
+		public event Action<LunyCollision2D> OnCollisionStarted2D;
+		public event Action<LunyCollision2D> OnCollisionEnded2D;
+		public event Action<LunyCollision2D> OnColliding2D;
+		public event Action OnTriggerEntered2D;
+		public event Action OnTriggerExited2D;
+		public event Action OnTriggering2D;
+
 		/// <summary>
 		/// LunyScript-specific unique, immutable identifier. This ID is distinct from engine's native object ID!
 		/// </summary>
@@ -83,6 +97,10 @@ namespace Luny.Engine.Bridge
 		/// The transform of this object.
 		/// </summary>
 		LunyTransform Transform { get; }
+		/// <summary>
+		/// The current Collision instance. Only valid during a collision event, otherwise null.
+		/// </summary>
+		LunyCollision Collision { get; }
 		/// <summary>
 		/// The name of the object in the scene hierarchy.
 		/// </summary>
@@ -161,12 +179,25 @@ namespace Luny.Engine.Bridge
 		public event Action OnReady;
 		public event Action OnEnable;
 		public event Action OnDisable;
+		public event Action<LunyCollision> OnCollisionStarted;
+		public event Action<LunyCollision> OnCollisionEnded;
+		public event Action<LunyCollision> OnColliding;
+		public event Action OnTriggerEntered;
+		public event Action OnTriggerExited;
+		public event Action OnTriggering;
+		public event Action<LunyCollision2D> OnCollisionStarted2D;
+		public event Action<LunyCollision2D> OnCollisionEnded2D;
+		public event Action<LunyCollision2D> OnColliding2D;
+		public event Action OnTriggerEntered2D;
+		public event Action OnTriggerExited2D;
+		public event Action OnTriggering2D;
 
 		private readonly LunyObjectID _lunyObjectID;
 		private readonly LunyNativeObjectID _nativeObjectID;
 		private SystemObject _nativeObject;
 		private LunyTransform _transform;
 		private ObjectState _state;
+		private LunyCollision _currentCollision;
 
 		[NotNull] private static ILunyObjectLifecycleInternal Lifecycle => ((ILunyEngineInternal)LunyEngine.Instance).ObjectLifecycle;
 		[NotNull] private static ILunyObjectRegistryInternal Objects => (ILunyObjectRegistryInternal)LunyEngine.Instance.Objects;
@@ -222,6 +253,8 @@ namespace Luny.Engine.Bridge
 			}
 		}
 
+		public LunyCollision Collision => _currentCollision;
+
 		private LunyObject() {} // Hidden ctor
 
 		/// <summary>
@@ -276,13 +309,9 @@ namespace Luny.Engine.Bridge
 			if (_state.IsEnabled)
 				SetEnabledState(false);
 
-			OnDestroy?.Invoke();
-
-			OnCreate = null;
-			OnDestroy = null;
-			OnEnable = null;
-			OnDisable = null;
-			OnReady = null;
+			var onDestroyEvent = OnDestroy;
+			ClearObjectEvents();
+			onDestroyEvent?.Invoke();
 
 			if (_nativeObject != null)
 				Lifecycle.ScheduleNativeObjectDestruction(this);
@@ -290,6 +319,27 @@ namespace Luny.Engine.Bridge
 				DestroyNativeObjectInternal(); // to satisfy the pattern (suppress finalizer)
 
 			Objects.Unregister(this);
+		}
+
+		private void ClearObjectEvents()
+		{
+			OnCreate = null;
+			OnEnable = null;
+			OnDisable = null;
+			OnReady = null;
+			OnDestroy = null;
+			OnCollisionStarted = null;
+			OnCollisionEnded = null;
+			OnColliding = null;
+			OnTriggerEntered = null;
+			OnTriggerExited = null;
+			OnTriggering = null;
+			OnCollisionStarted2D = null;
+			OnCollisionEnded2D = null;
+			OnColliding2D = null;
+			OnTriggerEntered2D = null;
+			OnTriggerExited2D = null;
+			OnTriggering2D = null;
 		}
 
 		// Should only be called internally by LunyObjectLifecycleManager from pending destroy queue processing
@@ -300,7 +350,7 @@ namespace Luny.Engine.Bridge
 
 			if (_nativeObject != null)
 			{
-				LunyLogger.LogInfo($"Destroying native object: {_nativeObject}", this);
+				//LunyLogger.LogInfo($"Destroying native object: {_nativeObject}", this);
 				DestroyNativeObject();
 				_nativeObject = null;
 			}
@@ -308,7 +358,7 @@ namespace Luny.Engine.Bridge
 			_state.IsDestroyed = true;
 			GC.SuppressFinalize(this);
 
-			LunyLogger.LogInfo($"Destroyed: {this} ({GetHashCode()})", this);
+			//LunyLogger.LogInfo($"Destroyed: {this} ({GetHashCode()})", this);
 		}
 
 		~LunyObject() => LunyTraceLogger.LogInfoFinalized(this);
@@ -492,6 +542,27 @@ namespace Luny.Engine.Bridge
 						sb.Append("|");
 				}
 			}
+		}
+
+		public void InvokeOnCollisionStarted(LunyCollision collision)
+		{
+			_currentCollision = collision;
+			OnCollisionStarted?.Invoke(collision);
+			_currentCollision = null;
+		}
+
+		public void InvokeOnCollisionEnded(LunyCollision collision)
+		{
+			_currentCollision = collision;
+			OnCollisionEnded?.Invoke(collision);
+			_currentCollision = null;
+		}
+
+		public void InvokeOnColliding(LunyCollision collision)
+		{
+			_currentCollision = collision;
+			OnColliding?.Invoke(collision);
+			_currentCollision = null;
 		}
 	}
 }

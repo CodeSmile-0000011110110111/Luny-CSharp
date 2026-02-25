@@ -40,7 +40,7 @@ namespace Luny.Engine.Services
 			var agnosticPath = path.AgnosticPath;
 			if (TryGetCached(agnosticPath, out T cachedAsset))
 			{
-				LunyLogger.LogInfo($"Skip load, asset already cached: {cachedAsset}", this);
+				//LunyLogger.LogInfo($"Skip load, asset already cached: {cachedAsset}", this);
 				return cachedAsset;
 			}
 

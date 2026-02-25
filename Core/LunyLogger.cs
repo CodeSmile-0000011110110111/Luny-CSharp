@@ -89,18 +89,25 @@ namespace Luny
 		/// </summary>
 		public static Boolean EnableInternalLogging { get; set; }
 
+		[DebuggerHidden]
 		public static void LogInfo(Object obj, Object context = null) =>
 			LogMessage(obj != null ? obj.ToString() : Null, LogLevel.Info, context);
 
+		[DebuggerHidden]
 		public static void LogWarning(Object obj, Object context = null) =>
 			LogMessage(obj != null ? obj.ToString() : Null, LogLevel.Warning, context);
 
+		[DebuggerHidden]
 		public static void LogError(Object obj, Object context = null) =>
 			LogMessage(obj != null ? obj.ToString() : Null, LogLevel.Error, context);
 
+		[DebuggerHidden]
 		public static void LogInfo(String message, Object context = null) => LogMessage(message, LogLevel.Info, context);
+		[DebuggerHidden]
 		public static void LogWarning(String message, Object context = null) => LogMessage(message, LogLevel.Warning, context);
+		[DebuggerHidden]
 		public static void LogError(String message, Object context = null) => LogMessage(message, LogLevel.Error, context);
+		[DebuggerHidden]
 		public static void LogException(Exception exception, Object context = null) => LogMessage(null, LogLevel.Exception, context, exception);
 
 		/// <summary>
@@ -126,6 +133,7 @@ namespace Luny
 				writer.WriteLine(entry.ToString());
 		}
 
+		[DebuggerHidden]
 		private static void LogMessage(String message, LogLevel logLevel, Object context = null, Exception exception = null)
 		{
 			var time = LunyEngine.Instance?.Time;
@@ -151,6 +159,7 @@ namespace Luny
 			}
 		}
 
+		[DebuggerHidden]
 		private static String FormatWithContext(String message, Object context = null, ILunyTimeService time = null)
 		{
 			var prefix = context switch
@@ -165,6 +174,7 @@ namespace Luny
 			return $"{frameCount}{prefix}{message}";
 		}
 
+		[DebuggerHidden]
 		private static void RecordInternalLog(LogLevel level, String message, Object context = null, ILunyTimeService time = null)
 		{
 			if (!EnableInternalLogging)

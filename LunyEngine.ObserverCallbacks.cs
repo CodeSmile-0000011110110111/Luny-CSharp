@@ -31,7 +31,7 @@ namespace Luny
 				catch (Exception e)
 				{
 					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnEngineSceneUnloaded, e);
-					//LunyLogger.LogException(e);
+					LunyLogger.LogException(e);
 					throw;
 				}
 				finally
@@ -53,7 +53,7 @@ namespace Luny
 				catch (Exception e)
 				{
 					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnEngineSceneLoaded, e);
-					//LunyLogger.LogException(e);
+					LunyLogger.LogException(e);
 					throw;
 				}
 				finally
@@ -69,7 +69,7 @@ namespace Luny
 
 		private void InvokeObserversOnObjectRegistered(ILunyObject lunyObject)
 		{
-			LunyLogger.LogInfo($"Registered: {lunyObject}", this);
+			//LunyLogger.LogInfo($"Registered: {lunyObject}", this);
 
 			foreach (var observer in _observerRegistry.EnabledObservers)
 			{
@@ -81,7 +81,7 @@ namespace Luny
 				catch (Exception e)
 				{
 					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnObjectCreated, e);
-					//LunyLogger.LogException(e);
+					LunyLogger.LogException(e);
 					throw;
 				}
 				finally
@@ -93,7 +93,7 @@ namespace Luny
 
 		private void InvokeObserversOnObjectUnregistered(ILunyObject lunyObject)
 		{
-			LunyLogger.LogInfo($"Unregistered: {lunyObject}", this);
+			//LunyLogger.LogInfo($"Unregistered: {lunyObject}", this);
 
 			foreach (var observer in _observerRegistry.EnabledObservers)
 			{
@@ -105,7 +105,7 @@ namespace Luny
 				catch (Exception e)
 				{
 					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnObjectDestroyed, e);
-					//LunyLogger.LogException(e);
+					LunyLogger.LogException(e);
 					throw;
 				}
 				finally
