@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 
 namespace Luny.Engine.Bridge.Physics
 {
-	public sealed class LunyCollision
+	public sealed class LunyCollider
 	{
 		public Object NativeObject { get; set; }
 

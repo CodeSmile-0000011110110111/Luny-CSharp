@@ -4,7 +4,7 @@ namespace Luny.Engine.Bridge
 	{
 		OnTriggerEntered,
 		OnTriggerExited,
-		OnTriggering,
+		OnTriggerUpdate,
 	}
 
 	public enum LunyTrigger2DEvent

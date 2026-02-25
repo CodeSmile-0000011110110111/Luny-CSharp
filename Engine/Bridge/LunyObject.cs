@@ -69,15 +69,15 @@ namespace Luny.Engine.Bridge
 		public event Action<LunyCollision> OnCollisionStarted;
 		public event Action<LunyCollision> OnCollisionEnded;
 		public event Action<LunyCollision> OnColliding;
-		public event Action OnTriggerEntered;
-		public event Action OnTriggerExited;
-		public event Action OnTriggering;
+		public event Action<LunyCollider> OnTriggerEntered;
+		public event Action<LunyCollider> OnTriggerExited;
+		public event Action<LunyCollider> OnTriggering;
 		public event Action<LunyCollision2D> OnCollisionStarted2D;
 		public event Action<LunyCollision2D> OnCollisionEnded2D;
 		public event Action<LunyCollision2D> OnColliding2D;
-		public event Action OnTriggerEntered2D;
-		public event Action OnTriggerExited2D;
-		public event Action OnTriggering2D;
+		public event Action<LunyCollider2D> OnTriggerEntered2D;
+		public event Action<LunyCollider2D> OnTriggerExited2D;
+		public event Action<LunyCollider2D> OnTriggering2D;
 
 		/// <summary>
 		/// LunyScript-specific unique, immutable identifier. This ID is distinct from engine's native object ID!
@@ -97,10 +97,6 @@ namespace Luny.Engine.Bridge
 		/// The transform of this object.
 		/// </summary>
 		LunyTransform Transform { get; }
-		/// <summary>
-		/// The current Collision instance. Only valid during a collision event, otherwise null.
-		/// </summary>
-		LunyCollision Collision { get; }
 		/// <summary>
 		/// The name of the object in the scene hierarchy.
 		/// </summary>
@@ -182,22 +178,21 @@ namespace Luny.Engine.Bridge
 		public event Action<LunyCollision> OnCollisionStarted;
 		public event Action<LunyCollision> OnCollisionEnded;
 		public event Action<LunyCollision> OnColliding;
-		public event Action OnTriggerEntered;
-		public event Action OnTriggerExited;
-		public event Action OnTriggering;
+		public event Action<LunyCollider> OnTriggerEntered;
+		public event Action<LunyCollider> OnTriggerExited;
+		public event Action<LunyCollider> OnTriggering;
 		public event Action<LunyCollision2D> OnCollisionStarted2D;
 		public event Action<LunyCollision2D> OnCollisionEnded2D;
 		public event Action<LunyCollision2D> OnColliding2D;
-		public event Action OnTriggerEntered2D;
-		public event Action OnTriggerExited2D;
-		public event Action OnTriggering2D;
+		public event Action<LunyCollider2D> OnTriggerEntered2D;
+		public event Action<LunyCollider2D> OnTriggerExited2D;
+		public event Action<LunyCollider2D> OnTriggering2D;
 
 		private readonly LunyObjectID _lunyObjectID;
 		private readonly LunyNativeObjectID _nativeObjectID;
 		private SystemObject _nativeObject;
 		private LunyTransform _transform;
 		private ObjectState _state;
-		private LunyCollision _currentCollision;
 
 		[NotNull] private static ILunyObjectLifecycleInternal Lifecycle => ((ILunyEngineInternal)LunyEngine.Instance).ObjectLifecycle;
 		[NotNull] private static ILunyObjectRegistryInternal Objects => (ILunyObjectRegistryInternal)LunyEngine.Instance.Objects;
@@ -252,8 +247,6 @@ namespace Luny.Engine.Bridge
 					SetVisibleState(value);
 			}
 		}
-
-		public LunyCollision Collision => _currentCollision;
 
 		private LunyObject() {} // Hidden ctor
 
@@ -544,25 +537,35 @@ namespace Luny.Engine.Bridge
 			}
 		}
 
+
 		public void InvokeOnCollisionStarted(LunyCollision collision)
 		{
-			_currentCollision = collision;
 			OnCollisionStarted?.Invoke(collision);
-			_currentCollision = null;
 		}
 
 		public void InvokeOnCollisionEnded(LunyCollision collision)
 		{
-			_currentCollision = collision;
 			OnCollisionEnded?.Invoke(collision);
-			_currentCollision = null;
 		}
 
 		public void InvokeOnColliding(LunyCollision collision)
 		{
-			_currentCollision = collision;
 			OnColliding?.Invoke(collision);
-			_currentCollision = null;
+		}
+
+		public void InvokeOnTriggerEntered(LunyCollider collider)
+		{
+			OnTriggerEntered?.Invoke(collider);
+		}
+
+		public void InvokeOnTriggerExited(LunyCollider collider)
+		{
+			OnTriggerExited?.Invoke(collider);
+		}
+
+		public void InvokeOnTriggering(LunyCollider collider)
+		{
+			OnTriggering?.Invoke(collider);
 		}
 	}
 }
