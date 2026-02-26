@@ -293,7 +293,7 @@ namespace Luny.Engine.Bridge
 			if (_state.IsDestroying || _state.IsDestroyed)
 				return;
 
-			LunyLogger.LogInfo($"Destroying ... {this} ({GetHashCode()})", this);
+			//LunyLogger.LogInfo($"Destroying ... {this} ({GetHashCode()})", this);
 
 			// prevents re-entry from other On.Disabled/On.Destroyed event blocks which might run Object.Destroy()
 			_state.IsDestroying = true;

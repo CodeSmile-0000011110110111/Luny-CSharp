@@ -31,7 +31,7 @@ namespace Luny
 				catch (Exception e)
 				{
 					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnEngineSceneUnloaded, e);
-					LunyLogger.LogException(e);
+					//LunyLogger.LogException(e);
 					throw;
 				}
 				finally
@@ -53,7 +53,7 @@ namespace Luny
 				catch (Exception e)
 				{
 					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnEngineSceneLoaded, e);
-					LunyLogger.LogException(e);
+					//LunyLogger.LogException(e);
 					throw;
 				}
 				finally
@@ -81,7 +81,7 @@ namespace Luny
 				catch (Exception e)
 				{
 					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnObjectCreated, e);
-					LunyLogger.LogException(e);
+					//LunyLogger.LogException(e);
 					throw;
 				}
 				finally
@@ -105,7 +105,7 @@ namespace Luny
 				catch (Exception e)
 				{
 					_profiler.RecordError(observer, LunyEngineLifecycleEvents.OnObjectDestroyed, e);
-					LunyLogger.LogException(e);
+					//LunyLogger.LogException(e);
 					throw;
 				}
 				finally
