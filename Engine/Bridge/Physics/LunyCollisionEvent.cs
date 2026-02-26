@@ -1,4 +1,4 @@
-﻿namespace Luny.Engine.Bridge
+﻿namespace Luny.Engine.Bridge.Physics
 {
 	public enum LunyCollisionEvent
 	{
@@ -9,8 +9,8 @@
 
 	public enum LunyCollision2DEvent
 	{
-		OnCollisionStarted2D,
-		OnCollisionEnded2D,
-		OnColliding2D,
+		OnCollisionEntered2D,
+		OnCollisionExited2D,
+		OnCollisionUpdate2D,
 	}
 }

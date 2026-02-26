@@ -2,14 +2,14 @@
 
 namespace Luny.Engine.Bridge.Physics
 {
-	public sealed class LunyCollision
+	public abstract class LunyCollision
 	{
 		public Object NativeObject { get; set; }
 
-		public String Tag => throw new NotImplementedException();
-		public String Name => throw new NotImplementedException();
-		public String LayerName => throw new NotImplementedException();
-		public Int32 LayerIndex => throw new NotImplementedException();
-		public Boolean HasComponent(Type type) => throw new NotImplementedException();
+		public abstract String Tag { get; }
+		public abstract String Name { get; }
+		public abstract String LayerName { get; }
+		public abstract Int32 Layer { get; }
+		public abstract Boolean HasComponent(Type type);
 	}
 }
