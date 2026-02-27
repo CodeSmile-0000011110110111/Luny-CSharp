@@ -2,14 +2,19 @@ using System;
 
 namespace Luny.Engine.Bridge.Physics
 {
-	public sealed class LunyCollider
+	public abstract class LunyCollider
 	{
-		public Object NativeObject { get; set; }
+		protected Object _nativeObject;
+		public Object NativeObject => _nativeObject;
 
-		public String Tag => throw new NotImplementedException();
-		public String Name => throw new NotImplementedException();
-		public String LayerName => throw new NotImplementedException();
-		public Int32 LayerIndex => throw new NotImplementedException();
-		public Boolean HasComponent(Type type) => throw new NotImplementedException();
+		public abstract String Tag { get; }
+		public abstract String Name { get; }
+		public abstract String LayerName { get; }
+		public abstract Int32 Layer { get; }
+
+		protected LunyCollider() {}
+		protected LunyCollider(Object collider) => _nativeObject = collider;
+
+		public abstract Boolean HasComponent(Type type);
 	}
 }
