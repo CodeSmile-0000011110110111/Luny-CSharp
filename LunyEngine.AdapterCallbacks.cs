@@ -12,6 +12,8 @@ namespace Luny
 
 		void ILunyEngineLifecycle.EngineStartup(ILunyEngineNativeAdapter nativeAdapter)
 		{
+			_timeInternal.SetLunyFrameCount(1); // Startup is enforced to be in frame 1
+
 			ILunyEngineLifecycle.ThrowIfNotCurrentAdapter(nativeAdapter, s_EngineAdapter);
 			LunyTraceLogger.LogInfoStartingUp(this);
 
@@ -43,6 +45,7 @@ namespace Luny
 			_serviceRegistry.Startup();
 
 			LunyTraceLogger.LogInfoStartupComplete(this);
+			_timeInternal.SetLunyFrameCount(0); // Reset back to 0 since we increment it when processing the first frame
 		}
 
 		void ILunyEngineLifecycle.EngineShutdown(ILunyEngineNativeAdapter nativeAdapter)
@@ -198,7 +201,7 @@ namespace Luny
 				_didCallPreUpdateThisFrame = true;
 
 				// engine services first
-				_timeInternal.IncrementFrameCounters();
+				_timeInternal.IncrementFrameCount();
 				_serviceRegistry.OnEnginePreUpdate();
 				_objectLifecycle.OnEnginePreUpdate();
 

@@ -54,10 +54,10 @@ namespace Luny.Engine.Services
 
 	internal interface ILunyTimeServiceInternal
 	{
-		void SetLunyFrameAndHeartbeatCount(Int64 frameCount);
+		void SetLunyFrameCount(Int64 frameCount);
 		void SetFixedDeltaTime(Double fixedDeltaTime);
 		void SetDeltaTime(Double deltaTime);
-		void IncrementFrameCounters();
+		void IncrementFrameCount();
 	}
 
 	public abstract class LunyTimeServiceBase : LunyEngineServiceBase, ILunyTimeService, ILunyTimeServiceInternal
@@ -69,19 +69,9 @@ namespace Luny.Engine.Services
 		public abstract Double ElapsedSeconds { get; }
 		public abstract Int64 EngineFrameCount { get; }
 
-		void ILunyTimeServiceInternal.SetLunyFrameAndHeartbeatCount(Int64 frameCount)
-		{
-			FrameCount = frameCount;
-			HeartbeatCount = frameCount;
-		}
-
+		void ILunyTimeServiceInternal.SetLunyFrameCount(Int64 frameCount) => FrameCount = frameCount;
 		void ILunyTimeServiceInternal.SetFixedDeltaTime(Double fixedDeltaTime) => FixedDeltaTime = fixedDeltaTime;
 		void ILunyTimeServiceInternal.SetDeltaTime(Double deltaTime) => DeltaTime = deltaTime;
-
-		void ILunyTimeServiceInternal.IncrementFrameCounters()
-		{
-			HeartbeatCount++;
-			FrameCount++;
-		}
+		void ILunyTimeServiceInternal.IncrementFrameCount() => FrameCount++;
 	}
 }

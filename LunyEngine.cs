@@ -149,7 +149,7 @@ namespace Luny
 				_serviceRegistry = new LunyServiceRegistry(engine);
 				AssignMandatoryServices();
 				_timeInternal = (ILunyTimeServiceInternal)Time;
-				_timeInternal.SetLunyFrameAndHeartbeatCount(0); // frame "0" marks anything before OnEngineStartup()
+				_timeInternal.SetLunyFrameCount(0); // frame "0" marks anything before OnEngineStartup()
 
 				_profiler = new LunyEngineProfiler(Time);
 				_observerRegistry = new LunyEngineObserverRegistry();
