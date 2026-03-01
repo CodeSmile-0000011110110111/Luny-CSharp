@@ -107,7 +107,7 @@ namespace Luny
 			}
 		}
 
-		public override String ToString() => ToString(@"mm\:ss");
+		public override String ToString() => ToString($"Timer({Current:F2}/{Duration:F2})");
 
 		/// <summary>
 		/// Returns the current time formatted as a string using TimeSpan format.
