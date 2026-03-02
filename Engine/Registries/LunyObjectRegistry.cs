@@ -9,8 +9,8 @@ namespace Luny.Engine.Registries
 	{
 		Int32 Count { get; }
 		IEnumerable<ILunyObject> AllObjects { get; }
-		Boolean TryGetByLunyID(LunyObjectID lunyObjectID, out ILunyObject lunyObject);
-		Boolean TryGetByNativeID(LunyNativeObjectID lunyNativeObjectID, out ILunyObject lunyObject);
+		Boolean TryGetByLunyID(LunyObjectId lunyObjectID, out ILunyObject lunyObject);
+		Boolean TryGetByNativeId(LunyNativeObjectId lunyNativeObjectID, out ILunyObject lunyObject);
 		ILunyObject Get(String objectName);
 		ILunyObject Find(String objectName);
 	}
@@ -27,8 +27,8 @@ namespace Luny.Engine.Registries
 	/// </summary>
 	internal sealed class LunyObjectRegistry : ILunyObjectRegistryInternal
 	{
-		private Dictionary<LunyObjectID, ILunyObject> _objectsByLunyID = new();
-		private Dictionary<LunyNativeObjectID, ILunyObject> _objectsByNativeID = new();
+		private Dictionary<LunyObjectId, ILunyObject> _objectsByLunyID = new();
+		private Dictionary<LunyNativeObjectId, ILunyObject> _objectsByNativeID = new();
 
 		/// <summary>
 		/// Gets the total number of registered objects.
@@ -48,8 +48,8 @@ namespace Luny.Engine.Registries
 			if (lunyObject == null)
 				throw new ArgumentNullException(nameof(lunyObject));
 
-			var lunyID = lunyObject.LunyObjectID;
-			var nativeID = lunyObject.NativeObjectID;
+			var lunyID = lunyObject.LunyObjectId;
+			var nativeID = lunyObject.NativeObjectId;
 
 #if DEBUG
 			if (_objectsByLunyID.ContainsKey(lunyID))
@@ -70,13 +70,13 @@ namespace Luny.Engine.Registries
 			if (lunyObject == null)
 				return false;
 
-			var removed = TryRemove(lunyObject.LunyObjectID);
+			var removed = TryRemove(lunyObject.LunyObjectId);
 			if (removed)
 				((LunyEngine)LunyEngine.Instance).ObjectUnregistered(lunyObject);
 
 #if DEBUG
 			if (!removed)
-				LunyLogger.LogWarning($"Tried to unregister non-existent LunyID {lunyObject.LunyObjectID}");
+				LunyLogger.LogWarning($"Tried to unregister non-existent LunyID {lunyObject.LunyObjectId}");
 #endif
 
 			return removed;
@@ -98,7 +98,7 @@ namespace Luny.Engine.Registries
 			{
 				// sceneObject might have been already cached by the bridge (e.g. UnityGameObject.ToLunyObject)
 				// check if it's already in our registries by its LunyID or NativeID
-				if (TryGetByNativeID(sceneObject.NativeObjectID, out var registeredObject))
+				if (TryGetByNativeId(sceneObject.NativeObjectId, out var registeredObject))
 					return registeredObject;
 
 				Register(sceneObject);
@@ -113,23 +113,23 @@ namespace Luny.Engine.Registries
 		/// <summary>
 		/// Finds an object by its NativeID.
 		/// </summary>
-		public Boolean TryGetByNativeID(LunyNativeObjectID lunyNativeObjectID, out ILunyObject lunyObject) =>
+		public Boolean TryGetByNativeId(LunyNativeObjectId lunyNativeObjectID, out ILunyObject lunyObject) =>
 			_objectsByNativeID.TryGetValue(lunyNativeObjectID, out lunyObject);
 
 		/// <summary>
 		/// Finds an object by its LunyID.
 		/// </summary>
-		public Boolean TryGetByLunyID(LunyObjectID lunyObjectID, out ILunyObject lunyObject) =>
+		public Boolean TryGetByLunyID(LunyObjectId lunyObjectID, out ILunyObject lunyObject) =>
 			_objectsByLunyID.TryGetValue(lunyObjectID, out lunyObject);
 
 		/// <summary>
 		/// Unregisters an object by its LunyID.
 		/// </summary>
-		private Boolean TryRemove(LunyObjectID lunyObjectID)
+		private Boolean TryRemove(LunyObjectId lunyObjectID)
 		{
 			if (_objectsByLunyID.Remove(lunyObjectID, out var lunyObject))
 			{
-				_objectsByNativeID.Remove(lunyObject.NativeObjectID);
+				_objectsByNativeID.Remove(lunyObject.NativeObjectId);
 				return true;
 			}
 			return false;

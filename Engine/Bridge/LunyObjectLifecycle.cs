@@ -21,7 +21,7 @@ namespace Luny.Engine.Bridge
 	{
 		private Queue<ILunyObject> _pendingReady = new();
 		private Queue<ILunyObject> _pendingDestroy = new();
-		private Dictionary<LunyObjectID, ILunyObject> _pendingReadyWaitingForEnable = new();
+		private Dictionary<LunyObjectId, ILunyObject> _pendingReadyWaitingForEnable = new();
 
 		/// <summary>
 		/// Queues an object for its OnReady event.
@@ -31,7 +31,7 @@ namespace Luny.Engine.Bridge
 			if (lunyObject.IsEnabledInHierarchy)
 				_pendingReady.Enqueue(lunyObject);
 			else
-				_pendingReadyWaitingForEnable[lunyObject.LunyObjectID] = lunyObject;
+				_pendingReadyWaitingForEnable[lunyObject.LunyObjectId] = lunyObject;
 		}
 
 		/// <summary>
@@ -45,7 +45,7 @@ namespace Luny.Engine.Bridge
 		/// </summary>
 		public void OnObjectEnabled(ILunyObject lunyObject)
 		{
-			if (_pendingReadyWaitingForEnable.Remove(lunyObject.LunyObjectID, out var obj))
+			if (_pendingReadyWaitingForEnable.Remove(lunyObject.LunyObjectId, out var obj))
 				_pendingReady.Enqueue(obj);
 		}
 

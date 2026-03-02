@@ -25,15 +25,15 @@ namespace Luny.Engine.Services
 		/// Unloads an asset by its internal ID.
 		/// </summary>
 		/// <param name="id">The internal asset ID.</param>
-		void Unload(LunyAssetID id);
+		void Unload(LunyAssetId id);
 	}
 
 	internal interface ILunyAssetServiceInternal {}
 
 	public abstract class LunyAssetServiceBase : LunyEngineServiceBase, ILunyAssetService, ILunyAssetServiceInternal
 	{
-		private readonly Dictionary<LunyAssetID, ILunyAsset> _cache = new();
-		private readonly Dictionary<String, LunyAssetID> _pathToId = new();
+		private readonly Dictionary<LunyAssetId, ILunyAsset> _cache = new();
+		private readonly Dictionary<String, LunyAssetId> _pathToId = new();
 
 		public T Load<T>(LunyAssetPath path) where T : class, ILunyAsset
 		{
@@ -56,7 +56,7 @@ namespace Luny.Engine.Services
 			return loadedAsset;
 		}
 
-		public void Unload(LunyAssetID id)
+		public void Unload(LunyAssetId id)
 		{
 			if (_cache.Remove(id, out var asset))
 			{
@@ -67,7 +67,7 @@ namespace Luny.Engine.Services
 
 		private void AddToCache<T>(T loadedAsset, String agnosticPath) where T : class, ILunyAsset
 		{
-			var assetId = LunyAssetID.Generate();
+			var assetId = LunyAssetId.Generate();
 			_cache[assetId] = loadedAsset;
 			_pathToId[agnosticPath] = assetId;
 		}

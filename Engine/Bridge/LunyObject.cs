@@ -82,12 +82,12 @@ namespace Luny.Engine.Bridge
 		/// <summary>
 		/// LunyScript-specific unique, immutable identifier. This ID is distinct from engine's native object ID!
 		/// </summary>
-		LunyObjectID LunyObjectID { get; }
+		LunyObjectId LunyObjectId { get; }
 		/// <summary>
 		/// Engine-specific unique, immutable identifier, subject to engine's behaviour (ie may change between runs, or not).
 		/// The ID is valid even after the engine-native object has been destroyed to aid debugging.
 		/// </summary>
-		LunyNativeObjectID NativeObjectID { get; }
+		LunyNativeObjectId NativeObjectId { get; }
 		/// <summary>
 		/// Gets the underlying engine-native object (GameObject, Node) as generic System.Object type.
 		/// Use the Cast<T> method to avoid manually casting the reference.
@@ -188,8 +188,8 @@ namespace Luny.Engine.Bridge
 		public event Action<LunyCollider2D> OnTriggerExited2D;
 		public event Action<LunyCollider2D> OnTriggerUpdate2D;
 
-		private readonly LunyObjectID _lunyObjectID;
-		private readonly LunyNativeObjectID _nativeObjectID;
+		private readonly LunyObjectId _lunyObjectId;
+		private readonly LunyNativeObjectId _nativeObjectId;
 		private SystemObject _nativeObject;
 		private LunyTransform _transform;
 		private ObjectState _state;
@@ -197,8 +197,8 @@ namespace Luny.Engine.Bridge
 		[NotNull] private static ILunyObjectLifecycleInternal Lifecycle => ((ILunyEngineInternal)LunyEngine.Instance).ObjectLifecycle;
 		[NotNull] private static ILunyObjectRegistryInternal Objects => (ILunyObjectRegistryInternal)LunyEngine.Instance.Objects;
 
-		public LunyObjectID LunyObjectID => _lunyObjectID;
-		public LunyNativeObjectID NativeObjectID => _nativeObjectID;
+		public LunyObjectId LunyObjectId => _lunyObjectId;
+		public LunyNativeObjectId NativeObjectId => _nativeObjectId;
 		public SystemObject NativeObject => _nativeObject;
 		public LunyTransform Transform => _transform ??= IsValid ? GetNativeTransform() : null;
 
@@ -210,7 +210,7 @@ namespace Luny.Engine.Bridge
 
 		public String Name
 		{
-			get => IsValid ? GetNativeObjectName() : $"<null:{DebugNativeObjectName}({_nativeObjectID})>";
+			get => IsValid ? GetNativeObjectName() : $"<null:{DebugNativeObjectName}({_nativeObjectId})>";
 			set
 			{
 				if (IsValid)
@@ -253,7 +253,7 @@ namespace Luny.Engine.Bridge
 		/// <summary>
 		/// Instantiates a LunyObject instance.
 		/// </summary>
-		protected LunyObject(SystemObject nativeObject, Int64 nativeObjectID, Boolean isNativeObjectEnabled, Boolean isNativeObjectVisible)
+		protected LunyObject(SystemObject nativeObject, Int64 nativeObjectId, Boolean isNativeObjectEnabled, Boolean isNativeObjectVisible)
 		{
 			if (nativeObject == null)
 				throw new LunyBridgeException($"{this}: {nameof(LunyObject)} created with a <null> reference");
@@ -261,12 +261,12 @@ namespace Luny.Engine.Bridge
 			_state.IsEnabled = isNativeObjectEnabled;
 			_state.IsVisible = isNativeObjectVisible;
 			_nativeObject = nativeObject;
-			_nativeObjectID = nativeObjectID;
-			_lunyObjectID = LunyObjectID.Generate();
+			_nativeObjectId = nativeObjectId;
+			_lunyObjectId = LunyObjectId.Generate();
 			Objects.Register(this);
 		}
 
-		protected static Boolean TryGetCached(Int64 nativeId, out ILunyObject lunyObject) => Objects.TryGetByNativeID(nativeId, out lunyObject);
+		protected static Boolean TryGetCached(Int64 nativeId, out ILunyObject lunyObject) => Objects.TryGetByNativeId(nativeId, out lunyObject);
 
 		public T As<T>() where T : class => _nativeObject as T;
 		public T Cast<T>() where T : class => (T)_nativeObject;
@@ -405,7 +405,7 @@ namespace Luny.Engine.Bridge
 		protected abstract void SetNativeObjectVisible();
 		protected abstract void SetNativeObjectInvisible();
 
-		public override String ToString() => $"{(IsEnabled ? "☑" : "☐")} {Name} ({LunyObjectID}, {NativeObjectID})";
+		public override String ToString() => $"{(IsEnabled ? "☑" : "☐")} {Name} ({LunyObjectId}, {NativeObjectId})";
 
 		[Conditional("DEBUG")] [Conditional("LUNY_DEBUG")]
 		private void ThrowIfInitializedAgain()

@@ -10,7 +10,7 @@ namespace Luny.Engine.Bridge
 		/// <summary>
 		/// The unique identifier for this asset.
 		/// </summary>
-		LunyAssetID AssetID { get; }
+		LunyAssetId AssetID { get; }
 
 		/// <summary>
 		/// The path used to load this asset.
@@ -32,7 +32,7 @@ namespace Luny.Engine.Bridge
 	{
 		public static Int32 s_NextAssetID;
 
-		public LunyAssetID AssetID { get; }
+		public LunyAssetId AssetID { get; }
 		public LunyAssetPath AssetPath { get; }
 		public Object NativeAsset { get; }
 
