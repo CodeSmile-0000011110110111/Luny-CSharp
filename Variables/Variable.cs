@@ -63,6 +63,7 @@ namespace Luny
 			ValueType.String => _refValue,
 			var _ => null,
 		};
+		public Boolean IsNull => _type == ValueType.Null || _type == ValueType.String && _refValue == null;
 
 		private Variable(Double value, ValueType type, String name = null)
 		{
