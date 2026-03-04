@@ -17,7 +17,6 @@ namespace Luny.Engine.Bridge
 		Started,
 		Performed,
 		Canceled,
-
-		Performing = 0xff,
+		Performing,
 	}
 }

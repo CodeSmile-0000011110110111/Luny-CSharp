@@ -27,6 +27,8 @@ namespace Luny
 		ILunyObjectRegistry Objects { get; }
 		ILunyEngineProfiler Profiler { get; }
 
+		ILunyObject TryGetObject(String name);
+
 		// Observer management
 		void EnableObserver<T>() where T : ILunyEngineObserver;
 		void DisableObserver<T>() where T : ILunyEngineObserver;
@@ -170,6 +172,8 @@ namespace Luny
 
 		public Boolean TryGetService<TService>(out TService service) where TService : LunyEngineServiceBase =>
 			_serviceRegistry.TryGet(out service);
+
+		public ILunyObject TryGetObject(String name) => _objectRegistry.GetCached(name) ?? _objectRegistry.Find(name);
 
 		public void EnableObserver<T>() where T : ILunyEngineObserver => _observerRegistry.EnableObserver<T>();
 		public void DisableObserver<T>() where T : ILunyEngineObserver => _observerRegistry.DisableObserver<T>();

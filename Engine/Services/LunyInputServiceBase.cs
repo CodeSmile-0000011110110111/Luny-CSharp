@@ -127,7 +127,7 @@ namespace Luny.Engine.Services
 			OnInputAction_old?.Invoke(evt);
 		}
 
-		protected LunyInputActionEvent GetInputActionEvent(String actionName)
+		protected LunyInputActionEvent GetOrCreateInputActionEvent(String actionName)
 		{
 			if (!_activeInputEvents.TryGetValue(actionName, out var evt))
 				_activeInputEvents[actionName] = evt = new LunyInputActionEvent();
@@ -137,12 +137,8 @@ namespace Luny.Engine.Services
 
 		protected void HandleInputActionEvent(LunyInputActionEvent inputEvent)
 		{
-			var actionName = inputEvent.ActionName;
-			if (_activeInputEvents.TryGetValue(actionName, out var evt))
-			{
-				//LunyLogger.LogInfo($"[{inputEvent.EventFrame}] {inputEvent.ActionName} phase {inputEvent.Phase}", this);
-				OnInputAction?.Invoke(inputEvent);
-			}
+			//LunyLogger.LogInfo($"[{inputEvent.EventFrame}] {inputEvent.ActionName} phase {inputEvent.Phase}", this);
+			OnInputAction?.Invoke(inputEvent);
 		}
 
 		protected override void OnServiceFrameUpdate()
@@ -151,10 +147,7 @@ namespace Luny.Engine.Services
 			{
 				var phase = inputEvent.Phase;
 				if (phase == LunyInputActionPhase.Performed || phase == LunyInputActionPhase.Started)
-				{
 					inputEvent.Phase = LunyInputActionPhase.Performing;
-					//LunyLogger.LogInfo($"[{inputEvent.EventFrame}] {inputEvent.ActionName} phase {inputEvent.Phase} (changed from {phase})", this);
-				}
 
 				if (inputEvent.Phase == LunyInputActionPhase.Performing)
 					OnInputAction?.Invoke(inputEvent);

@@ -11,7 +11,7 @@ namespace Luny.Engine.Registries
 		IEnumerable<ILunyObject> AllObjects { get; }
 		Boolean TryGetByLunyID(LunyObjectId lunyObjectID, out ILunyObject lunyObject);
 		Boolean TryGetByNativeId(LunyNativeObjectId lunyNativeObjectID, out ILunyObject lunyObject);
-		ILunyObject Get(String objectName);
+		ILunyObject GetCached(String objectName);
 		ILunyObject Find(String objectName);
 	}
 
@@ -82,14 +82,14 @@ namespace Luny.Engine.Registries
 			return removed;
 		}
 
-		public ILunyObject Get(String objectName)
+		public ILunyObject GetCached(String objectName)
 		{
 			return _objectsByLunyID.Values.FirstOrDefault(obj => obj.Name == objectName);
 		}
 
 		public ILunyObject Find(String objectName)
 		{
-			var existing = Get(objectName);
+			var existing = GetCached(objectName);
 			if (existing != null)
 				return existing;
 
