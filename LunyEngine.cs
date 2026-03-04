@@ -6,6 +6,8 @@ using Luny.Engine.Services;
 using Luny.Exceptions;
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace Luny
 {
@@ -27,7 +29,11 @@ namespace Luny
 		ILunyObjectRegistry Objects { get; }
 		ILunyEngineProfiler Profiler { get; }
 
-		ILunyObject TryGetObject(String name);
+		/// <summary>
+		/// Will try to find an object by name in the scene. Queries already-cached objects first.
+		/// </summary>
+		ILunyObject TryGetObject(String name, [CallerMemberName] String callerName = "", [CallerFilePath] String callerFilePath = "",
+			[CallerLineNumber] Int32 callerLineNumber = 0);
 
 		// Observer management
 		void EnableObserver<T>() where T : ILunyEngineObserver;
@@ -173,12 +179,21 @@ namespace Luny
 		public Boolean TryGetService<TService>(out TService service) where TService : LunyEngineServiceBase =>
 			_serviceRegistry.TryGet(out service);
 
-		public ILunyObject TryGetObject(String name) => _objectRegistry.GetCached(name) ?? _objectRegistry.Find(name);
-
 		public void EnableObserver<T>() where T : ILunyEngineObserver => _observerRegistry.EnableObserver<T>();
 		public void DisableObserver<T>() where T : ILunyEngineObserver => _observerRegistry.DisableObserver<T>();
 		public Boolean IsObserverEnabled<T>() where T : ILunyEngineObserver => _observerRegistry.IsObserverEnabled<T>();
 		public T GetObserver<T>() where T : ILunyEngineObserver => _observerRegistry.GetObserver<T>();
+
+		public ILunyObject TryGetObject(String name, [CallerMemberName] String callerName = "", [CallerFilePath] String callerFilePath = "",
+			[CallerLineNumber] Int32 callerLineNumber = 0)
+		{
+			var obj = _objectRegistry.GetCached(name) ?? _objectRegistry.Find(name);
+			if (obj == null)
+				LunyLogger.LogWarning(
+					$"Object '{obj}' was not found in scene. ({Path.GetFileName(callerFilePath)}({callerLineNumber}) {callerName})", this);
+
+			return obj;
+		}
 
 		private void AssignMandatoryServices()
 		{
