@@ -2,7 +2,7 @@ using System;
 
 namespace Luny.Engine.Bridge
 {
-	public struct LunyInputEvent
+	public struct LunyInputEvent_old
 	{
 		public String ActionName;
 		public LunyInputActionType ActionType;

@@ -92,6 +92,18 @@ namespace Luny.Engine.Registries
 				service.PreUpdate();
 		}
 
+		internal void OnEngineHeartbeat()
+		{
+			foreach (var service in _registeredServices.Values)
+				service.Heartbeat();
+		}
+
+		internal void OnEngineFrameUpdate()
+		{
+			foreach (var service in _registeredServices.Values)
+				service.FrameUpdate();
+		}
+
 		internal void OnEnginePostUpdate()
 		{
 			foreach (var service in _registeredServices.Values)

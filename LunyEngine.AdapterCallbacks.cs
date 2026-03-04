@@ -121,6 +121,9 @@ namespace Luny
 			foreach (var observer in _observerRegistry.EnabledObservers)
 			{
 				_profiler.BeginObserver(observer);
+
+				_serviceRegistry.OnEngineHeartbeat();
+
 				try
 				{
 					observer.OnEngineHeartbeat();
@@ -149,6 +152,9 @@ namespace Luny
 			foreach (var observer in _observerRegistry.EnabledObservers)
 			{
 				_profiler.BeginObserver(observer);
+
+				_serviceRegistry.OnEngineFrameUpdate();
+
 				try
 				{
 					observer.OnEngineFrameUpdate();

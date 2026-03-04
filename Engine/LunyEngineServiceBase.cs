@@ -30,11 +30,15 @@ namespace Luny.Engine
 		}
 
 		internal void PreUpdate() => OnServicePreUpdate();
+		internal void Heartbeat() => OnServiceHeartbeat();
+		internal void FrameUpdate() => OnServiceFrameUpdate();
 		internal void PostUpdate() => OnServicePostUpdate();
 		protected virtual void OnServiceInitialize() {}
 		protected virtual void OnServiceStartup() {}
 		protected virtual void OnServiceShutdown() {}
 		protected virtual void OnServicePreUpdate() {}
+		protected virtual void OnServiceHeartbeat() {}
+		protected virtual void OnServiceFrameUpdate() {}
 		protected virtual void OnServicePostUpdate() {}
 	}
 }
