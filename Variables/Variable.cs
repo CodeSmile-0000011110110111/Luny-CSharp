@@ -144,6 +144,12 @@ namespace Luny
 					var v3 = AsVector3();
 					return LunyQuaternion.Euler(v3);
 				}
+				/*
+				case ValueType.Number:
+				{
+					return LunyQuaternion.Euler(LunyVector3.Uniform(AsDouble()));
+				}
+				*/
 				default:
 					throw new NotSupportedException($"{nameof(AsQuaternion)}: Unsupported input type: {_type}");
 			}
@@ -268,16 +274,19 @@ namespace Luny
 		public static implicit operator Variable(Single v) => new(v, ValueType.Number);
 		public static implicit operator Variable(Double v) => new(v, ValueType.Number);
 		public static implicit operator Variable(Boolean v) => new(v ? 1.0 : 0.0, ValueType.Boolean);
-		public static implicit operator Variable(String v) => new(v, ValueType.String);
 		public static implicit operator Variable(Number v) => new(v, ValueType.Number);
+		public static implicit operator Variable(String v) => new(v, ValueType.String);
+		public static implicit operator Variable(LunyVector2 v) => new(v, ValueType.Vector2);
+		public static implicit operator Variable(LunyVector3 v) => new(v, ValueType.Vector3);
+		public static implicit operator Variable(LunyQuaternion v) => new(v, ValueType.Quaternion);
 
 		public static implicit operator Int32(Variable v) => v.AsInt32();
 		public static implicit operator Int64(Variable v) => v.AsInt64();
 		public static implicit operator Single(Variable v) => v.AsSingle();
 		public static implicit operator Double(Variable v) => v.AsDouble();
 		public static implicit operator Boolean(Variable v) => v.AsBoolean();
-		public static implicit operator String(Variable v) => v.AsString();
 		public static implicit operator Number(Variable v) => v.AsNumber();
+		public static implicit operator String(Variable v) => v.AsString();
 
 		[ExcludeFromCodeCoverage]
 		public override String ToString() => _type switch
@@ -294,8 +303,7 @@ namespace Luny
 		public Boolean Equals(Double d) => _type == ValueType.Number && _numValue.Equals(d);
 		public Boolean Equals(String s) => _type == ValueType.String && String.Equals((String)_refValue, s);
 
-		public Boolean Equals(Variable other) =>
-			_type == other._type && _numValue.Equals(other._numValue) && Equals(_refValue, other._refValue);
+		public Boolean Equals(Variable other) => _numValue.Equals(other._numValue) && Equals(_refValue, other._refValue);
 
 		public override Boolean Equals(Object obj) => obj switch
 		{

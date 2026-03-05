@@ -117,12 +117,13 @@ namespace Luny
 		/// <returns></returns>
 		public ScalarVarHandle GetHandle(String key)
 		{
-			if (_table.TryGetValue(key, out var handle))
-				return (ScalarVarHandle)handle;
+			if (_table.TryGetValue(key, out var existing))
+				return (ScalarVarHandle)existing;
 
-			var scalar = new ScalarVarHandle(this, key);
-			_table[key] = scalar;
-			return scalar;
+			var handle = new ScalarVarHandle(this, key);
+			handle.SetInitialValue(0.0);
+			_table[key] = handle;
+			return handle;
 		}
 
 		/// <summary>
@@ -130,12 +131,12 @@ namespace Luny
 		/// </summary>
 		public VarHandle<T> GetHandle<T>(String key)
 		{
-			if (_table.TryGetValue(key, out var handle))
-				return handle.As<T>();
+			if (_table.TryGetValue(key, out var existing))
+				return existing.As<T>();
 
-			var typed = new VarHandle<T>(this, key);
-			_table[key] = typed;
-			return typed;
+			var handle = new VarHandle<T>(this, key);
+			_table[key] = handle;
+			return handle;
 		}
 
 		/// <summary>

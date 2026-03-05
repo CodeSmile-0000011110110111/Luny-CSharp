@@ -3,7 +3,7 @@ namespace Luny.Engine.Bridge
 	/// <summary>
 	/// Specifies the coordinate space in which to operate.
 	/// </summary>
-	public enum LunySpace
+	public enum LunyTransformSpace
 	{
 		/// <summary>
 		/// Operates in world space (absolute, relative to scene origin).

@@ -227,6 +227,8 @@ namespace Luny.Engine.Bridge
 			return unsignedAngle * (sign < 0 ? -1f : 1f);
 		}
 
+		public static LunyVector3 Uniform(Double scale) => new(scale, scale, scale);
+
 		// Operators
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static LunyVector3 operator +(LunyVector3 a, LunyVector3 b) => new(a._value + b._value);
