@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace Luny
 {
-	public readonly struct Variable<T> : IVariable, IEquatable<Variable<T>>
+	public readonly struct Variable<T> : IEquatable<Variable<T>>
 	{
 		private readonly T _value;
 
