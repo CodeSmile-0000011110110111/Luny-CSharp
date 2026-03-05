@@ -7,16 +7,24 @@ namespace Luny
 {
 	public readonly struct Variable<T> : IEquatable<Variable<T>>
 	{
+		public enum ValueType
+		{
+			Generic,
+			Vector2,
+			Vector3,
+			Quaternion,
+			//String,
+		}
+
 		private readonly T _value;
 
 		public T Value => _value;
 
 		public Variable(T value) => _value = value;
 
-		// IVariable (cold path — boxing acceptable, except for matching vector types)
-		public Variable.ValueType Type => typeof(T) == typeof(LunyVector2) ? Variable.ValueType.Vector2 :
-			typeof(T) == typeof(LunyVector3) ? Variable.ValueType.Vector3 :
-			Variable.ValueType.Struct;
+		public ValueType Type => typeof(T) == typeof(LunyVector2) ? ValueType.Vector2 :
+			typeof(T) == typeof(LunyVector3) ? ValueType.Vector3 :
+			ValueType.Generic;
 
 		public Boolean AsBoolean() => _value != null;
 		public Double AsDouble() => 0.0;
