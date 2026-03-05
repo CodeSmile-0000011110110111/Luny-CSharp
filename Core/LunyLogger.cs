@@ -103,10 +103,13 @@ namespace Luny
 
 		[DebuggerHidden]
 		public static void LogInfo(String message, Object context = null) => LogMessage(message, LogLevel.Info, context);
+
 		[DebuggerHidden]
 		public static void LogWarning(String message, Object context = null) => LogMessage(message, LogLevel.Warning, context);
+
 		[DebuggerHidden]
 		public static void LogError(String message, Object context = null) => LogMessage(message, LogLevel.Error, context);
+
 		[DebuggerHidden]
 		public static void LogException(Exception exception, Object context = null) => LogMessage(null, LogLevel.Exception, context, exception);
 

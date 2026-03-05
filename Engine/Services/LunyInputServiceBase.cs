@@ -135,11 +135,9 @@ namespace Luny.Engine.Services
 			return evt;
 		}
 
-		protected void HandleInputActionEvent(LunyInputActionEvent inputEvent)
-		{
+		protected void HandleInputActionEvent(LunyInputActionEvent inputEvent) =>
 			//LunyLogger.LogInfo($"[{inputEvent.EventFrame}] {inputEvent.ActionName} phase {inputEvent.Phase}", this);
 			OnInputAction?.Invoke(inputEvent);
-		}
 
 		protected override void OnServiceFrameUpdate()
 		{

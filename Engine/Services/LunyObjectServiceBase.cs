@@ -9,7 +9,9 @@ namespace Luny.Engine.Services
 	public interface ILunyObjectService : ILunyEngineService
 	{
 		ILunyObject CreateEmpty(String name, ILunyObject parent, LunyVector3 position, LunyQuaternion rotation, LunyVector3 scale);
-		ILunyObject CreatePrimitive(String name, LunyPrimitiveType type, ILunyObject parent, LunyVector3 position, LunyQuaternion rotation, LunyVector3 scale);
+
+		ILunyObject CreatePrimitive(String name, LunyPrimitiveType type, ILunyObject parent, LunyVector3 position, LunyQuaternion rotation,
+			LunyVector3 scale);
 
 		/// <summary>
 		/// Creates a new object from a prefab bridge.
@@ -19,8 +21,13 @@ namespace Luny.Engine.Services
 
 	public abstract class LunyObjectServiceBase : LunyEngineServiceBase, ILunyObjectService
 	{
-		public abstract ILunyObject CreateEmpty(String name, ILunyObject parent, LunyVector3 position, LunyQuaternion rotation, LunyVector3 scale);
-		public abstract ILunyObject CreatePrimitive(String name, LunyPrimitiveType type, ILunyObject parent, LunyVector3 position, LunyQuaternion rotation, LunyVector3 scale);
-		public abstract ILunyObject CreateFromPrefab(ILunyPrefab prefab, ILunyObject parent, LunyVector3 position, LunyQuaternion rotation, LunyVector3 scale);
+		public abstract ILunyObject CreateEmpty(String name, ILunyObject parent, LunyVector3 position, LunyQuaternion rotation,
+			LunyVector3 scale);
+
+		public abstract ILunyObject CreatePrimitive(String name, LunyPrimitiveType type, ILunyObject parent, LunyVector3 position,
+			LunyQuaternion rotation, LunyVector3 scale);
+
+		public abstract ILunyObject CreateFromPrefab(ILunyPrefab prefab, ILunyObject parent, LunyVector3 position, LunyQuaternion rotation,
+			LunyVector3 scale);
 	}
 }

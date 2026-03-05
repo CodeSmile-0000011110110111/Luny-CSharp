@@ -82,10 +82,7 @@ namespace Luny.Engine.Registries
 			return removed;
 		}
 
-		public ILunyObject GetCached(String objectName)
-		{
-			return _objectsByLunyID.Values.FirstOrDefault(obj => obj.Name == objectName);
-		}
+		public ILunyObject GetCached(String objectName) => _objectsByLunyID.Values.FirstOrDefault(obj => obj.Name == objectName);
 
 		public ILunyObject Find(String objectName)
 		{

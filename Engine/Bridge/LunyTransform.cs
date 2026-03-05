@@ -3,7 +3,6 @@ using System.Collections.Generic;
 
 namespace Luny.Engine.Bridge
 {
-
 	/// <summary>
 	/// Engine-agnostic proxy for native transform types (UnityEngine.Transform, Godot.Node3D, etc.).
 	/// </summary>
@@ -30,8 +29,8 @@ namespace Luny.Engine.Bridge
 		public abstract LunyTransform Parent { get; set; }
 		public abstract LunyTransform Root { get; }
 		public abstract Int32 ChildCount { get; }
-		public abstract LunyTransform GetChild(Int32 index);
 		public abstract IEnumerable<LunyTransform> Children { get; }
+		public abstract LunyTransform GetChild(Int32 index);
 		public abstract void SetParent(LunyTransform parent, Boolean worldPositionStays = true);
 		public abstract Boolean IsChildOf(LunyTransform parent);
 		public abstract Int32 GetSiblingIndex();

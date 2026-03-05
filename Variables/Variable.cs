@@ -1,4 +1,3 @@
-using Luny.Engine.Bridge;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -54,8 +53,8 @@ namespace Luny
 			var _ => null,
 		};
 		public Boolean IsNull => _type == ValueType.String && _refValue == null;
-		public Boolean IsNullOrEmpty => _type == ValueType.String && string.IsNullOrEmpty((string)_refValue);
-		public Boolean IsNullOrWhitespace => _type == ValueType.String && string.IsNullOrWhiteSpace((string)_refValue);
+		public Boolean IsNullOrEmpty => _type == ValueType.String && String.IsNullOrEmpty((String)_refValue);
+		public Boolean IsNullOrWhitespace => _type == ValueType.String && String.IsNullOrWhiteSpace((String)_refValue);
 
 		private Variable(Double value, ValueType type, String name = null)
 		{
@@ -118,6 +117,7 @@ namespace Luny
 		public Double AsDouble() => _type == ValueType.Number ? _numValue : 0.0;
 		public Single AsSingle() => _type == ValueType.Number ? (Single)_numValue : 0f;
 		public Int64 AsInt64() => _type == ValueType.Number ? (Int64)_numValue : 0L;
+
 		public Int32 AsInt32() => _type == ValueType.Number ? (Int32)_numValue : 0;
 		// public LunyVector2 AsVector2() => _type == ValueType.Vector2 && _refValue is LunyVector2 v2 ? v2 : default;
 		// public LunyVector3 AsVector3() => _type == ValueType.Vector3 && _refValue is LunyVector3 v3 ? v3 : default;
@@ -271,6 +271,7 @@ namespace Luny
 		public static implicit operator Variable(Double v) => new(v, ValueType.Number);
 		public static implicit operator Variable(Boolean v) => new(v ? 1.0 : 0.0, ValueType.Boolean);
 		public static implicit operator Variable(Number v) => new(v, ValueType.Number);
+
 		public static implicit operator Variable(String v) => new(v, ValueType.String);
 		// public static implicit operator Variable(LunyVector2 v) => new(v, ValueType.Vector2);
 		// public static implicit operator Variable(LunyVector3 v) => new(v, ValueType.Vector3);

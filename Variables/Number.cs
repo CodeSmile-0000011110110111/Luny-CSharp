@@ -64,35 +64,6 @@ namespace Luny
 		public static implicit operator Boolean(Number number) => Math.Abs(number._value) > Double.Epsilon;
 		public static implicit operator String(Number number) => number._value.ToString(CultureInfo.InvariantCulture);
 
-		public TypeCode GetTypeCode() => TypeCode.Double;
-		public Boolean ToBoolean(IFormatProvider provider) => Convert.ToBoolean(_value);
-		public Byte ToByte(IFormatProvider provider) => Convert.ToByte(_value);
-
-		public Char ToChar(IFormatProvider provider) =>
-			(Char)(Int32)(_value >= Char.MaxValue ? Char.MaxValue : _value <= Char.MinValue ? Char.MinValue : _value);
-
-		public TimeSpan ToTimeSpan(IFormatProvider provider) =>
-			TimeSpan.FromTicks(_value >= Int64.MaxValue ? Int64.MaxValue : _value <= Int64.MinValue ? Int64.MinValue : (Int64)_value);
-
-		public DateTime ToDateTime(IFormatProvider provider) =>
-			DateTime.FromBinary(_value >= Int64.MaxValue ? Int64.MaxValue : _value <= Int64.MinValue ? Int64.MinValue : (Int64)_value);
-
-		public Decimal ToDecimal(IFormatProvider provider) => Convert.ToDecimal(_value);
-		public Double ToDouble(IFormatProvider provider) => _value;
-		public Int16 ToInt16(IFormatProvider provider) => Convert.ToInt16(_value);
-		public Int32 ToInt32(IFormatProvider provider) => Convert.ToInt32(_value);
-		public Int64 ToInt64(IFormatProvider provider) => Convert.ToInt64(_value);
-		public UInt16 ToUInt16(IFormatProvider provider) => Convert.ToUInt16(_value);
-		public UInt32 ToUInt32(IFormatProvider provider) => Convert.ToUInt32(_value);
-		public UInt64 ToUInt64(IFormatProvider provider) => Convert.ToUInt64(_value);
-		public SByte ToSByte(IFormatProvider provider) => Convert.ToSByte(_value);
-		public Single ToSingle(IFormatProvider provider) => Convert.ToSingle(_value);
-		public Object ToType(Type conversionType, IFormatProvider provider) => Convert.ChangeType(_value, conversionType, provider);
-		public String ToString(IFormatProvider provider) => _value.ToString(provider);
-		public String ToString(String format, IFormatProvider formatProvider) => _value.ToString(format, formatProvider);
-
-		[ExcludeFromCodeCoverage] public override String ToString() => _value.ToString(CultureInfo.InvariantCulture);
-
 		public static Number operator +(Number a, Number b) => a._value + b._value;
 		public static Number operator -(Number a, Number b) => a._value - b._value;
 		public static Number operator *(Number a, Number b) => a._value * b._value;
@@ -188,10 +159,45 @@ namespace Luny
 			throw new ArgumentException($"{obj} ({obj.GetType().Name}) is not an arithmetic type");
 		}
 
-		public Int32 CompareTo(Number other) => _value.CompareTo(other._value);
 		public Int32 CompareTo(Double other) => _value.CompareTo(other);
 		public Int32 CompareTo(Int64 other) => _value.CompareTo(other);
+
+		public Int32 CompareTo(Number other) => _value.CompareTo(other._value);
 		public Int32 CompareTo(UInt64 other) => _value.CompareTo(other);
+
+		public TypeCode GetTypeCode() => TypeCode.Double;
+		public Boolean ToBoolean(IFormatProvider provider) => Convert.ToBoolean(_value);
+		public Byte ToByte(IFormatProvider provider) => Convert.ToByte(_value);
+
+		public Char ToChar(IFormatProvider provider) =>
+			(Char)(Int32)(_value >= Char.MaxValue ? Char.MaxValue : _value <= Char.MinValue ? Char.MinValue : _value);
+
+		public DateTime ToDateTime(IFormatProvider provider) =>
+			DateTime.FromBinary(_value >= Int64.MaxValue ? Int64.MaxValue : _value <= Int64.MinValue ? Int64.MinValue : (Int64)_value);
+
+		public Decimal ToDecimal(IFormatProvider provider) => Convert.ToDecimal(_value);
+		public Double ToDouble(IFormatProvider provider) => _value;
+		public Int16 ToInt16(IFormatProvider provider) => Convert.ToInt16(_value);
+		public Int32 ToInt32(IFormatProvider provider) => Convert.ToInt32(_value);
+		public Int64 ToInt64(IFormatProvider provider) => Convert.ToInt64(_value);
+		public UInt16 ToUInt16(IFormatProvider provider) => Convert.ToUInt16(_value);
+		public UInt32 ToUInt32(IFormatProvider provider) => Convert.ToUInt32(_value);
+		public UInt64 ToUInt64(IFormatProvider provider) => Convert.ToUInt64(_value);
+		public SByte ToSByte(IFormatProvider provider) => Convert.ToSByte(_value);
+		public Single ToSingle(IFormatProvider provider) => Convert.ToSingle(_value);
+		public Object ToType(Type conversionType, IFormatProvider provider) => Convert.ChangeType(_value, conversionType, provider);
+		public String ToString(IFormatProvider provider) => _value.ToString(provider);
+		public Boolean Equals(Double other) => _value.Equals(other);
+		public Boolean Equals(Int64 other) => _value.Equals(other);
+
+		public Boolean Equals(Number other) => _value.Equals(other._value);
+		public Boolean Equals(UInt64 other) => _value.Equals(other);
+		public String ToString(String format, IFormatProvider formatProvider) => _value.ToString(format, formatProvider);
+
+		public TimeSpan ToTimeSpan(IFormatProvider provider) =>
+			TimeSpan.FromTicks(_value >= Int64.MaxValue ? Int64.MaxValue : _value <= Int64.MinValue ? Int64.MinValue : (Int64)_value);
+
+		[ExcludeFromCodeCoverage] public override String ToString() => _value.ToString(CultureInfo.InvariantCulture);
 
 		public override Boolean Equals(Object obj)
 		{
@@ -212,11 +218,6 @@ namespace Luny
 
 			return false;
 		}
-
-		public Boolean Equals(Number other) => _value.Equals(other._value);
-		public Boolean Equals(Double other) => _value.Equals(other);
-		public Boolean Equals(Int64 other) => _value.Equals(other);
-		public Boolean Equals(UInt64 other) => _value.Equals(other);
 
 		public override Int32 GetHashCode() => _value.GetHashCode();
 	}
