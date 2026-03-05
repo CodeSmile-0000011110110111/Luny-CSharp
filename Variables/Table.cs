@@ -30,6 +30,7 @@ namespace Luny
 		Variable this[String key] { get; set; }
 		T Get<T>(String key);
 		Table.ScalarVarHandle GetHandle(String key);
+		Table.ScalarVarHandle DefineVariable(String key, Variable value);
 		Table.ScalarVarHandle DefineConstant(String key, Variable value);
 		Table.VarHandle<T> GetHandle<T>(String key);
 		Boolean Has(String key);
@@ -140,17 +141,28 @@ namespace Luny
 		}
 
 		/// <summary>
+		/// Defines a variable with initial value.
+		/// </summary>
+		/// <param name="key"></param>
+		/// <param name="value"></param>
+		/// <returns></returns>
+		/// <exception cref="InvalidOperationException"></exception>
+		public ScalarVarHandle DefineVariable(String key, Variable value) => Define(key, value, false);
+
+		/// <summary>
 		/// Defines a constant variable that cannot be modified after creation.
 		/// </summary>
 		/// <param name="key">The constant name.</param>
 		/// <param name="value">The constant value.</param>
 		/// <returns>The handle to the constant.</returns>
-		public ScalarVarHandle DefineConstant(String key, Variable value)
+		public ScalarVarHandle DefineConstant(String key, Variable value) => Define(key, value, true);
+
+		private ScalarVarHandle Define(String key, Variable value, Boolean constant)
 		{
 			if (_table.TryGetValue(key, out var existing))
-				throw new InvalidOperationException($"Attempt to redefine constant: {existing}");
+				throw new InvalidOperationException($"Attempt to redefine {(constant ? "constant" : "variable")}: {existing}");
 
-			var handle = new ScalarVarHandle(this, key, true);
+			var handle = new ScalarVarHandle(this, key, constant);
 			handle.SetInitialValue(value);
 			_table[key] = handle;
 			return handle;

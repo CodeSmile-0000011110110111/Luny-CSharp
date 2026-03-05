@@ -68,6 +68,9 @@ namespace Luny.Engine.Bridge
 
 		private void ProcessPendingDestroy()
 		{
+			// if (_pendingDestroy.Count > 0)
+			// 	LunyLogger.LogInfo($"Processing pending destroy queue: {_pendingDestroy.Count} objects", this);
+
 			while (_pendingDestroy.Count > 0)
 			{
 				var obj = _pendingDestroy.Dequeue();
@@ -78,13 +81,15 @@ namespace Luny.Engine.Bridge
 
 		public void Shutdown(LunyObjectRegistry objectRegistry)
 		{
+			LunyLogger.LogInfo("==== SHUTDOWN ====", this);
+
 			// ensure all objects run their OnDestroy, must use a copy of collection because it will be modified
 			var allObjects = objectRegistry.AllObjects.ToArray();
 			foreach (var lunyObject in allObjects)
 				lunyObject.Destroy();
 
 			// cleans up any pending to be destroyed native objects
-			OnEnginePostUpdate();
+			ProcessPendingDestroy();
 
 			_pendingReady.Clear();
 			_pendingDestroy.Clear();
