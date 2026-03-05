@@ -1,4 +1,4 @@
-﻿namespace Luny.Engine.Bridge.Physics
+﻿namespace Luny.Engine.Bridge
 {
 	public enum LunyCollisionEvent
 	{

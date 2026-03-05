@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Luny.Engine.Bridge.Physics
+namespace Luny.Engine.Bridge
 {
 	public abstract class LunyCollision
 	{
