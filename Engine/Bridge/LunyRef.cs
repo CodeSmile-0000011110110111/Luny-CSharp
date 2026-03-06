@@ -7,9 +7,22 @@ namespace Luny
 	public abstract class LunyRef<T> where T : class
 	{
 		private String _query;
-		protected T _cachedObject;
+		protected WeakReference<T> _cachedObject;
 
-		public T Value => _cachedObject ??= _query != null ? ResolveObject(_query) : null;
+		public T Value
+		{
+			get
+			{
+				if (!_cachedObject.TryGetTarget(out var obj) || !IsValid(obj))
+				{
+					obj = ResolveObject(_query);
+					//LunyLogger.LogInfo($"'{_query}' resolved to {obj}", this);
+					_cachedObject.SetTarget(obj);
+				}
+
+				return obj;
+			}
+		}
 
 		protected LunyRef(String query)
 		{
@@ -17,17 +30,19 @@ namespace Luny
 				throw new ArgumentException("Query string cannot be null or empty.", nameof(query));
 
 			_query = query;
+			_cachedObject = new WeakReference<T>(default);
 		}
 
-		protected LunyRef(Object obj)
+		protected LunyRef(T obj)
 		{
 			if (obj == null)
-				throw new ArgumentNullException("Object cannot be null or empty.", nameof(obj));
+				throw new ArgumentNullException("Object cannot be null.", nameof(obj));
 
-			_cachedObject = (T)obj;
+			_cachedObject = new WeakReference<T>(obj);
 		}
 
 		protected abstract T ResolveObject([NotNull] String query);
+		protected abstract Boolean IsValid(T value);
 	}
 
 	public sealed class LunyObjectRef : LunyRef<LunyObject>
@@ -43,6 +58,7 @@ namespace Luny
 			: base((LunyObject)obj) {}
 
 		protected override LunyObject ResolveObject(String query) => (LunyObject)LunyEngine.Instance.Scene.FindObjectByName(query);
+		protected override Boolean IsValid(LunyObject value) => value != null && value.IsValid;
 	}
 
 	public sealed class LunyAssetRef : LunyRef<LunyAsset>
@@ -57,5 +73,6 @@ namespace Luny
 			: base((LunyAsset)asset) {}
 
 		protected override LunyAsset ResolveObject(String query) => throw new NotImplementedException(nameof(ResolveObject));
+		protected override Boolean IsValid(LunyAsset value) => value != null;
 	}
 }

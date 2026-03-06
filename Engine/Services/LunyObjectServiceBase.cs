@@ -11,14 +11,14 @@ namespace Luny.Engine.Services
 		ILunyObject CreateEmpty(String name, ILunyObject parent, LunyVector3 position, LunyQuaternion rotation, LunyVector3 scale);
 
 		ILunyObject CreatePrimitive(String name, LunyPrimitiveType type, ILunyObject parent, LunyVector3 position, LunyQuaternion rotation,
-			LunyVector3 scale);
+			LunyVector3? scale);
 
 		/// <summary>
 		/// Creates a new object from a prefab bridge.
 		/// </summary>
-		ILunyObject CreateFromPrefab(ILunyPrefab prefab, ILunyObject parent, LunyVector3 position, LunyQuaternion rotation, LunyVector3 scale);
+		ILunyObject CreateFromPrefab(ILunyPrefab prefab, ILunyObject parent, LunyVector3 position, LunyQuaternion rotation, LunyVector3? scale);
 
-		ILunyObject Clone(ILunyObject original, ILunyObject parent, LunyVector3 position, LunyQuaternion rotation, LunyVector3 scale);
+		ILunyObject Clone(ILunyObject original, ILunyObject parent, LunyVector3 position, LunyQuaternion rotation, LunyVector3? scale);
 	}
 
 	public abstract class LunyObjectServiceBase : LunyEngineServiceBase, ILunyObjectService
@@ -27,11 +27,11 @@ namespace Luny.Engine.Services
 			LunyVector3 scale);
 
 		public abstract ILunyObject CreatePrimitive(String name, LunyPrimitiveType type, ILunyObject parent, LunyVector3 position,
-			LunyQuaternion rotation, LunyVector3 scale);
+			LunyQuaternion rotation, LunyVector3? scale);
 
 		public abstract ILunyObject CreateFromPrefab(ILunyPrefab prefab, ILunyObject parent, LunyVector3 position, LunyQuaternion rotation,
-			LunyVector3 scale);
+			LunyVector3? scale);
 
-		public abstract ILunyObject Clone(ILunyObject original, ILunyObject parent, LunyVector3 position, LunyQuaternion rotation, LunyVector3 scale);
+		public abstract ILunyObject Clone(ILunyObject original, ILunyObject parent, LunyVector3 position, LunyQuaternion rotation, LunyVector3? scale);
 	}
 }
