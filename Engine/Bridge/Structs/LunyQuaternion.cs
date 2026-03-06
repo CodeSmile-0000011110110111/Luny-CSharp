@@ -177,6 +177,8 @@ namespace Luny.Engine.Bridge
 			return result;
 		}
 
+		public static LunyQuaternion Euler(Double x, Double y, Double z) => Euler((Single)x, (Single)y, (Single)z);
+
 		public static LunyQuaternion Euler(LunyVector3 euler)
 		{
 			var result = new LunyQuaternion(0, 0, 0, 1);
