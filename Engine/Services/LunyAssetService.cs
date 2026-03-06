@@ -49,7 +49,7 @@ namespace Luny.Engine.Services
 			if (loadedAsset == null)
 			{
 				loadedAsset = GetPlaceholder<T>(path);
-				LunyLogger.LogWarning($"Asset not found: '{agnosticPath}' (type: {typeof(T).Name}) => using placeholder: {loadedAsset}", this);
+				LunyLogger.LogWarning($"Asset not found: '{agnosticPath}' (type: {typeof(T).Name}) => using placeholder!", this);
 			}
 
 			AddToCache(loadedAsset, agnosticPath);

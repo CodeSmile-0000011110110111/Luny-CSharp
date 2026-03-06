@@ -8,7 +8,7 @@ namespace Luny.Engine.Bridge
 	/// </summary>
 	public abstract class LunyTransform
 	{
-		public abstract Object NativeObject { get; }
+		public abstract Object NativeTransform { get; }
 
 		public abstract LunyVector3 Position { get; set; }
 		public abstract LunyQuaternion Rotation { get; set; }
@@ -55,5 +55,7 @@ namespace Luny.Engine.Bridge
 		public abstract void OrbitAround(LunyVector3 worldPoint, LunyVector3 axis, Single angle);
 		public abstract void Translate(LunyVector2 translation, LunyTransformSpace space = LunyTransformSpace.Self);
 		public abstract void Translate(LunyVector3 translation, LunyTransformSpace space = LunyTransformSpace.Self);
+
+		public T As<T>() => (T)NativeTransform;
 	}
 }

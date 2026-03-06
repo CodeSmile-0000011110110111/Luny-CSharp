@@ -17,6 +17,8 @@ namespace Luny.Engine.Services
 		/// Creates a new object from a prefab bridge.
 		/// </summary>
 		ILunyObject CreateFromPrefab(ILunyPrefab prefab, ILunyObject parent, LunyVector3 position, LunyQuaternion rotation, LunyVector3 scale);
+
+		ILunyObject Clone(ILunyObject original, ILunyObject parent, LunyVector3 position, LunyQuaternion rotation, LunyVector3 scale);
 	}
 
 	public abstract class LunyObjectServiceBase : LunyEngineServiceBase, ILunyObjectService
@@ -29,5 +31,7 @@ namespace Luny.Engine.Services
 
 		public abstract ILunyObject CreateFromPrefab(ILunyPrefab prefab, ILunyObject parent, LunyVector3 position, LunyQuaternion rotation,
 			LunyVector3 scale);
+
+		public abstract ILunyObject Clone(ILunyObject original, ILunyObject parent, LunyVector3 position, LunyQuaternion rotation, LunyVector3 scale);
 	}
 }

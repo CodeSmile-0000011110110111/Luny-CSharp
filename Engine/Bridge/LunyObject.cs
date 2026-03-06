@@ -162,6 +162,9 @@ namespace Luny.Engine.Bridge
 		/// The engine-native object is destroyed at the end of the current frame.
 		/// </summary>
 		void Destroy();
+
+		ILunyObject Clone();
+		ILunyObject Clone(LunyTransform parent);
 	}
 
 	/// <summary>
@@ -312,6 +315,10 @@ namespace Luny.Engine.Bridge
 
 			Objects.Unregister(this);
 		}
+
+		public abstract ILunyObject Clone();
+
+		public abstract ILunyObject Clone(LunyTransform parent);
 
 		private void ClearObjectEvents()
 		{
